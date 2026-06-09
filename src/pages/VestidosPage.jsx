@@ -7,8 +7,6 @@ const VestidosPage = () => {
       id: "vestido-lame-elegante",
       name: "Vestido Lame Elegante",
       description: "Vestido elegante en tela lame con brillo sutil y caída impecable. Perfecto para ocasiones especiales.",
-      price: 199.90,
-      originalPrice: 249.90,
       badge: "-20%",
       image: "/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png",
       images: [
@@ -47,8 +45,6 @@ const VestidosPage = () => {
       id: "vestido-rit-elegante",
       name: "Vestido Rit Elegante",
       description: "Vestido confeccionado en tela Rit de alta calidad con diseño sofisticado",
-      price: 249.90,
-      originalPrice: 329.90,
       badge: "-24%",
       image: "/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delante.png",
       images: [
@@ -82,8 +78,6 @@ const VestidosPage = () => {
       id: "vestido-suplex-moderno",
       name: "Vestido Suplex Moderno",
       description: "Vestido moderno confeccionado en suplex de alta calidad. Ajuste perfecto y diseño versátil para cualquier ocasión.",
-      price: 159.90,
-      originalPrice: 209.90,
       badge: "Nuevo",
       image: "/imagenes/vestidos/vestido_suplex01/azul_adelante.png",
       images: [

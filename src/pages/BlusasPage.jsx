@@ -7,8 +7,6 @@ const BlusasPage = () => {
       id: "blusa-seda-francesa",
       name: "Blusa Seda Francesa",
       description: "Blusa elegante confeccionada en seda francesa premium. Diseño sofisticado y versátil, perfecta para looks casuales y formales. Comodidad y estilo en una sola prenda.",
-      price: 129.90,
-      originalPrice: 179.90,
       badge: "-28%",
       image: "/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_delante.png",
       images: [

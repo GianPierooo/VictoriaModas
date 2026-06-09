@@ -14,8 +14,6 @@ import QuantitySelector from '../components/QuantitySelector'
 const MOCK_PRODUCTS = {
   'blusa-seda-francesa': {
     name: 'Blusa Seda Francesa',
-    price: 129.90,
-    originalPrice: 179.90,
     fabric: 'Seda francesa premium',
     sizes: ['XS', 'S', 'M', 'L'],
     colors: ['Azul', 'Negro', 'Plomo'],
@@ -45,17 +43,45 @@ const MOCK_PRODUCTS = {
   },
   'pantalon-scuba-vena': {
     name: 'Pantalón Scuba Vena',
-    price: 149.90,
     fabric: 'Scuba premium',
     sizes: ['S', 'M', 'L'],
-    colors: ['Beige', 'Negro', 'Azul', 'Camello', 'Vino', 'Plomo'],
+    colors: ['Negro', 'Azul', 'Camello', 'Vino', 'Plomo'],
     description: 'Pantalón cómodo en tela scuba. Corte wide-leg con caída impecable y comodidad superior.',
-    images: ['/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png']
+    images: [
+      '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png',
+      '/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_atras.png',
+      '/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_delado.png'
+    ],
+    colorImages: {
+      'Negro': [
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_atras.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_delado.png'
+      ],
+      'Azul': [
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_azul_defrente.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_azul_atras.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_azul_delado.png'
+      ],
+      'Camello': [
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_camello_adelante.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_camello_atras.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_camello_delado.png'
+      ],
+      'Vino': [
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_adelante.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_atras.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_delado.png'
+      ],
+      'Plomo': [
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_plomo_adelante.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_plomo_atras.png',
+        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_plomo_delado.png'
+      ]
+    }
   },
   'pantalon-scuba-correa': {
     name: 'Pantalón Scuba con Correa',
-    price: 149.90,
-    originalPrice: 209.90,
     fabric: 'Scuba premium',
     sizes: ['S', 'M', 'L'],
     colors: ['Beach', 'Negro', 'Azul', 'Plomo'],
@@ -86,8 +112,6 @@ const MOCK_PRODUCTS = {
   },
   'vestido-lame-elegante': {
     name: 'Vestido Lame Elegante',
-    price: 199.90,
-    originalPrice: 249.90,
     fabric: 'Tela lame premium',
     sizes: ['S', 'M', 'L'],
     colors: ['Plomo', 'Negro', 'Azul', 'Vino'],
@@ -118,8 +142,6 @@ const MOCK_PRODUCTS = {
   },
   'vestido-suplex-moderno': {
     name: 'Vestido Suplex Moderno',
-    price: 159.90,
-    originalPrice: 209.90,
     fabric: 'Suplex de alta calidad',
     sizes: ['S', 'M', 'L'],
     colors: ['Azul', 'Blanco', 'Negro', 'Vino'],
@@ -150,8 +172,6 @@ const MOCK_PRODUCTS = {
   },
   'vestido-rit-elegante': {
     name: 'Vestido Rit Elegante',
-    price: 249.90,
-    originalPrice: 329.90,
     fabric: 'Tela Rit de alta calidad',
     sizes: ['S', 'M', 'L'],
     colors: ['Beige', 'Negro', 'Plomo'],
@@ -188,7 +208,7 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1)
 
   const colorMap = {
-    'Beige': '#F5E6D3', 'Negro': '#2C2C2C', 'Blanco': '#FFFFFF',
+    'Beige': '#F5E6D3', 'Beach': '#F5E6D3', 'Negro': '#2C2C2C', 'Blanco': '#FFFFFF',
     'Azul': '#1E40AF', 'Camello': '#C19A6B', 'Vino': '#722F37',
     'Plomo': '#6B7280', 'Gris': '#6B7280'
   }
@@ -218,8 +238,8 @@ export default function ProductPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Gallery */}
             <div className="space-y-4">
-              {/* Main Image */}
-              <div className="aspect-[3/4] bg-white rounded-lg overflow-hidden">
+              {/* Main Image con bordes redondeados */}
+              <div className="aspect-[3/4] bg-rose-50/30 rounded-3xl overflow-hidden shadow-lg">
                 <img 
                   src={currentImages[selectedImage] || product.images[0]} 
                   alt={product.name}
@@ -228,16 +248,16 @@ export default function ProductPage() {
                 />
               </div>
 
-              {/* Thumbnails */}
+              {/* Thumbnails circulares */}
               {currentImages.length > 1 && (
                 <div className="grid grid-cols-3 gap-4">
                   {currentImages.map((src, idx) => (
                     <button 
                       key={idx} 
-                      className={`aspect-square bg-white rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`aspect-square bg-rose-50/30 rounded-3xl overflow-hidden border-3 transition-all ${
                         idx === selectedImage 
-                          ? 'border-rose scale-105' 
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-rose scale-105 shadow-[0_0_20px_rgba(247,202,201,0.6)]' 
+                          : 'border-rose-200/40 hover:border-rose-200'
                       }`}
                       onClick={() => setSelectedImage(idx)}
                     >
@@ -269,9 +289,6 @@ export default function ProductPage() {
                 <span className="text-sm text-gray-600">(4.8)</span>
               </div>
 
-              {/* Price */}
-              {/* Precios removidos */}
-
               {/* Description */}
               <p className="text-gray-600 mb-8 leading-relaxed">
                 {product.description}
@@ -279,19 +296,19 @@ export default function ProductPage() {
 
               {/* Options */}
               <div className="space-y-6 mb-8">
-                {/* Size */}
+                {/* Size - botones circulares */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Talla:
                   </label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {product.sizes.map(size => (
                       <button 
                         key={size} 
-                        className={`px-6 py-3 rounded-md border-2 font-medium transition-all ${
+                        className={`w-14 h-14 rounded-full border-3 font-semibold transition-all duration-300 ${
                           selectedSize === size 
-                            ? 'border-rose bg-rose text-white' 
-                            : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                            ? 'border-rose bg-gradient-to-br from-rose to-rose-200 text-white shadow-[0_0_20px_rgba(247,202,201,0.6)] scale-110' 
+                            : 'border-rose-200/50 text-gray-700 hover:border-rose hover:scale-105'
                         }`}
                         onClick={() => setSelectedSize(size)}
                       >
@@ -301,19 +318,19 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                {/* Color */}
+                {/* Color - círculos */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Color: <span className="font-normal text-gray-600">{selectedColor}</span>
+                    Color: <span className="font-normal text-rose-400">{selectedColor}</span>
                   </label>
                   <div className="flex flex-wrap gap-3">
                     {product.colors.map(color => (
                       <button 
                         key={color} 
-                        className={`w-12 h-12 rounded-full border-4 transition-all ${
+                        className={`w-14 h-14 rounded-full border-4 transition-all duration-300 ${
                           selectedColor === color 
-                            ? 'border-rose scale-110' 
-                            : 'border-gray-300 hover:border-gray-400'
+                            ? 'border-rose scale-125 shadow-[0_0_20px_rgba(247,202,201,0.6)]' 
+                            : 'border-gray-300 hover:border-rose-200 hover:scale-110'
                         }`}
                         style={{ backgroundColor: colorMap[color] || '#ddd' }}
                         title={color}
@@ -332,7 +349,7 @@ export default function ProductPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tela:
                   </label>
-                  <span className="inline-block px-4 py-2 bg-gray-100 text-gray-700 rounded-md">
+                  <span className="inline-block px-6 py-3 bg-rose-50 text-gray-700 rounded-full border border-rose-200/50">
                     {product.fabric}
                   </span>
                 </div>
@@ -348,7 +365,7 @@ export default function ProductPage() {
                 />
               </div>
 
-              {/* Actions */}
+              {/* Actions - botones circulares */}
               <div className="space-y-3 mb-8">
                 <button
                   onClick={() => {
@@ -356,44 +373,43 @@ export default function ProductPage() {
                     addItem({
                       id: id || 'default-product',
                       name: product.name,
-                      price: product.price,
                       image: images[0] || product.images[0],
                       selectedColor,
                       selectedSize
                     }, quantity)
                   }}
-                  className="w-full bg-gray-900 hover:bg-gray-800 text-white px-8 py-4 rounded-full font-semibold text-lg transition-colors flex items-center justify-center gap-3"
+                  className="w-full bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 hover:scale-105 hover:shadow-xl"
                 >
                   <span>🛒</span>
                   Agregar al carrito
                 </button>
-                <button className="w-full bg-rose hover:bg-rose-dark text-white px-8 py-4 rounded-full font-semibold text-lg transition-colors flex items-center justify-center gap-3">
+                <button className="w-full bg-gradient-to-r from-rose to-rose-200 hover:from-rose-600 hover:to-rose-300 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 hover:scale-105 hover:shadow-[0_0_30px_rgba(247,202,201,0.6)]">
                   <span>⚡</span>
                   Comprar ahora
                 </button>
-                <button className="w-full bg-white hover:bg-gray-50 text-gray-900 px-8 py-4 rounded-full font-semibold border-2 border-gray-300 hover:border-gray-400 transition-all flex items-center justify-center gap-3">
+                <button className="w-full bg-white hover:bg-rose-50 text-gray-900 px-8 py-4 rounded-full font-semibold border-2 border-rose-200/50 hover:border-rose transition-all duration-300 flex items-center justify-center gap-3 hover:scale-105">
                   <span>❤️</span>
                   Agregar a favoritos
                 </button>
               </div>
 
-              {/* Features */}
+              {/* Features - tarjetas redondeadas */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200">
+                <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-rose-50 to-white rounded-2xl border-2 border-rose-200/40 hover:border-rose-200 transition-all duration-300 hover:shadow-lg">
                   <TruckIcon className="w-6 h-6 text-rose flex-shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Envío gratis</p>
                     <p className="text-xs text-gray-600">En compras &gt; S/150</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200">
+                <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-rose-50 to-white rounded-2xl border-2 border-rose-200/40 hover:border-rose-200 transition-all duration-300 hover:shadow-lg">
                   <ArrowPathIcon className="w-6 h-6 text-rose flex-shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Devoluciones</p>
                     <p className="text-xs text-gray-600">30 días</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200">
+                <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-rose-50 to-white rounded-2xl border-2 border-rose-200/40 hover:border-rose-200 transition-all duration-300 hover:shadow-lg">
                   <ShieldCheckIcon className="w-6 h-6 text-rose flex-shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Garantía</p>

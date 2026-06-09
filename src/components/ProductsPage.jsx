@@ -194,12 +194,8 @@ export default function ProductsPage({ products = [], title = "PRODUCTOS", categ
   const [showOnlyNew, setShowOnlyNew] = useState(false)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
-  // Normalizar precios
-  const allProducts = products.map(p => ({
-    ...p,
-    price: typeof p.price === 'number' && p.price > 1000 ? p.price / 100 : p.price,
-    originalPrice: p.originalPrice && typeof p.originalPrice === 'number' && p.originalPrice > 1000 ? p.originalPrice / 100 : p.originalPrice
-  }))
+  // Usar productos sin normalizar precios
+  const allProducts = products
 
   // Filtros disponibles
   const availableFabrics = filters.availableFabrics || []
@@ -233,16 +229,14 @@ export default function ProductsPage({ products = [], title = "PRODUCTOS", categ
     if (searchTerm && !product.name.toLowerCase().includes(searchTerm.toLowerCase())) return false
     if (selectedSizes.length > 0 && !selectedSizes.some(size => product.sizes?.includes(size))) return false
     if (selectedColors.length > 0 && !selectedColors.some(color => product.colors?.includes(color))) return false
-    if (showOnlySale && !product.originalPrice) return false
+    if (showOnlySale && !product.badge?.includes('%')) return false
     if (showOnlyNew && product.badge !== 'Nuevo') return false
     return true
   })
 
-  // Aplicar ordenamiento
+  // Aplicar ordenamiento (sin ordenar por precio)
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
-      case 'precio-asc': return a.price - b.price
-      case 'precio-desc': return b.price - a.price
       case 'nuevos': return (b.badge === 'Nuevo' ? 1 : 0) - (a.badge === 'Nuevo' ? 1 : 0)
       default: return 0
     }
@@ -253,7 +247,6 @@ export default function ProductsPage({ products = [], title = "PRODUCTOS", categ
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
       image: product.image,
       selectedColor: product.selectedColor,
       selectedSize: product.selectedSize,
@@ -421,8 +414,6 @@ export default function ProductsPage({ products = [], title = "PRODUCTOS", categ
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
                   >
                     <option value="popularidad">Popularidad</option>
-                    <option value="precio-asc">Precio: Menor a Mayor</option>
-                    <option value="precio-desc">Precio: Mayor a Menor</option>
                     <option value="nuevos">Más Nuevos</option>
                   </select>
                 </div>
@@ -445,8 +436,6 @@ export default function ProductsPage({ products = [], title = "PRODUCTOS", categ
                   className="flex-1 bg-white border border-gray-300 px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose"
                 >
                   <option value="popularidad">Popularidad</option>
-                  <option value="precio-asc">Precio: Menor a Mayor</option>
-                  <option value="precio-desc">Precio: Mayor a Menor</option>
                   <option value="nuevos">Más Nuevos</option>
                 </select>
               </div>

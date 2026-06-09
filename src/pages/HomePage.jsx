@@ -47,44 +47,67 @@ function Hero() {
 
   return (
     <section className="relative h-[60vh] md:h-[80vh] lg:h-screen overflow-hidden">
+      {/* Elementos decorativos animados con círculos rosa */}
+      <div className="absolute top-20 right-20 w-96 h-96 bg-rose/20 rounded-full blur-3xl animate-pulse-soft pointer-events-none z-10"></div>
+      <div className="absolute bottom-20 left-20 w-80 h-80 bg-rose-200/30 rounded-full blur-3xl animate-float pointer-events-none z-10"></div>
+      <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-rose/10 rounded-full blur-2xl animate-breathe pointer-events-none z-10"></div>
+      
       {/* Slides */}
       {slides.map((slide, idx) => (
         <div
           key={idx}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            idx === currentSlide ? 'opacity-100' : 'opacity-0'
+          className={`absolute inset-0 transition-all duration-1500 ${
+            idx === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
           }`}
         >
           {/* Background Image with Parallax */}
           <div
-            className="absolute inset-0 bg-cover bg-center scale-110 transition-transform duration-1000 ease-out"
-            style={{ backgroundImage: `url(${slide.img})` }}
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-[2000ms] ease-out"
+            style={{ 
+              backgroundImage: `url(${slide.img})`,
+              transform: idx === currentSlide ? 'scale(1.1)' : 'scale(1.2)'
+            }}
           />
           
-          {/* Overlay Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+          {/* Overlay Gradient con tonos rosa */}
+          <div className="absolute inset-0 bg-gradient-to-t from-rose-900/60 via-black/40 to-transparent animate-fadeIn" />
+          
+          {/* Círculos decorativos minimalistas */}
+          <div className="absolute top-0 left-1/2 w-3 h-3 rounded-full bg-rose-200/40 -translate-x-1/2 animate-slideDown"></div>
+          <div className="absolute bottom-0 left-1/2 w-3 h-3 rounded-full bg-rose-200/40 -translate-x-1/2 animate-fadeIn delay-500"></div>
           
           {/* Content */}
           <div className="relative h-full flex items-center justify-center">
-            <div className="text-center text-white px-4 max-w-4xl transform transition-all duration-1000">
-              <p className="text-sm md:text-base uppercase tracking-widest mb-4 opacity-90 animate-fade-in">
+            <div className={`text-center text-white px-4 max-w-4xl transition-all duration-1000 ${
+              idx === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+            }`}>
+              
+              <p className="text-xs md:text-sm uppercase tracking-[0.3em] mb-6 text-rose-100 font-light animate-fadeInDown delay-200">
                 {slide.subtitle}
               </p>
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-serif font-bold mb-8 animate-slide-up">
-                {slide.title}
+              
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-light mb-8 leading-tight animate-fadeInUp delay-300">
+                <span className="block">{slide.title.split(' ').slice(0, -2).join(' ')}</span>
+                <span className="block font-bold mt-2">{slide.title.split(' ').slice(-2).join(' ')}</span>
               </h1>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
+              
+              {/* Círculo decorativo con animación */}
+              <div className="w-2 h-2 rounded-full bg-rose-200/80 mx-auto mb-8 animate-scaleIn delay-500"></div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeIn delay-700">
                 <Link 
                   to="/vestidos" 
-                  className="btn-primary transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+                  className="group relative overflow-hidden bg-white text-gray-900 px-10 py-4 rounded-full transition-all duration-500 hover:tracking-widest hover:shadow-[0_0_40px_rgba(247,202,201,0.8)]"
                 >
-                  {slide.cta}
+                  <span className="relative z-10 text-sm font-light uppercase tracking-wider">{slide.cta}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-rose to-rose-200 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 rounded-full"></div>
+                  <span className="absolute inset-0 z-10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-sm font-light uppercase tracking-wider">{slide.cta}</span>
                 </Link>
                 <Link 
                   to="/nosotros" 
-                  className="btn-white transform transition-all duration-300 hover:scale-105"
+                  className="border border-rose-200/60 text-white px-10 py-4 rounded-full transition-all duration-500 hover:bg-rose/20 hover:border-rose-200 hover:tracking-widest backdrop-blur-sm"
                 >
-                  Nuestra historia
+                  <span className="text-sm font-light uppercase tracking-wider">Nuestra historia</span>
                 </Link>
               </div>
             </div>
@@ -92,46 +115,23 @@ function Hero() {
         </div>
       ))}
 
-      {/* Navigation Buttons */}
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-8 pointer-events-none">
+      {/* Navigation Buttons - Con círculos rosa */}
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-8 pointer-events-none z-20">
         <button
           onClick={() => scroll('prev')}
-          className="pointer-events-auto w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 flex items-center justify-center transition-colors"
+          className="pointer-events-auto group w-14 h-14 rounded-full border-2 border-rose-200/50 backdrop-blur-md hover:bg-rose/30 hover:border-rose flex items-center justify-center transition-all duration-500 hover:scale-110"
           aria-label="Anterior"
         >
-          <ChevronLeftIcon className="w-6 h-6 text-white" />
+          <ChevronLeftIcon className="w-6 h-6 text-white transition-transform group-hover:-translate-x-1" />
         </button>
         <button
           onClick={() => scroll('next')}
-          className="pointer-events-auto w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 flex items-center justify-center transition-colors"
+          className="pointer-events-auto group w-14 h-14 rounded-full border-2 border-rose-200/50 backdrop-blur-md hover:bg-rose/30 hover:border-rose flex items-center justify-center transition-all duration-500 hover:scale-110"
           aria-label="Siguiente"
         >
-          <ChevronRightIcon className="w-6 h-6 text-white" />
+          <ChevronRightIcon className="w-6 h-6 text-white transition-transform group-hover:translate-x-1" />
         </button>
       </div>
-
-      {/* Indicators */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
-        {slides.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentSlide(idx)}
-            className={`h-2 rounded-full transition-all ${
-              idx === currentSlide ? 'w-8 bg-white' : 'w-2 bg-white/50'
-            }`}
-            aria-label={`Ir a slide ${idx + 1}`}
-          />
-        ))}
-      </div>
-
-      {/* Scroll Indicator (hidden on mobile) */}
-      <button
-        onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
-        className="hidden lg:block absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
-        aria-label="Desplázate hacia abajo"
-      >
-        <ChevronDownIcon className="w-8 h-8 text-white" />
-      </button>
     </section>
   )
 }
@@ -172,8 +172,6 @@ function FeaturedProducts() {
     {
       id: 'vestido-suplex-moderno',
       name: 'Vestido Suplex Moderno',
-      price: 159.90,
-      originalPrice: 209.90,
       image: '/imagenes/vestidos/vestido_suplex01/azul_adelante.png',
       badge: 'Nuevo',
       category: 'Vestidos'
@@ -181,8 +179,6 @@ function FeaturedProducts() {
     {
       id: 'vestido-lame-elegante',
       name: 'Vestido Lame Elegante',
-      price: 199.90,
-      originalPrice: 249.90,
       image: '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png',
       badge: '-20%',
       category: 'Vestidos'
@@ -190,8 +186,6 @@ function FeaturedProducts() {
     {
       id: 'blusa-seda-francesa',
       name: 'Blusa Seda Francesa',
-      price: 129.90,
-      originalPrice: 179.90,
       image: '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_delante.png',
       badge: '-28%',
       category: 'Blusas'
@@ -199,8 +193,6 @@ function FeaturedProducts() {
     {
       id: 'vestido-rit-elegante',
       name: 'Vestido Rit Elegante',
-      price: 249.90,
-      originalPrice: 329.90,
       image: '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delante.png',
       badge: '-24%',
       category: 'Vestidos'
@@ -210,56 +202,86 @@ function FeaturedProducts() {
   return (
     <section 
       ref={ref}
-      className={`relative py-12 md:py-16 lg:py-20 bg-gradient-to-b from-rose-50 to-white overflow-hidden transition-all duration-1000 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
-      }`}
+      className="relative py-20 md:py-28 lg:py-32 bg-gradient-to-b from-white via-rose-50/30 to-white overflow-hidden"
       aria-labelledby="featured-title"
     >
-      {/* Círculos decorativos */}
-      <div className="absolute top-10 right-10 w-64 h-64 bg-gradient-radial-rose rounded-full opacity-30 animate-pulse-soft pointer-events-none"></div>
-      <div className="absolute bottom-20 left-10 w-48 h-48 bg-gradient-radial-rose rounded-full opacity-20 animate-float pointer-events-none"></div>
+      {/* Elementos decorativos con círculos rosa animados */}
+      <div className="absolute top-10 right-10 w-[500px] h-[500px] bg-rose/20 rounded-full opacity-40 animate-breathe pointer-events-none"></div>
+      <div className="absolute bottom-20 left-20 w-[400px] h-[400px] bg-rose-200/30 rounded-full opacity-30 animate-float pointer-events-none"></div>
+      <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-rose-100/20 rounded-full opacity-20 animate-pulse-soft pointer-events-none"></div>
+      
+      {/* Círculos decorativos pequeños */}
+      <div className="absolute top-40 left-1/4 w-3 h-3 rounded-full bg-rose-200/40 animate-float"></div>
+      <div className="absolute bottom-40 right-1/3 w-2 h-2 rounded-full bg-rose/40 animate-breathe"></div>
       
       <div className="container mx-auto px-4 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-12 transform transition-all duration-1000">
+        {/* Header mejorado con rosa */}
+        <div className="text-center mb-16 md:mb-20">
+          {/* Decoración superior con círculos */}
+          <div className={`flex items-center justify-center gap-3 mb-6 transition-all duration-1000 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+          }`}>
+            <div className="w-16 h-px bg-rose/60"></div>
+            <div className="w-3 h-3 rounded-full bg-rose animate-pulse"></div>
+            <div className="w-16 h-px bg-rose/60"></div>
+          </div>
+          
           <h2 
             id="featured-title" 
-            className={`text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-6 tracking-tight transition-all duration-1000 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            className={`text-5xl md:text-6xl lg:text-7xl font-serif font-light mb-6 tracking-tight transition-all duration-1000 delay-200 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
-            <span className="relative inline-block group">
-              <span className="absolute -inset-6 bg-gradient-to-r from-rose/20 via-rose-100/30 to-rose/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
-              <span className="relative inline-flex items-baseline gap-3">
-                <span className="text-rose font-light">Más</span>
-                <span className="text-gray-900 font-bold">Vendidos</span>
-              </span>
+            <span className="block text-rose-400 text-3xl md:text-4xl mb-2 font-light">Nuestros</span>
+            <span className="relative inline-block">
+              <span className="relative z-10 font-bold">Más Vendidos</span>
+              <div className={`absolute bottom-0 left-0 h-3 bg-rose-200/40 w-full transition-all duration-1000 delay-500 ${
+                isVisible ? 'w-full' : 'w-0'
+              }`}></div>
             </span>
           </h2>
+          
           <p 
-            className={`text-lg md:text-xl text-gray-600 mb-6 transition-all duration-1000 delay-100 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            className={`text-lg md:text-xl text-gray-500 mb-6 font-light max-w-2xl mx-auto transition-all duration-1000 delay-300 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
-            Las prendas favoritas de nuestras clientas
+            Las prendas que enamoran a nuestras clientas
           </p>
-          {/* Línea decorativa animada */}
-          <div className={`w-24 h-1 bg-gradient-to-r from-rose to-rose-dark mx-auto rounded-full transition-all duration-1000 delay-200 ${
-            isVisible ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'
+          
+          {/* Círculo decorativo animado */}
+          <div className={`w-2 h-2 rounded-full bg-rose mx-auto transition-all duration-1000 delay-400 animate-pulse ${
+            isVisible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
           }`}></div>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} showSizes={false} />
+        {/* Grid con animaciones escalonadas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {products.map((product, idx) => (
+            <div
+              key={product.id}
+              className={`transition-all duration-700 ${
+                isVisible 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-12'
+              }`}
+              style={{ transitionDelay: `${idx * 150 + 500}ms` }}
+            >
+              <ProductCard product={product} showSizes={false} />
+            </div>
           ))}
         </div>
 
-        {/* CTA */}
-        <div className="mt-12 text-center">
-          <Link to="/vestidos" className="btn-outline">
-            Ver todos los productos
+        {/* CTA mejorado con rosa */}
+        <div className={`mt-16 text-center transition-all duration-1000 delay-1000 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}>
+          <Link 
+            to="/vestidos" 
+            className="group inline-flex items-center gap-3 bg-gradient-to-r from-rose to-rose-200 text-white px-12 py-4 rounded-full transition-all duration-500 hover:shadow-[0_0_30px_rgba(247,202,201,0.6)] hover:scale-105"
+          >
+            <span className="text-sm font-light uppercase tracking-wider">Ver colección completa</span>
+            <ChevronRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-2" />
           </Link>
         </div>
       </div>
@@ -269,6 +291,8 @@ function FeaturedProducts() {
 
 // ============= COLECCIONES VISUALES =============
 function Collections() {
+  const [ref, isVisible] = useScrollAnimation()
+  
   const collections = [
     {
       id: 'vestidos-elegantes',
@@ -287,41 +311,85 @@ function Collections() {
   ]
 
   return (
-    <section className="relative py-12 md:py-16 overflow-hidden">
-      {/* Círculo decorativo */}
-      <div className="absolute top-1/2 left-0 w-96 h-96 bg-gradient-radial-rose rounded-full opacity-20 -translate-x-1/2 pointer-events-none"></div>
+    <section ref={ref} className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-white to-rose-50/30">
+      {/* Círculos decorativos grandes */}
+      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-rose-200/20 rounded-full blur-3xl animate-float opacity-40"></div>
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-rose/20 rounded-full blur-3xl animate-breathe opacity-30"></div>
+      
+      {/* Decoración superior circular */}
+      <div className={`flex items-center justify-center gap-3 mb-16 transition-all duration-1000 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+      }`}>
+        <div className="w-24 h-px bg-rose/60"></div>
+        <div className="w-4 h-4 rounded-full bg-rose animate-pulse"></div>
+        <div className="w-24 h-px bg-rose/60"></div>
+      </div>
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {collections.map((collection) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+          {collections.map((collection, idx) => (
             <Link
               key={collection.id}
               to={collection.link}
-              className="group relative h-96 rounded-2xl overflow-hidden shadow-md hover:shadow-rose-xl transition-all duration-500"
+              className={`group relative h-[500px] md:h-[600px] overflow-hidden rounded-3xl shadow-lg transition-all duration-1000 hover:shadow-[0_30px_80px_rgba(247,202,201,0.5)] ${
+                isVisible 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-12'
+              }`}
+              style={{ transitionDelay: `${idx * 200}ms` }}
             >
-              {/* Image */}
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                style={{ backgroundImage: `url(${collection.image})` }}
-              />
+              {/* Fondo con imagen */}
+              <div className="absolute inset-0 bg-rose-50/30">
+                <img
+                  src={collection.image}
+                  alt={collection.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+              </div>
               
-              {/* Overlay con tinte rosa */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-rose-900/20 to-transparent" />
+              {/* Overlay con gradiente rosa */}
+              <div className="absolute inset-0 bg-gradient-to-t from-rose-900/70 via-rose-900/30 to-transparent transition-opacity duration-500 group-hover:from-rose-900/50"></div>
+              
+              {/* Círculos decorativos flotantes */}
+              <div className="absolute top-10 right-10 w-20 h-20 rounded-full bg-rose-200/30 backdrop-blur-sm animate-float opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute bottom-20 left-10 w-16 h-16 rounded-full bg-rose/20 backdrop-blur-sm animate-breathe opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              
+              {/* Borde animado circular */}
+              <div className="absolute inset-0 rounded-3xl border-2 border-rose-200/0 group-hover:border-rose-200/60 transition-all duration-500 pointer-events-none shadow-[inset_0_0_40px_rgba(247,202,201,0)] group-hover:shadow-[inset_0_0_40px_rgba(247,202,201,0.3)]"></div>
+              
+              {/* Líneas decorativas circulares */}
+              <div className="absolute top-6 left-6 w-0 h-0.5 bg-rose-200 rounded-full group-hover:w-20 transition-all duration-700 delay-100"></div>
+              <div className="absolute top-6 right-6 w-3 h-3 rounded-full border-2 border-rose-200/0 group-hover:border-rose-200 transition-all duration-700 delay-300"></div>
               
               {/* Content */}
-              <div className="absolute inset-0 flex items-end p-8">
-                <div className="text-white">
-                  <h3 className="text-3xl font-serif font-bold mb-2">
-                    {collection.title}
-                  </h3>
-                  <p className="text-white/90 mb-4">
-                    {collection.description}
-                  </p>
-                  <span className="inline-flex items-center gap-2 text-white underline underline-offset-4">
-                    Explorar colección
-                    <ChevronRightIcon className="w-5 h-5" />
-                  </span>
+              <div className="absolute inset-0 flex flex-col items-start justify-end p-8 md:p-10">
+                {/* Decoración con círculos */}
+                <div className="flex items-center gap-2 mb-4 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-200">
+                  <div className="w-3 h-3 rounded-full bg-rose-200"></div>
+                  <div className="w-2 h-2 rounded-full bg-rose-100"></div>
+                  <div className="w-16 h-px bg-rose-200/60"></div>
                 </div>
+                
+                <h3 className="text-3xl md:text-4xl font-serif font-light text-white mb-3 transform transition-all duration-500 group-hover:translate-x-2">
+                  {collection.title}
+                </h3>
+                
+                <p className="text-rose-100 mb-6 font-light transform transition-all duration-500 delay-100 group-hover:translate-x-2">
+                  {collection.description}
+                </p>
+                
+                {/* Botón circular */}
+                <div className="inline-flex items-center gap-3 text-white text-sm uppercase tracking-wider font-light transition-all duration-500 group-hover:gap-5">
+                  Explorar colección
+                  <div className="w-10 h-10 rounded-full border-2 border-rose-200/80 flex items-center justify-center transition-all duration-500 group-hover:bg-rose-200/30 group-hover:shadow-[0_0_20px_rgba(247,202,201,0.6)] group-hover:scale-110">
+                    <ChevronRightIcon className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Efecto de brillo en hover */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl">
+                <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-rose-200/0 via-rose-200/10 to-rose-200/0 transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               </div>
             </Link>
           ))}
@@ -333,6 +401,8 @@ function Collections() {
 
 // ============= CATEGORÍAS =============
 function CategoryShowcase() {
+  const [ref, isVisible] = useScrollAnimation()
+  
   const categories = [
     { name: 'Vestidos', img: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=800&auto=format&fit=crop', link: '/vestidos' },
     { name: 'Pantalones', img: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=800&auto=format&fit=crop', link: '/pantalones' },
@@ -341,47 +411,94 @@ function CategoryShowcase() {
   ]
 
   return (
-    <section className="relative py-12 md:py-16 lg:py-20 bg-gradient-to-br from-rose-50 via-white to-rose-50/30 overflow-hidden" aria-labelledby="category-title">
-      {/* Círculos decorativos múltiples */}
-      <div className="absolute top-0 right-1/4 w-72 h-72 bg-gradient-radial-rose rounded-full opacity-25 animate-pulse-soft pointer-events-none"></div>
-      <div className="absolute bottom-0 left-1/3 w-56 h-56 bg-gradient-radial-rose rounded-full opacity-20 pointer-events-none"></div>
+    <section 
+      ref={ref}
+      className="relative py-20 md:py-28 bg-gradient-to-b from-white via-rose-50/20 to-white overflow-hidden" 
+      aria-labelledby="category-title"
+    >
+      {/* Círculos decorativos de fondo */}
+      <div className="absolute top-1/4 left-10 w-[400px] h-[400px] bg-rose-200/20 rounded-full blur-3xl animate-float opacity-30"></div>
+      <div className="absolute bottom-1/4 right-10 w-[350px] h-[350px] bg-rose/15 rounded-full blur-3xl animate-breathe opacity-25"></div>
       
       <div className="container mx-auto px-4 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 id="category-title" className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-4 animate-fade-in">
-            Explora por categoría
+        {/* Header minimalista */}
+        <div className="text-center mb-16">
+          {/* Mini decoración circular */}
+          <div className={`inline-flex items-center gap-3 mb-6 transition-all duration-1000 ${
+            isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+          }`}>
+            <div className="w-3 h-3 rounded-full bg-rose-200 animate-pulse"></div>
+            <div className="w-4 h-4 rounded-full bg-rose animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-3 h-3 rounded-full bg-rose-200 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+          </div>
+          
+          <h2 
+            id="category-title" 
+            className={`text-4xl md:text-5xl lg:text-6xl font-serif font-light text-gray-900 mb-4 transition-all duration-1000 delay-100 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
+            Explora por <span className="font-bold text-rose-400">categoría</span>
           </h2>
-          <p className="text-lg text-gray-600 animate-fade-in">
+          
+          <p className={`text-lg text-gray-500 font-light transition-all duration-1000 delay-200 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
             Encuentra el estilo perfecto para ti
           </p>
-          {/* Línea decorativa rosa */}
-          <div className="w-24 h-1 bg-gradient-rose mx-auto mt-6 rounded-full"></div>
+          
+          {/* Círculo decorativo */}
+          <div className={`w-2 h-2 rounded-full bg-rose mx-auto mt-6 transition-all duration-1000 delay-300 animate-pulse ${
+            isVisible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+          }`}></div>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {categories.map((cat) => (
+        {/* Grid con círculos */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          {categories.map((cat, idx) => (
             <Link
               key={cat.name}
               to={cat.link}
-              className="group relative h-64 md:h-80 rounded-xl overflow-hidden shadow-md hover:shadow-rose-lg transition-all duration-500"
+              className={`group relative aspect-[3/4] overflow-hidden bg-rose-50/20 rounded-3xl shadow-md transition-all duration-700 hover:shadow-[0_20px_60px_rgba(247,202,201,0.4)] hover:scale-105 ${
+                isVisible 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-12'
+              }`}
+              style={{ transitionDelay: `${idx * 100 + 400}ms` }}
             >
               {/* Image */}
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                style={{ backgroundImage: `url(${cat.img})` }}
+              <img
+                src={cat.img}
+                alt={cat.name}
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
               />
               
-              {/* Overlay con tinte rosa */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-rose-900/10 to-transparent group-hover:from-rose-900/30 transition-all duration-500" />
+              {/* Overlay rosa */}
+              <div className="absolute inset-0 bg-gradient-to-t from-rose-900/70 via-rose-900/20 to-transparent group-hover:from-rose-900/50 transition-all duration-500" />
               
-              {/* Content */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                <h3 className="text-2xl md:text-3xl font-serif font-bold mb-2">
+              {/* Círculos decorativos flotantes */}
+              <div className="absolute top-6 right-6 w-12 h-12 rounded-full bg-rose-200/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500 animate-float"></div>
+              <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-rose/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-700 animate-pulse"></div>
+              
+              {/* Borde circular en hover */}
+              <div className="absolute inset-0 rounded-3xl border-2 border-rose-200/0 group-hover:border-rose-200/60 transition-all duration-500 shadow-[inset_0_0_30px_rgba(247,202,201,0)] group-hover:shadow-[inset_0_0_30px_rgba(247,202,201,0.3)]"></div>
+              
+              {/* Content minimalista */}
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-8 text-white">
+                {/* Círculos decorativos superiores */}
+                <div className="flex gap-2 mb-4 opacity-0 group-hover:opacity-100 transition-all duration-500">
+                  <div className="w-2 h-2 rounded-full bg-rose-200"></div>
+                  <div className="w-2 h-2 rounded-full bg-rose-100"></div>
+                </div>
+                
+                <h3 className="text-2xl md:text-3xl font-serif font-light mb-3 transform group-hover:translate-y-[-4px] transition-transform duration-500">
                   {cat.name}
                 </h3>
-                <ChevronRightIcon className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                {/* Botón circular */}
+                <div className="w-10 h-10 rounded-full border-2 border-rose-200/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-500 hover:bg-rose-200/30 hover:scale-110">
+                  <ChevronRightIcon className="w-5 h-5" />
+                </div>
               </div>
             </Link>
           ))}
@@ -393,55 +510,99 @@ function CategoryShowcase() {
 
 // ============= PRODUCTO SPOTLIGHT =============
 function ProductSpotlight() {
+  const [ref, isVisible] = useScrollAnimation()
+  
   return (
-    <section className="relative py-12 md:py-16 lg:py-20 bg-gradient-to-br from-white to-rose-50 overflow-hidden">
-      {/* Círculos decorativos */}
-      <div className="absolute top-20 right-20 w-80 h-80 bg-gradient-radial-rose rounded-full opacity-15 pointer-events-none"></div>
-      <div className="absolute bottom-10 left-20 w-60 h-60 bg-gradient-radial-rose rounded-full opacity-10 animate-pulse-soft pointer-events-none"></div>
+    <section ref={ref} className="relative py-20 md:py-28 bg-gradient-to-b from-rose-50/30 to-white overflow-hidden">
+      {/* Elementos decorativos */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-radial-rose opacity-10 animate-breathe pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-px h-1/2 bg-gradient-to-b from-rose/20 to-transparent"></div>
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Image */}
-          <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-100 shadow-rose-md hover:shadow-rose-xl transition-all duration-500 group">
-            <img
-              src="/imagenes/vestidos/vestido_suplex01/azul_adelante.png"
-              alt="Vestido Suplex Moderno"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              loading="lazy"
-            />
-            {/* Overlay rosa sutil */}
-            <div className="absolute inset-0 bg-rose/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Image con efectos */}
+          <div className={`relative aspect-[3/4] bg-gray-50 transition-all duration-1000 ${
+            isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
+          }`}>
+            {/* Imagen principal */}
+            <div className="relative h-full overflow-hidden group">
+              <img
+                src="/imagenes/vestidos/vestido_suplex01/azul_adelante.png"
+                alt="Vestido Suplex Moderno"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy"
+              />
+              
+              {/* Overlay sutil */}
+              <div className="absolute inset-0 bg-rose/0 group-hover:bg-rose/5 transition-colors duration-700"></div>
+              
+              {/* Marco decorativo */}
+              <div className="absolute inset-0 border border-gray-200/0 group-hover:border-rose/30 transition-colors duration-700"></div>
+            </div>
+            
+            {/* Decoración flotante */}
+            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white border border-rose/20 flex items-center justify-center animate-float">
+              <div className="text-center">
+                <div className="text-3xl font-serif font-bold text-gray-900">-24%</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider">Descuento</div>
+              </div>
+            </div>
           </div>
 
           {/* Content */}
-          <div>
-            <p className="text-rose text-sm uppercase tracking-wide mb-2">
-              Producto destacado
-            </p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-6">
-              VESTIDO SUPLEX MODERNO
+          <div className={`transition-all duration-1000 delay-300 ${
+            isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+          }`}>
+            {/* Badge minimalista */}
+            <div className="inline-flex items-center gap-2 mb-6">
+              <div className="w-12 h-px bg-rose"></div>
+              <span className="text-rose text-xs uppercase tracking-[0.3em] font-light">
+                Producto destacado
+              </span>
+            </div>
+            
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-light text-gray-900 mb-6 leading-tight">
+              VESTIDO SUPLEX
+              <span className="block font-bold mt-2">MODERNO</span>
             </h2>
-            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+            
+            {/* Línea decorativa */}
+            <div className="w-24 h-px bg-rose/40 mb-8"></div>
+            
+            <p className="text-lg text-gray-600 mb-8 leading-relaxed font-light">
               Vestido moderno confeccionado en suplex de alta calidad. Ajuste perfecto al cuerpo 
               con diseño versátil y elegante. Ideal para cualquier ocasión, desde eventos casuales 
-              hasta reuniones formales. Comodidad y estilo en una sola prenda.
+              hasta reuniones formales.
             </p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose mt-2 flex-shrink-0"></span>
-                <span className="text-gray-700"><strong>Tela:</strong> Suplex de alta calidad</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose mt-2 flex-shrink-0"></span>
-                <span className="text-gray-700"><strong>Corte:</strong> Ajuste perfecto y moderno</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose mt-2 flex-shrink-0"></span>
-                <span className="text-gray-700"><strong>Tallas:</strong> S a L</span>
-              </li>
+            
+            {/* Features minimalistas */}
+            <ul className="space-y-4 mb-10">
+              {[
+                { label: 'Tela', value: 'Suplex de alta calidad' },
+                { label: 'Corte', value: 'Ajuste perfecto y moderno' },
+                { label: 'Tallas', value: 'S a L disponibles' }
+              ].map((item, idx) => (
+                <li 
+                  key={item.label}
+                  className="flex items-start gap-4 group"
+                  style={{ animationDelay: `${idx * 100}ms` }}
+                >
+                  <div className="w-1 h-1 bg-rose mt-2.5 group-hover:scale-150 transition-transform"></div>
+                  <div className="flex-1">
+                    <span className="text-gray-400 text-sm uppercase tracking-wider">{item.label}</span>
+                    <p className="text-gray-900 font-light">{item.value}</p>
+                  </div>
+                </li>
+              ))}
             </ul>
-            <Link to="/producto/vestido-suplex-moderno" className="btn-primary">
-              Ver detalles completos
+            
+            {/* CTA */}
+            <Link 
+              to="/producto/vestido-suplex-moderno" 
+              className="group inline-flex items-center gap-3 bg-gray-900 text-white px-12 py-4 transition-all duration-500 hover:bg-rose hover:tracking-widest"
+            >
+              <span className="text-sm uppercase tracking-wider font-light">Ver detalles completos</span>
+              <ChevronRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-2" />
             </Link>
           </div>
         </div>
@@ -450,8 +611,10 @@ function ProductSpotlight() {
   )
 }
 
-// ============= SOCIAL FAVORITES (Simplified) =============
+// ============= SOCIAL FAVORITES =============
 function SocialFavorites() {
+  const [ref, isVisible] = useScrollAnimation()
+  
   const favorites = [
     { id: 'vestido-suplex-moderno', name: 'Vestido Suplex Moderno', image: '/imagenes/vestidos/vestido_suplex01/negro_adelante.png', collection: 'Colección Suplex' },
     { id: 'vestido-lame-elegante', name: 'Vestido Lame Elegante', image: '/imagenes/vestidos/vestido_lame01/azul_adelante.png', collection: 'Elegancia Premium' },
@@ -459,53 +622,97 @@ function SocialFavorites() {
   ]
 
   return (
-    <section className="py-12 md:py-16 lg:py-20 bg-gradient-to-b from-white to-gray-50" aria-labelledby="social-title">
+    <section ref={ref} className="py-20 md:py-28 bg-gray-50" aria-labelledby="social-title">
       <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 id="social-title" className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-4">
-            Favoritos de Instagram
+        {/* Header minimalista */}
+        <div className="text-center mb-16">
+          {/* Decoración */}
+          <div className={`inline-flex items-center gap-2 mb-6 transition-all duration-1000 ${
+            isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+          }`}>
+            <div className="w-2 h-2 rotate-45 border border-rose"></div>
+            <div className="w-8 h-px bg-rose/40"></div>
+            <div className="w-2 h-2 bg-rose"></div>
+            <div className="w-8 h-px bg-rose/40"></div>
+            <div className="w-2 h-2 rotate-45 border border-rose"></div>
+          </div>
+          
+          <h2 
+            id="social-title" 
+            className={`text-4xl md:text-5xl lg:text-6xl font-serif font-light text-gray-900 mb-4 transition-all duration-1000 delay-100 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
+            Favoritos de <span className="font-bold">Instagram</span>
           </h2>
-          <p className="text-lg text-gray-600">
+          
+          <p className={`text-lg text-gray-500 font-light transition-all duration-1000 delay-200 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
             Las prendas que más aman nuestras clientas en redes sociales
           </p>
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {favorites.map((item) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {favorites.map((item, idx) => (
             <Link
               key={item.id}
               to={`/producto/${item.id}`}
-              className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-100"
+              className={`group relative aspect-[3/4] bg-gray-100 overflow-hidden transition-all duration-1000 ${
+                isVisible 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-12'
+              }`}
+              style={{ transitionDelay: `${idx * 150 + 300}ms` }}
             >
+              {/* Image */}
               <img
                 src={item.image}
                 alt={item.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:blur-sm"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white translate-y-full group-hover:translate-y-0 transition-transform">
-                <h3 className="text-xl font-semibold mb-1">{item.collection}</h3>
-                <span className="text-sm underline">Aprende más</span>
+              
+              {/* Overlay minimalista */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              {/* Content */}
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                {/* Línea decorativa */}
+                <div className="w-12 h-px bg-white/60 mb-4"></div>
+                
+                <h3 className="text-xl font-serif font-light mb-2">{item.collection}</h3>
+                <p className="text-sm text-white/80 mb-4">{item.name}</p>
+                
+                <span className="inline-flex items-center gap-2 text-sm uppercase tracking-wider border-b border-white/40 pb-1">
+                  Ver más
+                  <ChevronRightIcon className="w-4 h-4" />
+                </span>
+              </div>
+              
+              {/* Badge de Instagram */}
+              <div className="absolute top-4 right-4 w-10 h-10 bg-white/10 backdrop-blur-sm border border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <span className="text-white text-xl">📸</span>
               </div>
             </Link>
           ))}
         </div>
 
-        {/* CTA */}
-        <div className="mt-12 text-center">
+        {/* CTA mejorado */}
+        <div className={`mt-16 text-center transition-all duration-1000 delay-700 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}>
           <a
             href="https://www.facebook.com/profile.php?id=61555283742078"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full transition-colors"
+            className="inline-flex items-center gap-3 bg-blue-600 text-white px-10 py-4 transition-all duration-500 hover:bg-blue-700 hover:tracking-widest"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22 12.07C22 6.48 17.52 2 11.93 2S1.86 6.48 1.86 12.07C1.86 17.12 5.57 21.25 10.38 22v-7.01H7.9v-2.92h2.48V9.41c0-2.45 1.46-3.8 3.7-3.8 1.07 0 2.18.19 2.18.19v2.4h-1.23c-1.21 0-1.59.75-1.59 1.52v1.82h2.71l-.43 2.92h-2.28V22c4.81-.75 8.52-4.88 8.52-9.93z"/>
             </svg>
-            Síguenos en Facebook
+            <span className="text-sm uppercase tracking-wider font-light">Síguenos en Facebook</span>
           </a>
         </div>
       </div>
@@ -515,6 +722,8 @@ function SocialFavorites() {
 
 // ============= BLOG =============
 function BlogNoticias() {
+  const [ref, isVisible] = useScrollAnimation()
+  
   const posts = [
     {
       title: 'Cómo combinar pantalones wide-leg en 2025',
@@ -537,53 +746,87 @@ function BlogNoticias() {
   ]
 
   return (
-    <section className="relative py-12 md:py-16 lg:py-20 bg-white overflow-hidden" aria-labelledby="blog-title">
-      {/* Círculos decorativos */}
-      <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-radial-rose rounded-full opacity-20 animate-float pointer-events-none"></div>
-      <div className="absolute bottom-20 right-10 w-64 h-64 bg-gradient-radial-rose rounded-full opacity-15 pointer-events-none"></div>
+    <section ref={ref} className="relative py-20 md:py-28 bg-white overflow-hidden" aria-labelledby="blog-title">
+      {/* Decoración de fondo */}
+      <div className="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-transparent via-rose/10 to-transparent"></div>
       
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h2 id="blog-title" className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-4 animate-fade-in">
-            Blog y Novedades
+        <div className="text-center mb-16">
+          {/* Mini decoración */}
+          <div className={`inline-flex items-center gap-3 mb-6 transition-all duration-1000 ${
+            isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+          }`}>
+            <div className="w-16 h-px bg-rose/40"></div>
+            <div className="w-2 h-2 bg-rose rotate-45"></div>
+            <div className="w-16 h-px bg-rose/40"></div>
+          </div>
+          
+          <h2 
+            id="blog-title" 
+            className={`text-4xl md:text-5xl lg:text-6xl font-serif font-light text-gray-900 mb-4 transition-all duration-1000 delay-100 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
+            Blog & <span className="font-bold">Novedades</span>
           </h2>
-          <p className="text-lg text-gray-600 animate-fade-in">
+          
+          <p className={`text-lg text-gray-500 font-light transition-all duration-1000 delay-200 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
             Consejos de moda, tendencias y guías de estilo
           </p>
+          
           {/* Línea decorativa */}
-          <div className="w-24 h-1 bg-gradient-rose mx-auto mt-6 rounded-full"></div>
+          <div className={`w-px h-16 bg-gradient-to-b from-rose/60 to-transparent mx-auto mt-6 transition-all duration-1000 delay-300 ${
+            isVisible ? 'h-16 opacity-100' : 'h-0 opacity-0'
+          }`}></div>
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {posts.map((post, idx) => (
-            <article key={post.title} className="group animate-slide-up" style={{ animationDelay: `${idx * 100}ms` }}>
+            <article 
+              key={post.title}
+              className={`group transition-all duration-1000 ${
+                isVisible 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-12'
+              }`}
+              style={{ transitionDelay: `${idx * 150 + 400}ms` }}
+            >
               {/* Image */}
-              <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 mb-4 shadow-md group-hover:shadow-rose-lg transition-all duration-500">
+              <div className="relative aspect-video bg-gray-100 mb-6 overflow-hidden">
                 <img
                   src={post.img}
                   alt={post.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
                   loading="lazy"
                 />
-                {/* Overlay rosa sutil en hover */}
-                <div className="absolute inset-0 bg-rose/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                {/* Overlay minimalista */}
+                <div className="absolute inset-0 bg-rose/0 group-hover:bg-rose/10 transition-colors duration-500"></div>
+                
+                {/* Borde */}
+                <div className="absolute inset-0 border border-gray-200/0 group-hover:border-rose/30 transition-colors duration-500"></div>
               </div>
 
               {/* Content */}
-              <time className="text-sm text-gray-500">{post.date}</time>
-              <h3 className="text-xl font-semibold text-gray-900 mt-2 mb-3 group-hover:text-rose transition-colors">
+              <time className="text-xs text-gray-400 uppercase tracking-wider font-light">{post.date}</time>
+              
+              <h3 className="text-xl md:text-2xl font-serif font-light text-gray-900 mt-3 mb-4 group-hover:text-rose transition-colors duration-500">
                 {post.title}
               </h3>
-              <p className="text-gray-600 mb-4 line-clamp-2">
+              
+              <p className="text-gray-600 mb-6 line-clamp-2 font-light leading-relaxed">
                 {post.excerpt}
               </p>
+              
               <Link
                 to="/vestidos"
-                className="inline-flex items-center gap-2 text-rose font-medium hover:gap-3 transition-all"
+                className="inline-flex items-center gap-2 text-sm text-gray-900 uppercase tracking-wider font-light border-b border-gray-900/0 group-hover:border-gray-900 pb-1 transition-all duration-500 group-hover:gap-3"
               >
-                Leer más
+                Leer artículo
                 <ChevronRightIcon className="w-4 h-4" />
               </Link>
             </article>

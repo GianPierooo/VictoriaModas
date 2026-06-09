@@ -7,25 +7,18 @@ const PantalonesPage = () => {
       id: "pantalon-scuba-vena",
       name: "Pantalón Scuba Vena",
       description: "Pantalón cómodo en tela scuba con caída impecable",
-      price: 2000,
-      originalPrice: 2500,
       badge: "-20%",
-      image: "/imagenes/pantalones/pantalon_scuba/Pantalon Scuba_parte_adelante.png",
+      image: "/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png",
       images: [
-        "/imagenes/pantalones/pantalon_scuba/Pantalon Scuba_parte_adelante.png",
-        "/imagenes/pantalones/pantalon_scuba/Pantalon Scuba_parte_trasera.png",
-        "/imagenes/pantalones/pantalon_scuba/Pantalon Scuba_parte_delado.png"
+        "/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png",
+        "/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_atras.png",
+        "/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_delado.png"
       ],
       category: "pantalones",
       sizes: ["S", "M", "L"],
-      colors: ["Beige", "Negro", "Azul", "Camello", "Vino", "Plomo"],
+      colors: ["Negro", "Azul", "Camello", "Vino", "Plomo"],
       fabric: "Scuba",
       colorImages: {
-        "Beige": [
-          "/imagenes/pantalones/pantalon_scuba/Pantalon Scuba_parte_adelante.png",
-          "/imagenes/pantalones/pantalon_scuba/Pantalon Scuba_parte_trasera.png",
-          "/imagenes/pantalones/pantalon_scuba/Pantalon Scuba_parte_delado.png"
-        ],
         "Negro": [
           "/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png",
           "/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_atras.png",
@@ -57,8 +50,6 @@ const PantalonesPage = () => {
       id: "pantalon-scuba-correa",
       name: "Pantalón Scuba con Correa",
       description: "Pantalón scuba moderno con correa decorativa, ideal para looks elegantes",
-      price: 2200,
-      originalPrice: 2800,
       badge: "Nuevo",
       image: "/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_beach.png",
       images: [
