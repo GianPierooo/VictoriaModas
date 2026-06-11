@@ -299,11 +299,54 @@ Stack: React 19 + Vite + Tailwind CSS 3. Trabajamos directamente sobre `main`.
 integral sin Unsplash ni recargo, y banner + WhatsApp pulidos. El home está
 coherente de arriba a abajo con el sistema cálido-premium.
 
+---
+
+## Fase 3 — Catálogo y páginas
+
+### 3.1 Catálogo rediseñado con filtros responsive (2026-06-11)
+
+- ✅ Reescrito `src/components/ProductsPage.jsx` completo (compartido por
+  Vestidos/Blusas/Pantalones/Abrigos):
+  - **Cabecera**: fondo cream plano, eyebrow "Colección" tracking-luxe clay,
+    título serif font-light normalizado a sentence case ("VESTIDOS
+    ELEGANTES" → "Vestidos elegantes"), contador "X piezas" en ink-muted.
+    Fuera el hero rosa con blur-3xl y drop-shadows.
+  - **Cards**: ya usaban el ProductCard compartido desde la Fase 1.3
+    (el CatalogProductCard interno se eliminó entonces).
+  - **Filtros**: de sidebar a barra horizontal limpia bajo la cabecera.
+    Desktop (md+): dropdowns Popover minimal (Talla / Color / Tela) con
+    contador "· N" en el botón activo, toggles pill "Nuevo"/"Oferta",
+    select de orden y "Limpiar". Móvil: botón "Filtrar" (con badge clay de
+    filtros activos) que abre un **bottom sheet** con Dialog de
+    @headlessui (asa, secciones, CTA "Ver N piezas" que se actualiza en
+    vivo, limpiar).
+  - **🐛 Bug del filtro de tela ARREGLADO**: `availableFabrics` se pasaba
+    como prop pero nunca filtraba. Implementado de verdad: dropdown/sección
+    "Tela" que compara contra `product.fabric` (Lame, Rit, Suplex, Scuba,
+    Seda francesa). Si la página no pasa la prop, las telas se derivan de
+    los productos (igual que tallas y colores).
+  - **Grid**: `grid-cols-2 md:grid-cols-3 xl:grid-cols-4` con
+    `gap-x-6 gap-y-12`.
+  - **Estado vacío**: "No encontramos piezas con esos filtros" en serif +
+    botón pill ink "Limpiar filtros".
+  - Eliminado el buscador propio del sidebar (redundante: el header ya
+    tiene SearchModal global con Ctrl+K). La prop `category` quedó sin uso
+    y se retiró de la firma (las páginas pueden seguir pasándola).
+- ✅ `COLOR_HEX` movido a `src/utils/colorUtils.js` (compartido por
+  ProductCard y los swatches de filtros; antes vivía duplicado).
+- ✅ Verificación funcional en preview:
+  - Móvil 375: cabecera correcta, grid 2 col, panel móvil abre/cierra,
+    **todas las áreas táctiles 44–48px**, filtro Lame → "Ver 1 pieza" y
+    1 card; Lame+Nuevo → estado vacío serif; limpiar restaura las 3.
+  - Tablet 768: barra desktop visible, grid 3 col, sin overflow.
+  - Desktop 1280: popover Tela abre con Lame/Rit/Suplex, Suplex → 1 card y
+    botón "Tela · 1", grid 4 col, botón móvil oculto, sin overflow.
+  - Cero errores de consola.
+- ✅ Build sin errores; lint limpio.
+
 📝 Pendientes para fases siguientes (estética vieja aún viva):
 - **Footer**: gradiente rosa con `border-t-4 border-rose-dark`, emoji ✨ ya
   retirado del logo (Fase 1.4) pero el resto sigue con grises/rosa viejo.
-- **ProductsPage** (catálogo): hero rosa con blur, sidebar de filtros gris,
-  botones `bg-rose`.
 - Páginas internas: ProductPage, CartPage, CheckoutPage, About, Contact, FAQ.
 - `src/index.css`: las clases `.btn-*` aún usan `gray-900`/`white`.
 - `src/test-tailwind.html`: archivo de prueba sobrante, confirmar si se borra.
