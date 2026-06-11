@@ -162,3 +162,38 @@ Stack: React 19 + Vite + Tailwind CSS 3. Trabajamos directamente sobre `main`.
   texto (cadena del footer recorrida: blanco→normal→oculto); favicon y
   apple-touch-icon servidos; simulada la llegada del logo real → la img
   aparece a 40px junto al texto. Build sin errores, lint limpio.
+
+---
+
+## Fase 2 — Home
+
+### 2.1 Hero editorial con producto real (2026-06-11)
+
+- ✅ Reemplazada la función `Hero()` de `src/pages/HomePage.jsx` con la
+  versión editorial de `archivos-listos/Hero-nuevo.jsx`. Fuera el slider
+  viejo: 3 fotos de Unsplash, autoplay con `setInterval`, parallax,
+  círculos flotantes con `blur-3xl` y CTAs con gradiente animado
+  (~129 líneas → ~60).
+- ✅ El hero nuevo:
+  - 2 columnas: texto editorial a la izquierda ("Elegancia / *hecha para
+    ti*" con la segunda línea itálica clay), foto grande de producto REAL a
+    la derecha (`/imagenes/vestidos/vestido_suplex01/azul_adelante.png`,
+    verificada su existencia) con marco interior elegante.
+  - Fondo cream con 2 acentos radiales rosa muy sutiles (sin blur-3xl,
+    sin animaciones flotantes).
+  - CTA principal pill `bg-ink` → clay al hover; secundaria pill outline.
+  - Indicador "Descubre ↓" (solo desktop, `hidden lg:flex`).
+- ✅ Limpieza de imports: eliminado `ChevronLeftIcon` (huérfano tras quitar
+  el slider). `useState/useRef/useEffect` se conservan (los usa el hook
+  `useScrollAnimation`). Bonus: desaparecieron 1 error y 1 warning de lint
+  que vivían en el slider viejo (`sliderRef` sin uso, dep de `scroll`).
+- ✅ Responsive verificado (estilos computados en preview):
+  - **375px**: apilado con la foto ARRIBA y el texto abajo (`order-1/2`),
+    título 48px sin desborde, CTAs a ancho completo de 48–50px de alto,
+    sin overflow horizontal.
+  - **768px**: 1 columna (el grid pasa a 2 en `lg`), título 60px, sin overflow.
+  - **1280px**: 2 columnas texto-izq/foto-der, título 72px, itálica clay
+    `#C08B7D`, CTA ink `#2B2424` con texto cream, "Descubre" visible.
+  - Cero errores de consola.
+- ✅ `npm run build` sin errores; lint de HomePage sin errores (solo un
+  warning preexistente del hook `useScrollAnimation`, ajeno a este cambio).

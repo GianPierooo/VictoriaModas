@@ -1,136 +1,68 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import Header from '../components/Header.jsx'
 import Footer from '../components/Footer.jsx'
 import AnnouncementBanner from '../components/AnnouncementBanner.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 
-// ============= HERO SLIDER =============
+// ============= HERO EDITORIAL =============
 function Hero() {
-  const sliderRef = useRef(null)
-  const [currentSlide, setCurrentSlide] = useState(0)
-
-  const slides = [
-    {
-      img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2400&auto=format&fit=crop',
-      title: 'Descubre la elegancia atemporal',
-      subtitle: 'Colección Primavera 2025',
-      cta: 'Explorar colección'
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2400&auto=format&fit=crop',
-      title: 'Telas premium, estilo único',
-      subtitle: 'Scuba, Suplex y Seda Francesa',
-      cta: 'Ver catálogo'
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2400&auto=format&fit=crop',
-      title: 'Minimalismo sofisticado',
-      subtitle: 'Diseños que hablan por sí mismos',
-      cta: 'Comprar ahora'
-    }
-  ]
-
-  const scroll = (direction) => {
-    const newIndex = direction === 'next' 
-      ? (currentSlide + 1) % slides.length 
-      : (currentSlide - 1 + slides.length) % slides.length
-    setCurrentSlide(newIndex)
-  }
-
-  // Auto-play
-  useEffect(() => {
-    const timer = setInterval(() => scroll('next'), 5000)
-    return () => clearInterval(timer)
-  }, [currentSlide])
-
   return (
-    <section className="relative h-[60vh] md:h-[80vh] lg:h-screen overflow-hidden">
-      {/* Elementos decorativos animados con círculos rosa */}
-      <div className="absolute top-20 right-20 w-96 h-96 bg-rose/20 rounded-full blur-3xl animate-pulse-soft pointer-events-none z-10"></div>
-      <div className="absolute bottom-20 left-20 w-80 h-80 bg-rose-200/30 rounded-full blur-3xl animate-float pointer-events-none z-10"></div>
-      <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-rose/10 rounded-full blur-2xl animate-breathe pointer-events-none z-10"></div>
-      
-      {/* Slides */}
-      {slides.map((slide, idx) => (
-        <div
-          key={idx}
-          className={`absolute inset-0 transition-all duration-1500 ${
-            idx === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-          }`}
-        >
-          {/* Background Image with Parallax */}
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-[2000ms] ease-out"
-            style={{ 
-              backgroundImage: `url(${slide.img})`,
-              transform: idx === currentSlide ? 'scale(1.1)' : 'scale(1.2)'
-            }}
-          />
-          
-          {/* Overlay Gradient con tonos rosa */}
-          <div className="absolute inset-0 bg-gradient-to-t from-rose-900/60 via-black/40 to-transparent animate-fadeIn" />
-          
-          {/* Círculos decorativos minimalistas */}
-          <div className="absolute top-0 left-1/2 w-3 h-3 rounded-full bg-rose-200/40 -translate-x-1/2 animate-slideDown"></div>
-          <div className="absolute bottom-0 left-1/2 w-3 h-3 rounded-full bg-rose-200/40 -translate-x-1/2 animate-fadeIn delay-500"></div>
-          
-          {/* Content */}
-          <div className="relative h-full flex items-center justify-center">
-            <div className={`text-center text-white px-4 max-w-4xl transition-all duration-1000 ${
-              idx === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-            }`}>
-              
-              <p className="text-xs md:text-sm uppercase tracking-[0.3em] mb-6 text-rose-100 font-light animate-fadeInDown delay-200">
-                {slide.subtitle}
-              </p>
-              
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-light mb-8 leading-tight animate-fadeInUp delay-300">
-                <span className="block">{slide.title.split(' ').slice(0, -2).join(' ')}</span>
-                <span className="block font-bold mt-2">{slide.title.split(' ').slice(-2).join(' ')}</span>
-              </h1>
-              
-              {/* Círculo decorativo con animación */}
-              <div className="w-2 h-2 rounded-full bg-rose-200/80 mx-auto mb-8 animate-scaleIn delay-500"></div>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeIn delay-700">
-                <Link 
-                  to="/vestidos" 
-                  className="group relative overflow-hidden bg-white text-gray-900 px-10 py-4 rounded-full transition-all duration-500 hover:tracking-widest hover:shadow-[0_0_40px_rgba(247,202,201,0.8)]"
-                >
-                  <span className="relative z-10 text-sm font-light uppercase tracking-wider">{slide.cta}</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-rose to-rose-200 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 rounded-full"></div>
-                  <span className="absolute inset-0 z-10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-sm font-light uppercase tracking-wider">{slide.cta}</span>
-                </Link>
-                <Link 
-                  to="/nosotros" 
-                  className="border border-rose-200/60 text-white px-10 py-4 rounded-full transition-all duration-500 hover:bg-rose/20 hover:border-rose-200 hover:tracking-widest backdrop-blur-sm"
-                >
-                  <span className="text-sm font-light uppercase tracking-wider">Nuestra historia</span>
-                </Link>
-              </div>
-            </div>
+    <section className="relative bg-cream overflow-hidden">
+      {/* Acento radial cálido, muy sutil */}
+      <div className="absolute -top-32 -right-32 w-[36rem] h-[36rem] bg-gradient-radial-rose rounded-full pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-[32rem] h-[32rem] bg-gradient-radial-rose rounded-full pointer-events-none" />
+
+      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-10 items-center min-h-[88vh] py-20">
+        {/* Columna texto */}
+        <div className="order-2 lg:order-1 text-center lg:text-left animate-fadeInUp">
+          <p className="text-[11px] uppercase tracking-luxe text-clay mb-6">
+            Nueva colección · 2026
+          </p>
+          <h1 className="font-serif font-light text-ink leading-[1.05] text-5xl md:text-6xl lg:text-7xl mb-8">
+            Elegancia
+            <span className="block italic text-clay">hecha para ti</span>
+          </h1>
+          <p className="text-ink-soft text-base md:text-lg max-w-md mx-auto lg:mx-0 mb-10 leading-relaxed font-light">
+            Vestidos, blusas y abrigos en telas premium. Piezas pensadas para
+            la mujer que viste con intención.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <Link
+              to="/vestidos"
+              className="group inline-flex items-center justify-center bg-ink text-cream px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:bg-clay"
+            >
+              Explorar colección
+              <ChevronRightIcon className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              to="/nosotros"
+              className="inline-flex items-center justify-center border border-ink/20 text-ink px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:border-ink hover:bg-ink/[0.03]"
+            >
+              Nuestra historia
+            </Link>
           </div>
         </div>
-      ))}
 
-      {/* Navigation Buttons - Con círculos rosa */}
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-8 pointer-events-none z-20">
-        <button
-          onClick={() => scroll('prev')}
-          className="pointer-events-auto group w-14 h-14 rounded-full border-2 border-rose-200/50 backdrop-blur-md hover:bg-rose/30 hover:border-rose flex items-center justify-center transition-all duration-500 hover:scale-110"
-          aria-label="Anterior"
-        >
-          <ChevronLeftIcon className="w-6 h-6 text-white transition-transform group-hover:-translate-x-1" />
-        </button>
-        <button
-          onClick={() => scroll('next')}
-          className="pointer-events-auto group w-14 h-14 rounded-full border-2 border-rose-200/50 backdrop-blur-md hover:bg-rose/30 hover:border-rose flex items-center justify-center transition-all duration-500 hover:scale-110"
-          aria-label="Siguiente"
-        >
-          <ChevronRightIcon className="w-6 h-6 text-white transition-transform group-hover:translate-x-1" />
-        </button>
+        {/* Columna imagen */}
+        <div className="order-1 lg:order-2 animate-fadeIn">
+          <div className="relative aspect-[4/5] max-w-md mx-auto rounded-[1.5rem] overflow-hidden bg-cream-dark shadow-rose-lg">
+            <img
+              src="/imagenes/vestidos/vestido_suplex01/azul_adelante.png"
+              alt="Vestido de la nueva colección Victoria Modas"
+              className="w-full h-full object-cover object-top"
+            />
+            {/* Marco interior elegante */}
+            <div className="absolute inset-4 border border-cream/40 rounded-[1rem] pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* Indicador scroll */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 text-ink-muted animate-pulse-soft">
+        <span className="text-[10px] uppercase tracking-luxe">Descubre</span>
+        <ChevronDownIcon className="w-4 h-4" />
       </div>
     </section>
   )
