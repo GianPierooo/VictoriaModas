@@ -1,19 +1,31 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useCart } from '../context/CartContext.jsx'
-import { 
-  ChevronRightIcon, 
-  TruckIcon, 
-  ArrowPathIcon, 
-  ShieldCheckIcon 
+import { Disclosure, Transition } from '@headlessui/react'
+import {
+  ChevronRightIcon,
+  ChevronUpIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import QuantitySelector from '../components/QuantitySelector'
+import ProductCard from '../components/ProductCard.jsx'
+import { useCart } from '../context/CartContext.jsx'
+import { COLOR_HEX } from '../utils/colorMap.js'
+
+const WHATSAPP_NUMBER = '51993357672'
+
+// Rutas de catálogo por categoría (para el breadcrumb)
+const CATEGORY_PATH = {
+  Vestidos: '/vestidos',
+  Blusas: '/blusas',
+  Pantalones: '/pantalones',
+}
 
 // Mock products database
 const MOCK_PRODUCTS = {
   'blusa-seda-francesa': {
     name: 'Blusa Seda Francesa',
+    category: 'Blusas',
     fabric: 'Seda francesa premium',
     sizes: ['XS', 'S', 'M', 'L'],
     colors: ['Azul', 'Negro', 'Plomo'],
@@ -43,6 +55,7 @@ const MOCK_PRODUCTS = {
   },
   'pantalon-scuba-vena': {
     name: 'Pantalón Scuba Vena',
+    category: 'Pantalones',
     fabric: 'Scuba premium',
     sizes: ['S', 'M', 'L'],
     colors: ['Negro', 'Azul', 'Camello', 'Vino', 'Plomo'],
@@ -82,11 +95,16 @@ const MOCK_PRODUCTS = {
   },
   'pantalon-scuba-correa': {
     name: 'Pantalón Scuba con Correa',
+    category: 'Pantalones',
     fabric: 'Scuba premium',
     sizes: ['S', 'M', 'L'],
     colors: ['Beach', 'Negro', 'Azul', 'Plomo'],
     description: 'Pantalón scuba moderno con correa decorativa, ideal para looks elegantes. Comodidad y estilo en una sola prenda.',
-    images: ['/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_beach.png'],
+    images: [
+      '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_beach.png',
+      '/imagenes/pantalones/pantalon_scuba_correa/p_correa_atras_beach.png',
+      '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delado_beach.png'
+    ],
     colorImages: {
       'Beach': [
         '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_beach.png',
@@ -112,11 +130,16 @@ const MOCK_PRODUCTS = {
   },
   'vestido-lame-elegante': {
     name: 'Vestido Lame Elegante',
+    category: 'Vestidos',
     fabric: 'Tela lame premium',
     sizes: ['S', 'M', 'L'],
     colors: ['Plomo', 'Negro', 'Azul', 'Vino'],
     description: 'Vestido elegante en tela lame con brillo sutil y caída impecable. Perfecto para ocasiones especiales.',
-    images: ['/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png'],
+    images: [
+      '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png',
+      '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_atras.png',
+      '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_delado.png'
+    ],
     colorImages: {
       'Plomo': [
         '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png',
@@ -142,11 +165,16 @@ const MOCK_PRODUCTS = {
   },
   'vestido-suplex-moderno': {
     name: 'Vestido Suplex Moderno',
+    category: 'Vestidos',
     fabric: 'Suplex de alta calidad',
     sizes: ['S', 'M', 'L'],
     colors: ['Azul', 'Blanco', 'Negro', 'Vino'],
     description: 'Vestido moderno en suplex de alta calidad. Ajuste perfecto al cuerpo con diseño versátil y elegante.',
-    images: ['/imagenes/vestidos/vestido_suplex01/azul_adelante.png'],
+    images: [
+      '/imagenes/vestidos/vestido_suplex01/azul_adelante.png',
+      '/imagenes/vestidos/vestido_suplex01/azul_atras.png',
+      '/imagenes/vestidos/vestido_suplex01/azul_delado.png'
+    ],
     colorImages: {
       'Azul': [
         '/imagenes/vestidos/vestido_suplex01/azul_adelante.png',
@@ -172,11 +200,16 @@ const MOCK_PRODUCTS = {
   },
   'vestido-rit-elegante': {
     name: 'Vestido Rit Elegante',
+    category: 'Vestidos',
     fabric: 'Tela Rit de alta calidad',
     sizes: ['S', 'M', 'L'],
     colors: ['Beige', 'Negro', 'Plomo'],
     description: 'Vestido elegante en tela Rit de primera calidad. Diseño sofisticado y moderno con excelente caída.',
-    images: ['/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delante.png'],
+    images: [
+      '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delante.png',
+      '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_atras.png',
+      '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delado.png'
+    ],
     colorImages: {
       'Beige': [
         '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delante.png',
@@ -197,229 +230,306 @@ const MOCK_PRODUCTS = {
   }
 }
 
+// Construye el objeto que consume ProductCard a partir de una entrada mock
+function toCardProduct(id, p) {
+  const base = p.colorImages?.[p.colors[0]] || p.images || []
+  return {
+    id,
+    name: p.name,
+    category: p.category,
+    image: base[0],
+    images: base,
+    colors: p.colors,
+    colorImages: p.colorImages,
+  }
+}
+
 export default function ProductPage() {
   const { id } = useParams()
   const { addItem } = useCart()
-  const product = MOCK_PRODUCTS[id] || MOCK_PRODUCTS['vestido-suplex-moderno']
+  const productId = MOCK_PRODUCTS[id] ? id : 'vestido-suplex-moderno'
+  const product = MOCK_PRODUCTS[productId]
 
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedColor, setSelectedColor] = useState(product.colors[0])
   const [selectedSize, setSelectedSize] = useState(product.sizes[0])
   const [quantity, setQuantity] = useState(1)
 
-  const colorMap = {
-    'Beige': '#F5E6D3', 'Beach': '#F5E6D3', 'Negro': '#2C2C2C', 'Blanco': '#FFFFFF',
-    'Azul': '#1E40AF', 'Camello': '#C19A6B', 'Vino': '#722F37',
-    'Plomo': '#6B7280', 'Gris': '#6B7280'
-  }
+  // Al cambiar de producto (navegación entre detalles), reiniciar selección
+  useEffect(() => {
+    setSelectedImage(0)
+    setSelectedColor(product.colors[0])
+    setSelectedSize(product.sizes[0])
+    setQuantity(1)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [productId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const getCurrentImages = () => {
-    if (product.colorImages && selectedColor && product.colorImages[selectedColor]) {
-      return product.colorImages[selectedColor]
-    }
+  const currentImages = useMemo(() => {
+    if (product.colorImages?.[selectedColor]?.length) return product.colorImages[selectedColor]
     return product.images || []
+  }, [product, selectedColor])
+
+  const mainImage = currentImages[selectedImage] || currentImages[0]
+
+  // Tallas no disponibles (capacidad lista; los datos actuales no marcan ninguna)
+  const unavailableSizes = product.unavailableSizes || []
+
+  // Swipe en móvil
+  const touchStartX = useRef(0)
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX }
+  const onTouchEnd = (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    if (Math.abs(dx) < 50) return
+    setSelectedImage((i) => {
+      if (dx < 0) return Math.min(i + 1, currentImages.length - 1)
+      return Math.max(i - 1, 0)
+    })
   }
 
-  const currentImages = getCurrentImages()
+  const handleColorChange = (color) => {
+    setSelectedColor(color)
+    setSelectedImage(0)
+  }
+
+  const handleAddToCart = () => {
+    addItem({
+      id: productId,
+      name: product.name,
+      image: currentImages[0] || product.images[0],
+      selectedColor,
+      selectedSize,
+    }, quantity)
+  }
+
+  const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    `Hola, me interesa la prenda "${product.name}" (color ${selectedColor}, talla ${selectedSize}). ¿Está disponible?`
+  )}`
+
+  // Relacionados: misma categoría, excluyendo el actual
+  const relatedProducts = Object.entries(MOCK_PRODUCTS)
+    .filter(([key, p]) => key !== productId && p.category === product.category)
+    .slice(0, 4)
+    .map(([key, p]) => toCardProduct(key, p))
+
+  const categoryPath = CATEGORY_PATH[product.category] || '/vestidos'
+
+  const accordion = [
+    {
+      title: 'Detalles y tela',
+      body: `Confeccionado en ${product.fabric.toLowerCase()}. ${product.description}`,
+    },
+    {
+      title: 'Envíos',
+      body: 'Envío gratis en compras mayores a S/ 200. Entregas en Lima en 2 a 4 días hábiles y a provincias en 4 a 7 días hábiles mediante agencia.',
+    },
+    {
+      title: 'Cambios y devoluciones',
+      body: 'Aceptamos cambios dentro de los 7 días posteriores a la entrega, con la prenda sin uso y en su empaque original. Coordínalo con nosotras por WhatsApp.',
+    },
+  ]
 
   return (
     <Layout>
-      <div className="bg-gray-50 py-8 md:py-12">
-        <div className="container mx-auto px-4">
+      <div className="bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:py-12">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-gray-600 mb-8" aria-label="Breadcrumb">
-            <Link to="/" className="hover:text-gray-900">Inicio</Link>
-            <ChevronRightIcon className="w-4 h-4" />
-            <Link to="/vestidos" className="hover:text-gray-900">Productos</Link>
-            <ChevronRightIcon className="w-4 h-4" />
-            <span className="text-gray-900">{product.name}</span>
+          <nav className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-ink-muted" aria-label="Breadcrumb">
+            <Link to="/" className="transition-colors hover:text-clay">Inicio</Link>
+            <ChevronRightIcon className="h-3 w-3" />
+            <Link to={categoryPath} className="transition-colors hover:text-clay">{product.category}</Link>
+            <ChevronRightIcon className="h-3 w-3" />
+            <span className="text-ink-soft">{product.name}</span>
           </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Gallery */}
-            <div className="space-y-4">
-              {/* Main Image con bordes redondeados */}
-              <div className="aspect-[3/4] bg-rose-50/30 rounded-3xl overflow-hidden shadow-lg">
-                <img 
-                  src={currentImages[selectedImage] || product.images[0]} 
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-              </div>
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-5 lg:gap-12">
+            {/* Galería (60%) */}
+            <div className="lg:col-span-3">
+              <div className="flex flex-col-reverse gap-4 lg:flex-row">
+                {/* Miniaturas */}
+                {currentImages.length > 1 && (
+                  <div className="flex gap-3 lg:flex-col">
+                    {currentImages.map((src, idx) => (
+                      <button
+                        key={src}
+                        type="button"
+                        onClick={() => setSelectedImage(idx)}
+                        className={`relative aspect-[3/4] w-16 flex-shrink-0 overflow-hidden rounded-md bg-cream-dark transition-all duration-300 lg:w-20 ${
+                          idx === selectedImage ? 'ring-1 ring-clay ring-offset-2 ring-offset-white' : 'opacity-70 hover:opacity-100'
+                        }`}
+                        aria-label={`Ver imagen ${idx + 1}`}
+                      >
+                        <img src={src} alt="" aria-hidden="true" className="h-full w-full object-cover object-top" loading="lazy" />
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-              {/* Thumbnails circulares */}
-              {currentImages.length > 1 && (
-                <div className="grid grid-cols-3 gap-4">
-                  {currentImages.map((src, idx) => (
-                    <button 
-                      key={idx} 
-                      className={`aspect-square bg-rose-50/30 rounded-3xl overflow-hidden border-3 transition-all ${
-                        idx === selectedImage 
-                          ? 'border-rose scale-105 shadow-[0_0_20px_rgba(247,202,201,0.6)]' 
-                          : 'border-rose-200/40 hover:border-rose-200'
-                      }`}
-                      onClick={() => setSelectedImage(idx)}
-                    >
-                      <img 
-                        src={src} 
-                        alt={`${product.name} vista ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </button>
-                  ))}
+                {/* Imagen principal */}
+                <div
+                  className="relative aspect-[3/4] flex-1 overflow-hidden rounded-lg bg-cream-dark"
+                  onTouchStart={onTouchStart}
+                  onTouchEnd={onTouchEnd}
+                >
+                  <img
+                    key={mainImage}
+                    src={mainImage}
+                    alt={product.name}
+                    className="h-full w-full object-cover object-top"
+                    style={{ animation: 'fadeIn 0.4s ease-out both' }}
+                    loading="eager"
+                  />
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* Details */}
-            <div>
-              <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">
-                {product.name}
-              </h1>
+            {/* Info (40%) */}
+            <div className="lg:col-span-2">
+              <div className="lg:sticky lg:top-28">
+                <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">
+                  {product.category}
+                </p>
+                <h1 className="mb-5 font-serif text-3xl font-light leading-tight text-ink">
+                  {product.name}
+                </h1>
+                <p className="mb-8 font-light leading-relaxed text-ink-soft">
+                  {product.description}
+                </p>
 
-              {/* Rating */}
-              <div className="flex items-center gap-2 mb-6">
-                <div className="flex text-yellow-400">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i}>★</span>
-                  ))}
-                </div>
-                <span className="text-sm text-gray-600">(4.8)</span>
-              </div>
-
-              {/* Description */}
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                {product.description}
-              </p>
-
-              {/* Options */}
-              <div className="space-y-6 mb-8">
-                {/* Size - botones circulares */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Talla:
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {product.sizes.map(size => (
-                      <button 
-                        key={size} 
-                        className={`w-14 h-14 rounded-full border-3 font-semibold transition-all duration-300 ${
-                          selectedSize === size 
-                            ? 'border-rose bg-gradient-to-br from-rose to-rose-200 text-white shadow-[0_0_20px_rgba(247,202,201,0.6)] scale-110' 
-                            : 'border-rose-200/50 text-gray-700 hover:border-rose hover:scale-105'
-                        }`}
-                        onClick={() => setSelectedSize(size)}
+                {/* Color */}
+                <div className="mb-7">
+                  <div className="mb-3 flex items-center gap-2 text-[10px] uppercase tracking-luxe text-ink-muted">
+                    Color
+                    <span className="text-ink-soft">· {selectedColor}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {product.colors.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => handleColorChange(color)}
+                        className="flex h-11 w-11 items-center justify-center rounded-full"
+                        title={color}
+                        aria-label={`Color ${color}`}
+                        aria-pressed={selectedColor === color}
                       >
-                        {size}
+                        <span
+                          className={`block h-8 w-8 rounded-full border border-ink/15 transition-all duration-300 ${
+                            selectedColor === color ? 'ring-1 ring-clay ring-offset-2 ring-offset-white' : ''
+                          }`}
+                          style={{ backgroundColor: COLOR_HEX[color] || '#CCCCCC' }}
+                        />
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Color - círculos */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Color: <span className="font-normal text-rose-400">{selectedColor}</span>
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {product.colors.map(color => (
-                      <button 
-                        key={color} 
-                        className={`w-14 h-14 rounded-full border-4 transition-all duration-300 ${
-                          selectedColor === color 
-                            ? 'border-rose scale-125 shadow-[0_0_20px_rgba(247,202,201,0.6)]' 
-                            : 'border-gray-300 hover:border-rose-200 hover:scale-110'
-                        }`}
-                        style={{ backgroundColor: colorMap[color] || '#ddd' }}
-                        title={color}
-                        onClick={() => {
-                          setSelectedColor(color)
-                          setSelectedImage(0)
-                        }}
-                        aria-label={`Color ${color}`}
-                      />
-                    ))}
+                {/* Talla */}
+                <div className="mb-7">
+                  <div className="mb-3 text-[10px] uppercase tracking-luxe text-ink-muted">Talla</div>
+                  <div className="flex flex-wrap gap-2">
+                    {product.sizes.map((size) => {
+                      const disabled = unavailableSizes.includes(size)
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => setSelectedSize(size)}
+                          className={`h-11 min-w-[48px] rounded-md border px-4 text-sm uppercase tracking-[0.1em] transition-colors duration-300 ${
+                            disabled
+                              ? 'cursor-not-allowed border-ink/10 text-ink-muted/40 line-through'
+                              : selectedSize === size
+                                ? 'border-ink bg-ink text-cream'
+                                : 'border-ink/20 text-ink-soft hover:border-ink'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
-                {/* Fabric */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tela:
-                  </label>
-                  <span className="inline-block px-6 py-3 bg-rose-50 text-gray-700 rounded-full border border-rose-200/50">
-                    {product.fabric}
-                  </span>
+                {/* Cantidad */}
+                <div className="mb-8">
+                  <QuantitySelector
+                    quantity={quantity}
+                    onQuantityChange={setQuantity}
+                    min={1}
+                    max={10}
+                  />
                 </div>
-              </div>
 
-              {/* Quantity */}
-              <div className="mb-8">
-                <QuantitySelector
-                  quantity={quantity}
-                  onQuantityChange={setQuantity}
-                  min={1}
-                  max={10}
-                />
-              </div>
-
-              {/* Actions - botones circulares */}
-              <div className="space-y-3 mb-8">
-                <button
-                  onClick={() => {
-                    const images = getCurrentImages()
-                    addItem({
-                      id: id || 'default-product',
-                      name: product.name,
-                      image: images[0] || product.images[0],
-                      selectedColor,
-                      selectedSize
-                    }, quantity)
-                  }}
-                  className="w-full bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 hover:scale-105 hover:shadow-xl"
-                >
-                  <span>🛒</span>
-                  Agregar al carrito
-                </button>
-                <button className="w-full bg-gradient-to-r from-rose to-rose-200 hover:from-rose-600 hover:to-rose-300 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 hover:scale-105 hover:shadow-[0_0_30px_rgba(247,202,201,0.6)]">
-                  <span>⚡</span>
-                  Comprar ahora
-                </button>
-                <button className="w-full bg-white hover:bg-rose-50 text-gray-900 px-8 py-4 rounded-full font-semibold border-2 border-rose-200/50 hover:border-rose transition-all duration-300 flex items-center justify-center gap-3 hover:scale-105">
-                  <span>❤️</span>
-                  Agregar a favoritos
-                </button>
-              </div>
-
-              {/* Features - tarjetas redondeadas */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-rose-50 to-white rounded-2xl border-2 border-rose-200/40 hover:border-rose-200 transition-all duration-300 hover:shadow-lg">
-                  <TruckIcon className="w-6 h-6 text-rose flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">Envío gratis</p>
-                    <p className="text-xs text-gray-600">En compras &gt; S/150</p>
-                  </div>
+                {/* Acciones */}
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    className="block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
+                  >
+                    Agregar al carrito
+                  </button>
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 py-4 text-xs uppercase tracking-[0.2em] text-ink transition-colors duration-500 hover:border-ink hover:bg-ink/[0.03]"
+                  >
+                    <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                    Consultar por WhatsApp
+                  </a>
                 </div>
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-rose-50 to-white rounded-2xl border-2 border-rose-200/40 hover:border-rose-200 transition-all duration-300 hover:shadow-lg">
-                  <ArrowPathIcon className="w-6 h-6 text-rose flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">Devoluciones</p>
-                    <p className="text-xs text-gray-600">30 días</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-rose-50 to-white rounded-2xl border-2 border-rose-200/40 hover:border-rose-200 transition-all duration-300 hover:shadow-lg">
-                  <ShieldCheckIcon className="w-6 h-6 text-rose flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">Garantía</p>
-                    <p className="text-xs text-gray-600">Calidad garantizada</p>
-                  </div>
+
+                {/* Acordeón */}
+                <div className="mt-10 border-t border-ink/10">
+                  {accordion.map((item) => (
+                    <Disclosure key={item.title}>
+                      {({ open }) => (
+                        <div className="border-b border-ink/10">
+                          <Disclosure.Button className="flex w-full items-center justify-between py-4 text-left text-xs uppercase tracking-[0.15em] text-ink transition-colors hover:text-clay">
+                            {item.title}
+                            <ChevronUpIcon className={`h-4 w-4 text-ink-muted transition-transform duration-300 ${open ? '' : 'rotate-180'}`} />
+                          </Disclosure.Button>
+                          <Transition
+                            enter="transition duration-200 ease-out"
+                            enterFrom="opacity-0 -translate-y-1"
+                            enterTo="opacity-100 translate-y-0"
+                            leave="transition duration-150 ease-in"
+                            leaveFrom="opacity-100 translate-y-0"
+                            leaveTo="opacity-0 -translate-y-1"
+                          >
+                            <Disclosure.Panel className="pb-5 text-sm font-light leading-relaxed text-ink-soft">
+                              {item.body}
+                            </Disclosure.Panel>
+                          </Transition>
+                        </div>
+                      )}
+                    </Disclosure>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* También te puede gustar */}
+        {relatedProducts.length > 0 && (
+          <section className="bg-cream py-20 md:py-28">
+            <div className="mx-auto max-w-7xl px-6 lg:px-8">
+              <div className="mb-12 text-center">
+                <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Quizá te guste</p>
+                <h2 className="font-serif text-3xl font-light text-ink md:text-4xl">
+                  También te puede gustar
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-12 lg:grid-cols-4">
+                {relatedProducts.map((p, i) => (
+                  <ProductCard key={p.id} product={p} index={i} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </Layout>
   )

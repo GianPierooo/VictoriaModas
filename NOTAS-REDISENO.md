@@ -344,9 +344,61 @@ coherente de arriba a abajo con el sistema cálido-premium.
   - Cero errores de consola.
 - ✅ Build sin errores; lint limpio.
 
+### 3.2 Página de producto premium (2026-06-11)
+
+- ✅ Reescrito `src/pages/ProductPage.jsx` completo al estilo boutique
+  cream/ink/clay. Fuera toda la estética vieja: gradientes rosa, sombras
+  neón `[0_0_20px_rgba(247,202,201)]`, círculos border-4, rating falso de
+  estrellas, y los botones "Comprar ahora" / "Agregar a favoritos" (no
+  funcionales).
+- ✅ **Layout desktop** (`lg:`): grid de 5 columnas → galería `col-span-3`
+  (60%) + info `col-span-2` (40%) con la info en `lg:sticky lg:top-28`.
+  Móvil/tablet: una sola columna (el split entra en `lg`/1024).
+- ✅ **Galería**: miniaturas verticales al lado en desktop
+  (`lg:flex-row` + `lg:flex-col`), en fila debajo de la principal en móvil
+  (`flex-col-reverse`). Click en miniatura cambia la principal con fade
+  (animación por `key`). Miniatura activa con `ring-clay`. **Swipe táctil**
+  en móvil (touchstart/touchend, umbral 50px) — verificado que avanza/
+  retrocede. Al cambiar de color, la galería se recarga con las imágenes
+  de ese color desde `colorImages`.
+- ✅ **Panel info**: eyebrow categoría clay · nombre serif 3xl font-light
+  ink · descripción ink-soft · selector de color (círculos 32px, activo
+  ring-clay, nombre del color visible al lado) · tallas (pills
+  rectangulares, activa rellena ink, soporte de `disabled` con line-through
+  para `product.unavailableSizes` — capacidad lista, datos actuales no
+  marcan ninguna) · `QuantitySelector` existente · botón "Agregar al
+  carrito" pill ink full-width → clay (dispara la CartNotification global,
+  verificado: badge del header sube y aparece el panel) · "Consultar por
+  WhatsApp" outline con ícono y mensaje pre-armado (nombre + color + talla).
+- ✅ **Acordeón** con `Disclosure` de @headlessui, separadores hairline
+  `border-ink/10`: "Detalles y tela" / "Envíos" / "Cambios y devoluciones"
+  con contenido real y breve.
+- ✅ **"También te puede gustar"**: hasta 4 `ProductCard` de la MISMA
+  categoría excluyendo el actual (se añadió `category` a cada entrada del
+  mock; helper `toCardProduct` arma el shape que consume la card, usando el
+  set de color por defecto para que el hover tenga crossfade).
+- ✅ **colorMap unificado**: `src/utils/colorUtils.js` (creado en 3.1)
+  renombrado a `src/utils/colorMap.js` con `git mv`; ProductCard,
+  ProductsPage y ProductPage importan `COLOR_HEX` desde ahí. Eliminado el
+  `colorMap` local duplicado de ProductPage.
+- ✅ Extra: al navegar entre detalles (`productId` cambia) se reinician
+  imagen/color/talla/cantidad y se hace scroll al top.
+- ✅ Verificado en preview:
+  - Desktop 1280: grid 5 col, galería span-3, info sticky, 3 miniaturas,
+    4 colores a 32px, botón ink, WhatsApp con texto pre-armado y
+    `target=_blank`, 3 secciones de acordeón (Envíos abre), 2 relacionados
+    (los otros vestidos). Cambio a Negro recarga galería; thumb 2 → atras;
+    agregar → notificación con "Vestido Lame · Negro · S".
+  - Móvil 375: 1 columna, miniaturas en fila debajo de la imagen, swipe
+    cambia de vista, botón carrito 48px de alto y ancho completo, colores y
+    tallas con 44px de área táctil, info no sticky, sin overflow.
+  - Tablet 768: 1 columna, relacionados en 2 col, sin overflow.
+  - Cero errores de consola.
+- ✅ Build sin errores; lint limpio.
+
 📝 Pendientes para fases siguientes (estética vieja aún viva):
 - **Footer**: gradiente rosa con `border-t-4 border-rose-dark`, emoji ✨ ya
   retirado del logo (Fase 1.4) pero el resto sigue con grises/rosa viejo.
-- Páginas internas: ProductPage, CartPage, CheckoutPage, About, Contact, FAQ.
+- Páginas internas: CartPage, CheckoutPage, About, Contact, FAQ.
 - `src/index.css`: las clases `.btn-*` aún usan `gray-900`/`white`.
 - `src/test-tailwind.html`: archivo de prueba sobrante, confirmar si se borra.

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { COLOR_HEX } from '../utils/colorUtils.js'
+import { COLOR_HEX } from '../utils/colorMap.js'
 
 const MAX_SWATCHES = 4
 

@@ -9,7 +9,7 @@ import AnnouncementBanner from './AnnouncementBanner.jsx'
 import Header from './Header.jsx'
 import Footer from './Footer.jsx'
 import ProductCard from './ProductCard.jsx'
-import { COLOR_HEX } from '../utils/colorUtils.js'
+import { COLOR_HEX } from '../utils/colorMap.js'
 
 // "VESTIDOS ELEGANTES" → "Vestidos elegantes"
 function toSentenceCase(text) {
