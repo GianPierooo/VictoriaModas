@@ -396,9 +396,53 @@ coherente de arriba a abajo con el sistema cálido-premium.
   - Cero errores de consola.
 - ✅ Build sin errores; lint limpio.
 
+### 3.3 Carrito y checkout pulidos + fix de IDs (2026-06-11)
+
+- ✅ **🐛 BUG CRÍTICO arreglado** en `CartContext.jsx`: `removeItem` y
+  `updateQuantity` usaban el ÍNDICE del array como identificador, frágil
+  (al quitar un item los demás se descuadraban). Ahora usan una **clave
+  estable compuesta** `${id}__${color}__${talla}` vía helper `cartItemKey`.
+  Verificado en preview: con 3 items, quitar el del MEDIO deja exactamente
+  los correctos, y subir la cantidad de uno NO altera la de otro.
+  - `cartItemKey` vive en `src/utils/cart.js` (archivo nuevo) — importado por
+    CartContext y CartPage. Se separó del contexto para no romper la regla
+    `react-refresh/only-export-components` (el único error que queda en
+    CartContext es el de `useCart`, **preexistente**, no introducido aquí).
+  - **Persistencia protegida**: `loadStoredCart()` tolera carritos viejos o
+    corruptos (no-array, items sin id, cantidad inválida) sin crashear; la
+    clave se deriva de los campos existentes, sin migración.
+- ✅ **CartPage** rediseñado: filas con foto `rounded-lg` + nombre serif +
+  color/talla en ink-muted uppercase + `QuantitySelector` + botón quitar (X
+  discreto, 44×44 de área táctil), separadas por hairline `border-ink/10`.
+  Resumen sticky (solo desktop) con total + "Finalizar pedido" pill ink→clay
+  (→ /checkout) + nota "Coordinaremos pago y envío contigo por WhatsApp".
+  Vacío elegante: `ShoppingBagIcon`, serif "Tu carrito está esperando" + CTA
+  a /vestidos.
+- ✅ **CheckoutPage** rediseñado: inputs editoriales `border-b` hairline (sin
+  cajas grises), labels uppercase tracking-luxe. Campos: nombre, teléfono,
+  ciudad/distrito, notas (opcional). Validación sutil: borde clay al enfocar,
+  rojo suave + mensaje si falta un obligatorio (verificado: submit vacío
+  bloquea y marca 3 errores). **Pantalla de confirmación** tras enviar:
+  "¡Pedido enviado! Te responderemos pronto por WhatsApp" + resumen del
+  pedido + "Volver al inicio". Maneja también el caso de carrito vacío.
+- ✅ **whatsappUtils.js**: eliminados los emojis (👤📋📦💬🙏); títulos en
+  *negrita* de WhatsApp. Nueva `generateOrderMessage(formData, items)` con
+  datos del cliente + detalle (producto, color, talla, cantidad) + total.
+  Verificado el mensaje generado: limpio y completo. Número unificado en una
+  constante.
+- ✅ **QuantitySelector** armonizado a la paleta ink (pill, borde ink/20,
+  foco clay) — mejora de paso CartPage y ProductPage (su API no cambió).
+- ✅ Responsive verificado (375/768/1280): carrito y checkout a 1 columna en
+  móvil/tablet con el resumen DEBAJO (no sticky), 2 col en desktop con
+  resumen sticky; submit y finalizar 48px, quitar 44×44, inputs sin caja;
+  sin overflow horizontal; cero errores de consola.
+- ✅ Build sin errores; lint de archivos nuevos/tocados limpio.
+
 📝 Pendientes para fases siguientes (estética vieja aún viva):
 - **Footer**: gradiente rosa con `border-t-4 border-rose-dark`, emoji ✨ ya
   retirado del logo (Fase 1.4) pero el resto sigue con grises/rosa viejo.
-- Páginas internas: CartPage, CheckoutPage, About, Contact, FAQ.
+- Páginas internas: About, Contact, FAQ, AccountPage.
+- `CartNotification.jsx`: aún con estética rosa/gris vieja (y el swatch usa el
+  nombre del color en español como CSS, que no renderiza). Candidato a pulir.
 - `src/index.css`: las clases `.btn-*` aún usan `gray-900`/`white`.
 - `src/test-tailwind.html`: archivo de prueba sobrante, confirmar si se borra.

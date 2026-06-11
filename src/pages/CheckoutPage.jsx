@@ -1,285 +1,246 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useCart } from '../context/CartContext.jsx'
-import { ChevronLeftIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
-import { generateWhatsAppMessage, openWhatsApp } from '../utils/whatsappUtils.js'
+import { useCart } from '../context/CartContext.jsx'
+import { generateOrderMessage, openWhatsApp } from '../utils/whatsappUtils.js'
+
+const REQUIRED_FIELDS = ['nombre', 'telefono', 'ciudad']
 
 export default function CheckoutPage() {
   const { items } = useCart()
   const [formData, setFormData] = useState({
     nombre: '',
-    apellidos: '',
     telefono: '',
-    email: '',
-    direccion: '',
-    metodoEnvio: 'domicilio',
-    metodoPago: 'efectivo',
-    comentarios: ''
+    ciudad: '',
+    notas: '',
   })
+  const [errors, setErrors] = useState({})
+  const [confirmed, setConfirmed] = useState(false)
+
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: false }))
   }
 
-  const handleWhatsAppSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    
-    // Generar mensaje
-    let message = "¡Hola! Me gustaría hacer un pedido en VictoriaModas.\n\n"
-    
-    message += "👤 *INFORMACIÓN DEL CLIENTE:*\n"
-    message += `Nombre: ${formData.nombre} ${formData.apellidos}\n`
-    message += `Teléfono: ${formData.telefono}\n`
-    message += `Email: ${formData.email}\n`
-    message += `Dirección: ${formData.direccion}\n`
-    message += `Método de envío: ${formData.metodoEnvio === 'domicilio' ? 'Envío a domicilio' : 'Recojo en tienda'}\n`
-    message += `Método de pago: ${formData.metodoPago}\n`
-    if (formData.comentarios) {
-      message += `Comentarios: ${formData.comentarios}\n`
-    }
-    message += "\n"
-    
-    message += "📋 *PRODUCTOS SOLICITADOS:*\n\n"
-    items.forEach((item, index) => {
-      message += `${index + 1}. *${item.name}*\n`
-      message += `   Cantidad: ${item.quantity}\n`
-      if (item.selectedSize) message += `   Talla: ${item.selectedSize}\n`
-      if (item.selectedColor) message += `   Color: ${item.selectedColor}\n`
-      message += "\n"
+    const nextErrors = {}
+    REQUIRED_FIELDS.forEach(field => {
+      if (!formData[field].trim()) nextErrors[field] = true
     })
-
-    const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
-    message += `📦 *Total de artículos: ${totalItems}*\n\n`
-    message += "💬 *Por favor, confírmame la disponibilidad y coordinar la entrega.*\n\n"
-    message += "¡Gracias! 🙏"
-
-    openWhatsApp(message)
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors)
+      return
+    }
+    openWhatsApp(generateOrderMessage(formData, items))
+    setConfirmed(true)
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }
+
+  // Pantalla de confirmación
+  if (confirmed) {
+    return (
+      <Layout>
+        <div className="bg-white">
+          <div className="mx-auto max-w-xl px-6 py-24 text-center lg:px-8">
+            <CheckCircleIcon className="mx-auto mb-6 h-16 w-16 text-clay" strokeWidth={1} />
+            <h1 className="mb-4 font-serif text-3xl font-light text-ink md:text-4xl">
+              ¡Pedido enviado!
+            </h1>
+            <p className="mb-10 font-light leading-relaxed text-ink-soft">
+              Te responderemos pronto por WhatsApp para confirmar disponibilidad y
+              coordinar el pago y el envío. Gracias por elegir Victoria Modas, {formData.nombre.split(' ')[0]}.
+            </p>
+
+            {/* Resumen */}
+            <div className="mb-10 rounded-lg bg-cream p-6 text-left">
+              <p className="mb-4 text-[10px] uppercase tracking-luxe text-ink-muted">Tu pedido</p>
+              <ul className="space-y-3">
+                {items.map((item, idx) => (
+                  <li key={idx} className="flex items-center justify-between gap-4 text-sm">
+                    <span className="font-light text-ink">
+                      {item.name}
+                      <span className="text-ink-muted">
+                        {' '}· {[item.selectedColor, item.selectedSize].filter(Boolean).join(' · ')}
+                      </span>
+                    </span>
+                    <span className="flex-shrink-0 text-ink-muted">× {item.quantity}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center rounded-full bg-ink px-9 py-4 text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
+            >
+              Volver al inicio
+            </Link>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  // Carrito vacío
+  if (items.length === 0) {
+    return (
+      <Layout>
+        <div className="bg-white">
+          <div className="mx-auto max-w-xl px-6 py-24 text-center lg:px-8">
+            <h1 className="mb-4 font-serif text-3xl font-light text-ink">
+              No hay nada que finalizar
+            </h1>
+            <p className="mb-8 font-light text-ink-soft">
+              Tu carrito está vacío. Añade alguna pieza antes de continuar.
+            </p>
+            <Link
+              to="/vestidos"
+              className="inline-flex items-center justify-center rounded-full bg-ink px-9 py-4 text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
+            >
+              Explorar la colección
+            </Link>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  // Clases compartidas para inputs editoriales (border-b hairline)
+  const inputClass = (field) =>
+    `w-full border-b bg-transparent py-2.5 text-ink font-light placeholder:text-ink-muted/50 focus:outline-none transition-colors ${
+      errors[field] ? 'border-red-300 focus:border-red-400' : 'border-ink/20 focus:border-clay'
+    }`
+
+  const labelClass = 'mb-2 block text-[10px] uppercase tracking-luxe text-ink-muted'
 
   return (
     <Layout>
-      <div className="bg-gray-50 py-8 md:py-12">
-        <div className="container mx-auto px-4">
-          {/* Header */}
-          <div className="mb-8">
-            <Link 
-              to="/carrito" 
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+      <div className="bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-14">
+          {/* Encabezado */}
+          <div className="mb-10">
+            <Link
+              to="/carrito"
+              className="mb-5 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.12em] text-ink-muted transition-colors hover:text-clay"
             >
-              <ChevronLeftIcon className="w-5 h-5" />
+              <ChevronLeftIcon className="h-4 w-4" />
               Volver al carrito
             </Link>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900">
-              Finalizar Compra
-            </h1>
+            <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">Casi listo</p>
+            <h1 className="font-serif text-4xl font-light text-ink md:text-5xl">Finalizar pedido</h1>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Form */}
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-12">
+            {/* Formulario */}
             <div className="lg:col-span-2">
-              <form onSubmit={handleWhatsAppSubmit} className="bg-white rounded-lg shadow-sm p-6 md:p-8">
-                <div className="mb-8">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                    Información del Pedido
-                  </h2>
-                  <p className="text-gray-600">
-                    Completa tus datos y enviaremos tu pedido por WhatsApp para coordinar la entrega.
-                  </p>
-                </div>
-                  
-                {/* Personal Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
-                      Nombre *
-                    </label>
-                    <input
-                      type="text"
-                      id="nombre"
-                      name="nombre"
-                      value={formData.nombre}
-                      onChange={handleInputChange}
-                      placeholder="Tu nombre"
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="apellidos" className="block text-sm font-medium text-gray-700 mb-2">
-                      Apellidos *
-                    </label>
-                    <input
-                      type="text"
-                      id="apellidos"
-                      name="apellidos"
-                      value={formData.apellidos}
-                      onChange={handleInputChange}
-                      placeholder="Tus apellidos"
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
-                    />
-                  </div>
+              <p className="mb-8 max-w-md font-light leading-relaxed text-ink-soft">
+                Completa tus datos y enviaremos el pedido por WhatsApp para coordinar pago y entrega.
+              </p>
+
+              <form onSubmit={handleSubmit} noValidate className="space-y-7">
+                <div>
+                  <label htmlFor="nombre" className={labelClass}>Nombre completo *</label>
+                  <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleInputChange}
+                    placeholder="Tu nombre y apellido"
+                    className={inputClass('nombre')}
+                  />
+                  {errors.nombre && <p className="mt-2 text-xs text-red-400">Ingresa tu nombre.</p>}
                 </div>
 
-                {/* Contact */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 gap-7 md:grid-cols-2">
                   <div>
-                    <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-2">
-                      Teléfono *
-                    </label>
+                    <label htmlFor="telefono" className={labelClass}>Teléfono *</label>
                     <input
                       type="tel"
                       id="telefono"
                       name="telefono"
                       value={formData.telefono}
                       onChange={handleInputChange}
-                      placeholder="999999999"
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
+                      placeholder="999 999 999"
+                      className={inputClass('telefono')}
                     />
+                    {errors.telefono && <p className="mt-2 text-xs text-red-400">Ingresa tu teléfono.</p>}
                   </div>
+
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email
-                    </label>
+                    <label htmlFor="ciudad" className={labelClass}>Ciudad / distrito *</label>
                     <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
+                      type="text"
+                      id="ciudad"
+                      name="ciudad"
+                      value={formData.ciudad}
                       onChange={handleInputChange}
-                      placeholder="email@ejemplo.com"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
+                      placeholder="Ej. Lima, Miraflores"
+                      className={inputClass('ciudad')}
                     />
+                    {errors.ciudad && <p className="mt-2 text-xs text-red-400">Ingresa tu ciudad o distrito.</p>}
                   </div>
                 </div>
 
-                {/* Address */}
-                <div className="mb-6">
-                  <label htmlFor="direccion" className="block text-sm font-medium text-gray-700 mb-2">
-                    Dirección de entrega *
-                  </label>
+                <div>
+                  <label htmlFor="notas" className={labelClass}>Notas (opcional)</label>
                   <textarea
-                    id="direccion"
-                    name="direccion"
-                    value={formData.direccion}
+                    id="notas"
+                    name="notas"
+                    value={formData.notas}
                     onChange={handleInputChange}
-                    placeholder="Dirección completa para la entrega"
                     rows="3"
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
+                    placeholder="Referencias de entrega, preferencias, etc."
+                    className={`${inputClass('notas')} resize-none`}
                   />
                 </div>
 
-                {/* Shipping & Payment */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <label htmlFor="metodoEnvio" className="block text-sm font-medium text-gray-700 mb-2">
-                      Método de envío
-                    </label>
-                    <select
-                      id="metodoEnvio"
-                      name="metodoEnvio"
-                      value={formData.metodoEnvio}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
-                    >
-                      <option value="domicilio">Envío a domicilio</option>
-                      <option value="tienda">Recojo en tienda</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="metodoPago" className="block text-sm font-medium text-gray-700 mb-2">
-                      Método de pago
-                    </label>
-                    <select
-                      id="metodoPago"
-                      name="metodoPago"
-                      value={formData.metodoPago}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
-                    >
-                      <option value="efectivo">Efectivo</option>
-                      <option value="yape">Yape</option>
-                      <option value="transferencia">Transferencia</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Comments */}
-                <div className="mb-8">
-                  <label htmlFor="comentarios" className="block text-sm font-medium text-gray-700 mb-2">
-                    Comentarios adicionales (opcional)
-                  </label>
-                  <textarea
-                    id="comentarios"
-                    name="comentarios"
-                    value={formData.comentarios}
-                    onChange={handleInputChange}
-                    placeholder="Cualquier información adicional sobre tu pedido"
-                    rows="3"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
-                  />
-                </div>
-
-                {/* Submit */}
-                <button 
-                  type="submit" 
-                  className="w-full bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-colors flex items-center justify-center gap-3"
+                <button
+                  type="submit"
+                  className="block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay md:w-auto md:px-12"
                 >
-                  <span>📱</span>
                   Enviar pedido por WhatsApp
                 </button>
               </form>
             </div>
 
-            {/* Summary Sidebar */}
+            {/* Resumen */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">
-                  Resumen del Pedido
-                </h3>
-                
-                {/* Items */}
-                <div className="space-y-4 mb-6">
+              <div className="rounded-lg bg-cream p-6 lg:sticky lg:top-28">
+                <h2 className="mb-6 font-serif text-xl font-light text-ink">Resumen</h2>
+
+                <ul className="mb-6 space-y-4">
                   {items.map((item, idx) => (
-                    <div key={idx} className="flex gap-3">
-                      <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    <li key={idx} className="flex gap-3">
+                      <div className="h-16 w-12 flex-shrink-0 overflow-hidden rounded-md bg-cream-dark">
+                        <img src={item.image} alt={item.name} className="h-full w-full object-cover object-top" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 truncate">{item.name}</h4>
-                        <p className="text-sm text-gray-500">Cantidad: {item.quantity}</p>
-                        {item.selectedColor && (
-                          <p className="text-xs text-gray-500">Color: {item.selectedColor}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-serif text-sm font-light text-ink">{item.name}</p>
+                        {(item.selectedColor || item.selectedSize) && (
+                          <p className="mt-0.5 text-[11px] uppercase tracking-[0.1em] text-ink-muted">
+                            {[item.selectedColor, item.selectedSize].filter(Boolean).join(' · ')}
+                          </p>
                         )}
-                        {item.selectedSize && (
-                          <p className="text-xs text-gray-500">Talla: {item.selectedSize}</p>
-                        )}
+                        <p className="mt-0.5 text-xs text-ink-muted">× {item.quantity}</p>
                       </div>
-                    </div>
+                    </li>
                   ))}
+                </ul>
+
+                <div className="flex items-center justify-between border-t border-ink/10 pt-4 text-sm">
+                  <span className="text-ink-soft">Artículos</span>
+                  <span className="text-ink">{totalItems}</span>
                 </div>
 
-                {/* Total */}
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between text-gray-600 mb-2">
-                    <span>Artículos</span>
-                    <span>{items.reduce((sum, item) => sum + item.quantity, 0)} artículos</span>
-                  </div>
-                </div>
-
-                {/* WhatsApp Info */}
-                <div className="mt-6 p-4 bg-green-50 rounded-lg">
-                  <div className="flex gap-3">
-                    <span className="text-2xl flex-shrink-0">💬</span>
-                    <p className="text-sm text-green-900">
-                      Te contactaremos por WhatsApp para confirmar tu pedido y coordinar la entrega.
-                    </p>
-                  </div>
-                </div>
+                <p className="mt-5 text-xs font-light leading-relaxed text-ink-muted">
+                  Coordinaremos pago y envío contigo por WhatsApp.
+                </p>
               </div>
             </div>
           </div>

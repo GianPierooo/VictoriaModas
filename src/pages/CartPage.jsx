@@ -1,181 +1,137 @@
 import { Link } from 'react-router-dom'
-import { useCart } from '../context/CartContext.jsx'
-import { TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
-import { generateWhatsAppMessage, openWhatsApp } from '../utils/whatsappUtils.js'
+import QuantitySelector from '../components/QuantitySelector'
+import { useCart } from '../context/CartContext.jsx'
+import { cartItemKey } from '../utils/cart.js'
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, totals, clearCart } = useCart()
+  const { items, removeItem, updateQuantity, clearCart } = useCart()
+  const totalItems = items.reduce((sum, it) => sum + it.quantity, 0)
 
   return (
     <Layout>
-      <div className="bg-gray-50 pb-8 md:pb-12">
-        <div className="container mx-auto px-4">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-2">
-              Carrito de Compras
-            </h1>
-            <p className="text-gray-600">
-              {items.length > 0 
-                ? `Tienes ${items.length} ${items.length === 1 ? 'producto' : 'productos'} en tu carrito` 
-                : 'Tu carrito está vacío'}
-            </p>
+      <div className="bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-14">
+          {/* Encabezado */}
+          <div className="mb-10">
+            <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">Tu selección</p>
+            <h1 className="font-serif text-4xl font-light text-ink md:text-5xl">Carrito</h1>
           </div>
 
-          {/* Empty State */}
           {items.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-              <div className="max-w-md mx-auto">
-                <ShoppingBagIcon className="w-24 h-24 text-gray-300 mx-auto mb-6" />
-                <h2 className="text-2xl font-serif font-bold text-gray-900 mb-3">
-                  Tu carrito está vacío
-                </h2>
-                <p className="text-gray-600 mb-8">
-                  ¡Descubre nuestras colecciones y encuentra prendas que te encantarán!
-                </p>
-                <Link to="/vestidos" className="btn-primary">
-                  Explorar productos
-                </Link>
-              </div>
+            /* Carrito vacío */
+            <div className="py-20 text-center">
+              <ShoppingBagIcon className="mx-auto mb-6 h-16 w-16 text-ink/20" strokeWidth={1} />
+              <h2 className="mb-3 font-serif text-2xl font-light text-ink md:text-3xl">
+                Tu carrito está esperando
+              </h2>
+              <p className="mb-8 font-light text-ink-soft">
+                Aún no has añadido piezas. Descubre la colección y encuentra tu próxima favorita.
+              </p>
+              <Link
+                to="/vestidos"
+                className="inline-flex items-center justify-center rounded-full bg-ink px-9 py-4 text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
+              >
+                Explorar la colección
+              </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Cart Items */}
-              <div className="lg:col-span-2 space-y-4">
-                {items.map((item, index) => (
-                  <div 
-                    key={`${item.id}-${item.selectedColor}-${item.selectedSize}-${index}`} 
-                    className="bg-white rounded-lg shadow-sm p-4 md:p-6"
-                  >
-                    <div className="flex gap-4 md:gap-6">
-                      {/* Image */}
-                      <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-                        <img 
-                          src={item.image} 
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-12">
+              {/* Lista de items */}
+              <div className="lg:col-span-2">
+                <ul className="border-t border-ink/10">
+                  {items.map((item) => {
+                    const key = cartItemKey(item)
+                    return (
+                      <li key={key} className="flex gap-4 border-b border-ink/10 py-6 md:gap-6">
+                        {/* Foto */}
+                        <Link
+                          to={`/producto/${item.id}`}
+                          className="block h-32 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-cream-dark md:h-40 md:w-32"
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-full w-full object-cover object-top"
+                            loading="lazy"
+                          />
+                        </Link>
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {item.name}
-                        </h3>
-                        
-                        {/* Attributes */}
-                        {(item.selectedColor || item.selectedSize) && (
-                          <div className="flex flex-wrap gap-2 mb-3 text-sm">
-                            {item.selectedColor && (
-                              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
-                                Color: {item.selectedColor}
-                              </span>
-                            )}
-                            {item.selectedSize && (
-                              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
-                                Talla: {item.selectedSize}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Actions */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                          {/* Quantity */}
-                          <div className="flex items-center gap-2">
-                            <label className="text-sm text-gray-600 mr-2">
-                              Cantidad:
-                            </label>
-                            <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
-                              <button
-                                onClick={() => updateQuantity(index, Math.max(1, item.quantity - 1))}
-                                className="px-3 py-1 bg-gray-50 hover:bg-gray-100 transition-colors"
-                                aria-label="Disminuir cantidad"
-                              >
-                                −
-                              </button>
-                              <input
-                                type="number"
-                                min="1"
-                                value={item.quantity}
-                                onChange={(e) => updateQuantity(index, Math.max(1, Number(e.target.value)))}
-                                className="w-16 text-center py-1 border-x border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose"
-                              />
-                              <button
-                                onClick={() => updateQuantity(index, item.quantity + 1)}
-                                className="px-3 py-1 bg-gray-50 hover:bg-gray-100 transition-colors"
-                                aria-label="Aumentar cantidad"
-                              >
-                                +
-                              </button>
+                        {/* Info */}
+                        <div className="flex flex-1 flex-col">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <h3 className="font-serif text-lg font-light text-ink">
+                                <Link to={`/producto/${item.id}`} className="transition-colors hover:text-clay">
+                                  {item.name}
+                                </Link>
+                              </h3>
+                              {(item.selectedColor || item.selectedSize) && (
+                                <p className="mt-1 text-xs uppercase tracking-[0.12em] text-ink-muted">
+                                  {[item.selectedColor, item.selectedSize].filter(Boolean).join(' · ')}
+                                </p>
+                              )}
                             </div>
+                            {/* Quitar */}
+                            <button
+                              type="button"
+                              onClick={() => removeItem(key)}
+                              className="-mr-2 -mt-2 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-md text-ink-muted transition-colors hover:text-ink"
+                              aria-label={`Quitar ${item.name}`}
+                            >
+                              <XMarkIcon className="h-5 w-5" />
+                            </button>
                           </div>
 
-                          {/* Remove */}
-                          <button 
-                            onClick={() => removeItem(index)}
-                            className="flex items-center gap-2 text-red-600 hover:text-red-700 transition-colors text-sm font-medium"
-                            aria-label={`Eliminar ${item.name}`}
-                          >
-                            <TrashIcon className="w-5 h-5" />
-                            Eliminar
-                          </button>
+                          {/* Cantidad */}
+                          <div className="mt-auto pt-4">
+                            <QuantitySelector
+                              quantity={item.quantity}
+                              onQuantityChange={(q) => updateQuantity(key, q)}
+                              min={1}
+                              max={10}
+                              showLabel={false}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                      </li>
+                    )
+                  })}
+                </ul>
+
+                {/* Vaciar carrito */}
+                <div className="pt-6">
+                  <button
+                    type="button"
+                    onClick={clearCart}
+                    className="text-xs uppercase tracking-[0.15em] text-ink-muted transition-colors hover:text-clay"
+                  >
+                    Vaciar carrito
+                  </button>
+                </div>
               </div>
 
-              {/* Summary Sidebar */}
+              {/* Resumen sticky */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-6">
-                    Resumen del Pedido
-                  </h3>
-                  
-                  <div className="space-y-3 mb-6">
-                    <div className="flex justify-between text-gray-600">
-                      <span>Artículos</span>
-                      <span>
-                        {items.reduce((sum, it) => sum + it.quantity, 0)} {items.reduce((sum, it) => sum + it.quantity, 0) === 1 ? 'artículo' : 'artículos'}
-                      </span>
-                    </div>
+                <div className="rounded-lg bg-cream p-6 lg:sticky lg:top-28">
+                  <h2 className="mb-6 font-serif text-xl font-light text-ink">Resumen</h2>
+
+                  <div className="mb-6 flex items-center justify-between border-b border-ink/10 pb-6 text-sm">
+                    <span className="text-ink-soft">Artículos</span>
+                    <span className="text-ink">{totalItems}</span>
                   </div>
 
-                  <div className="space-y-3">
-                    {/* WhatsApp Button */}
-                    <button 
-                      onClick={() => {
-                        const message = generateWhatsAppMessage(items)
-                        openWhatsApp(message)
-                      }}
-                      disabled={items.length === 0}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span>📱</span>
-                      Enviar pedido por WhatsApp
-                    </button>
+                  <Link
+                    to="/checkout"
+                    className="block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
+                  >
+                    Finalizar pedido
+                  </Link>
 
-                    {/* Clear Cart */}
-                    <button 
-                      onClick={clearCart}
-                      disabled={items.length === 0}
-                      className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      aria-label="Vaciar carrito"
-                    >
-                      Vaciar Carrito
-                    </button>
-                  </div>
-
-                  {/* Note */}
-                  <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-900">
-                      💬 Te contactaremos por WhatsApp para confirmar tu pedido y coordinar la entrega.
-                    </p>
-                  </div>
+                  <p className="mt-5 text-center text-xs font-light leading-relaxed text-ink-muted">
+                    Coordinaremos pago y envío contigo por WhatsApp.
+                  </p>
                 </div>
               </div>
             </div>

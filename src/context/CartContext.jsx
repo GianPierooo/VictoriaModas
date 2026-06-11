@@ -1,16 +1,26 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { cartItemKey } from '../utils/cart.js'
 
 const CartContext = createContext(null)
 
+// Carga defensiva del carrito guardado: tolera datos viejos o corruptos.
+function loadStoredCart() {
+  try {
+    const raw = localStorage.getItem('vm_cart_items')
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    // Conserva solo entradas válidas (deben tener id y una cantidad numérica > 0)
+    return parsed
+      .filter(it => it && it.id)
+      .map(it => ({ ...it, quantity: Math.max(1, Number(it.quantity) || 1) }))
+  } catch {
+    return []
+  }
+}
+
 export function CartProvider({ children }) {
-  const [items, setItems] = useState(() => {
-    try {
-      const raw = localStorage.getItem('vm_cart_items')
-      return raw ? JSON.parse(raw) : []
-    } catch {
-      return []
-    }
-  })
+  const [items, setItems] = useState(loadStoredCart)
   
   const [showNotification, setShowNotification] = useState(false)
 
@@ -46,13 +56,13 @@ export function CartProvider({ children }) {
     setShowNotification(false)
   }
 
-  function removeItem(itemId) {
-    setItems(prev => prev.filter((_, index) => index !== itemId))
+  function removeItem(key) {
+    setItems(prev => prev.filter(p => cartItemKey(p) !== key))
   }
 
-  function updateQuantity(itemId, quantity) {
-    setItems(prev => prev.map((p, index) => 
-      index === itemId ? { ...p, quantity: Math.max(1, quantity) } : p
+  function updateQuantity(key, quantity) {
+    setItems(prev => prev.map(p =>
+      cartItemKey(p) === key ? { ...p, quantity: Math.max(1, quantity) } : p
     ))
   }
 

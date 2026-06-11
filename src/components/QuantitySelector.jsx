@@ -29,35 +29,35 @@ export default function QuantitySelector({
   return (
     <div className="flex flex-col gap-2">
       {showLabel && (
-        <label className="text-sm font-medium text-gray-700">
-          Cantidad:
+        <label className="text-[10px] uppercase tracking-luxe text-ink-muted">
+          Cantidad
         </label>
       )}
-      <div className="inline-flex items-center border border-gray-300 rounded-lg overflow-hidden w-fit">
-        <button 
-          className="flex items-center justify-center w-10 h-10 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
+      <div className="inline-flex w-fit items-center overflow-hidden rounded-full border border-ink/20">
+        <button
+          className="flex h-10 w-10 items-center justify-center text-ink-soft transition-colors hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed"
           onClick={handleDecrease}
           disabled={quantity <= min}
           aria-label="Disminuir cantidad"
         >
-          <MinusIcon className="w-4 h-4" />
+          <MinusIcon className="h-4 w-4" />
         </button>
         <input
           type="number"
-          className="w-16 h-10 text-center font-medium text-gray-900 border-x border-gray-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-rose"
+          className="h-10 w-12 border-x border-ink/15 bg-transparent text-center text-sm font-light text-ink focus:outline-none focus:ring-1 focus:ring-inset focus:ring-clay"
           value={quantity}
           onChange={handleInputChange}
           min={min}
           max={max}
           aria-label="Cantidad"
         />
-        <button 
-          className="flex items-center justify-center w-10 h-10 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        <button
+          className="flex h-10 w-10 items-center justify-center text-ink-soft transition-colors hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed"
           onClick={handleIncrease}
           disabled={quantity >= max}
           aria-label="Aumentar cantidad"
         >
-          <PlusIcon className="w-4 h-4" />
+          <PlusIcon className="h-4 w-4" />
         </button>
       </div>
     </div>
