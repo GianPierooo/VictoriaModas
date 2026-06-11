@@ -7,18 +7,42 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Rosa empolvado, cálido y elegante (no saturado)
         rose: {
-          DEFAULT: '#f7cac9',
-          light: '#fff5f5',
-          dark: '#f8b5b8',
-          100: '#fde9e7',
-          200: '#f8b5b8',
-          50: '#fff9f9',
+          DEFAULT: '#E8B4B8',
+          light: '#F5E3E0',
+          dark: '#D89A9E',
+          50: '#FBF3F1',
+          100: '#F5E3E0',
+          200: '#EFD0CC',
+          300: '#E8B4B8',
+          400: '#D89A9E',
+          500: '#C77F84',
+        },
+        // Terracota / nude para detalles
+        clay: {
+          DEFAULT: '#C08B7D',
+          light: '#D7B3A8',
+          dark: '#A06E60',
+        },
+        // Crema cálida de fondo
+        cream: {
+          DEFAULT: '#FBF7F4',
+          dark: '#F4EDE7',
+        },
+        // Tinta cálida (no negro puro)
+        ink: {
+          DEFAULT: '#2B2424',
+          soft: '#5B5150',
+          muted: '#8A7E7C',
         },
       },
       fontFamily: {
         sans: ['Roboto Flex', 'sans-serif'],
         serif: ['Bodoni Moda', 'serif'],
+      },
+      letterSpacing: {
+        luxe: '0.28em',
       },
       container: {
         center: true,
@@ -32,15 +56,16 @@ export default {
         },
       },
       boxShadow: {
-        'rose': '0 4px 20px rgba(247, 202, 201, 0.3)',
-        'rose-md': '0 6px 25px rgba(247, 202, 201, 0.4)',
-        'rose-lg': '0 10px 40px rgba(247, 202, 201, 0.5)',
-        'rose-xl': '0 15px 50px rgba(247, 202, 201, 0.6)',
+        'rose': '0 10px 30px -12px rgba(192, 139, 125, 0.25)',
+        'rose-md': '0 18px 40px -16px rgba(192, 139, 125, 0.30)',
+        'rose-lg': '0 24px 60px -20px rgba(192, 139, 125, 0.35)',
+        'rose-xl': '0 30px 70px -24px rgba(192, 139, 125, 0.40)',
+        'soft': '0 4px 24px -8px rgba(43, 36, 36, 0.10)',
       },
       backgroundImage: {
-        'gradient-rose': 'linear-gradient(135deg, #f7cac9 0%, #fde9e7 100%)',
-        'gradient-rose-light': 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
-        'gradient-radial-rose': 'radial-gradient(circle, rgba(247, 202, 201, 0.1) 0%, transparent 70%)',
+        'gradient-rose': 'linear-gradient(135deg, #E8B4B8 0%, #F5E3E0 100%)',
+        'gradient-rose-light': 'linear-gradient(180deg, #FBF7F4 0%, #F5E3E0 100%)',
+        'gradient-radial-rose': 'radial-gradient(circle, rgba(232, 180, 184, 0.12) 0%, transparent 70%)',
       },
       animation: {
         'fade-in': 'fadeIn 0.8s ease-in-out',
