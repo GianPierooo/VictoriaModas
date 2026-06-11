@@ -265,3 +265,45 @@ Stack: React 19 + Vite + Tailwind CSS 3. Trabajamos directamente sobre `main`.
   los acentos radiales recortados por `overflow-hidden`, invisible). Grids:
   destacados 2→2→4, colecciones 1→2→2, categorías 1→3→3, social 1→2→3.
 - ✅ Build sin errores; lint de HomePage con 0 errores.
+
+### 2.4 Banner y WhatsApp pulidos (2026-06-11)
+
+- ✅ **AnnouncementBanner**: rediseñado sobrio y elegante.
+  - Sin emojis. Mensajes nuevos: "Envío gratis en compras mayores a S/ 200"
+    · "Nueva colección disponible" · "Atención personalizada por WhatsApp"
+    (fuera el "Primavera 2025" y el código SPRING20 caducos).
+  - Fondo `bg-ink`, texto cream, uppercase. Rotan cada 4s con **fade suave**
+    (animación `fadeIn` 0.7s disparada por `key={current}`, no corte brusco).
+  - Responsive: `text-[10px] tracking-[0.15em]` en móvil →
+    `sm:text-xs sm:tracking-[0.2em]`; verificado que el texto NO se corta a
+    375px (banner 35px de alto, sin overflow).
+  - Limpieza: eliminado el estado `scrolled` que se calculaba pero nunca se
+    usaba en el render.
+- ✅ **Botón flotante WhatsApp** (en Footer.jsx): de exagerado a elegante.
+  - Círculo de 56px (`h-14 w-14`), fondo `#25D366`, ícono WhatsApp blanco
+    `h-7 w-7`, `shadow-soft`.
+  - Eliminadas las animaciones recargadas: gradiente verde de 3 paradas,
+    `animate-ping`, `animate-pulse-soft`, `hover:scale-125`,
+    `hover:rotate-12`. Ahora solo aparición suave al cargar (`fadeIn` 0.6s) y
+    un `hover:scale-105` discreto. (Verificado: 0 pings restantes.)
+  - Tooltip discreto solo desktop (`hidden lg:block`): "¿Tienes dudas?
+    Escríbenos", pill ink/cream, opacity 0 → 100 al hover. En móvil no se
+    renderiza.
+  - Posición `bottom-6 right-6`; enlace a wa.me/51993357672 con
+    `target="_blank"` + `rel="noopener noreferrer"`.
+- ✅ Build sin errores; lint limpio en banner y footer.
+
+---
+
+**Fase 2 (Home) COMPLETA**: hero editorial, categorías reales, limpieza
+integral sin Unsplash ni recargo, y banner + WhatsApp pulidos. El home está
+coherente de arriba a abajo con el sistema cálido-premium.
+
+📝 Pendientes para fases siguientes (estética vieja aún viva):
+- **Footer**: gradiente rosa con `border-t-4 border-rose-dark`, emoji ✨ ya
+  retirado del logo (Fase 1.4) pero el resto sigue con grises/rosa viejo.
+- **ProductsPage** (catálogo): hero rosa con blur, sidebar de filtros gris,
+  botones `bg-rose`.
+- Páginas internas: ProductPage, CartPage, CheckoutPage, About, Contact, FAQ.
+- `src/index.css`: las clases `.btn-*` aún usan `gray-900`/`white`.
+- `src/test-tailwind.html`: archivo de prueba sobrante, confirmar si se borra.
