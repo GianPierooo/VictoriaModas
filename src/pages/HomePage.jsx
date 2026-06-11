@@ -324,103 +324,63 @@ function Collections() {
 // ============= CATEGORÍAS =============
 function CategoryShowcase() {
   const [ref, isVisible] = useScrollAnimation()
-  
+
   const categories = [
-    { name: 'Vestidos', img: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=800&auto=format&fit=crop', link: '/vestidos' },
-    { name: 'Pantalones', img: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=800&auto=format&fit=crop', link: '/pantalones' },
-    { name: 'Conjuntos', img: 'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?q=80&w=800&auto=format&fit=crop', link: '/vestidos' },
-    { name: 'Bodys', img: 'https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?q=80&w=800&auto=format&fit=crop', link: '/vestidos' }
+    { name: 'Vestidos', img: '/imagenes/vestidos/vestido_lame01/negro_adelante.png', link: '/vestidos' },
+    { name: 'Blusas', img: '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_delante.png', link: '/blusas' },
+    { name: 'Pantalones', img: '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_negro.png', link: '/pantalones' },
   ]
 
   return (
-    <section 
+    <section
       ref={ref}
-      className="relative py-20 md:py-28 bg-gradient-to-b from-white via-rose-50/20 to-white overflow-hidden" 
+      className="bg-cream py-24"
       aria-labelledby="category-title"
     >
-      {/* Círculos decorativos de fondo */}
-      <div className="absolute top-1/4 left-10 w-[400px] h-[400px] bg-rose-200/20 rounded-full blur-3xl animate-float opacity-30"></div>
-      <div className="absolute bottom-1/4 right-10 w-[350px] h-[350px] bg-rose/15 rounded-full blur-3xl animate-breathe opacity-25"></div>
-      
-      <div className="container mx-auto px-4 relative z-10">
-        {/* Header minimalista */}
-        <div className="text-center mb-16">
-          {/* Mini decoración circular */}
-          <div className={`inline-flex items-center gap-3 mb-6 transition-all duration-1000 ${
-            isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        {/* Encabezado */}
+        <div className="text-center mb-14">
+          <p className={`text-[11px] uppercase tracking-luxe text-clay mb-4 transition-all duration-700 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
-            <div className="w-3 h-3 rounded-full bg-rose-200 animate-pulse"></div>
-            <div className="w-4 h-4 rounded-full bg-rose animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-3 h-3 rounded-full bg-rose-200 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-          </div>
-          
-          <h2 
-            id="category-title" 
-            className={`text-4xl md:text-5xl lg:text-6xl font-serif font-light text-gray-900 mb-4 transition-all duration-1000 delay-100 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            Colecciones
+          </p>
+          <h2
+            id="category-title"
+            className={`font-serif font-light text-ink text-4xl md:text-5xl transition-all duration-700 delay-100 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            Explora por <span className="font-bold text-rose-400">categoría</span>
+            Encuentra tu estilo
           </h2>
-          
-          <p className={`text-lg text-gray-500 font-light transition-all duration-1000 delay-200 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
-            Encuentra el estilo perfecto para ti
-          </p>
-          
-          {/* Círculo decorativo */}
-          <div className={`w-2 h-2 rounded-full bg-rose mx-auto mt-6 transition-all duration-1000 delay-300 animate-pulse ${
-            isVisible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-          }`}></div>
         </div>
 
-        {/* Grid con círculos */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        {/* Grid de categorías */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
           {categories.map((cat, idx) => (
             <Link
               key={cat.name}
               to={cat.link}
-              className={`group relative aspect-[3/4] overflow-hidden bg-rose-50/20 rounded-3xl shadow-md transition-all duration-700 hover:shadow-[0_20px_60px_rgba(247,202,201,0.4)] hover:scale-105 ${
-                isVisible 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-12'
+              className={`group relative aspect-[3/4] overflow-hidden rounded-lg bg-cream-dark transition-all duration-700 ease-out ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
-              style={{ transitionDelay: `${idx * 100 + 400}ms` }}
+              style={{ transitionDelay: `${idx * 120 + 200}ms` }}
             >
-              {/* Image */}
               <img
                 src={cat.img}
                 alt={cat.name}
-                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-105"
+                loading="lazy"
               />
-              
-              {/* Overlay rosa */}
-              <div className="absolute inset-0 bg-gradient-to-t from-rose-900/70 via-rose-900/20 to-transparent group-hover:from-rose-900/50 transition-all duration-500" />
-              
-              {/* Círculos decorativos flotantes */}
-              <div className="absolute top-6 right-6 w-12 h-12 rounded-full bg-rose-200/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500 animate-float"></div>
-              <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-rose/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-700 animate-pulse"></div>
-              
-              {/* Borde circular en hover */}
-              <div className="absolute inset-0 rounded-3xl border-2 border-rose-200/0 group-hover:border-rose-200/60 transition-all duration-500 shadow-[inset_0_0_30px_rgba(247,202,201,0)] group-hover:shadow-[inset_0_0_30px_rgba(247,202,201,0.3)]"></div>
-              
-              {/* Content minimalista */}
-              <div className="absolute inset-0 flex flex-col items-center justify-end pb-8 text-white">
-                {/* Círculos decorativos superiores */}
-                <div className="flex gap-2 mb-4 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                  <div className="w-2 h-2 rounded-full bg-rose-200"></div>
-                  <div className="w-2 h-2 rounded-full bg-rose-100"></div>
-                </div>
-                
-                <h3 className="text-2xl md:text-3xl font-serif font-light mb-3 transform group-hover:translate-y-[-4px] transition-transform duration-500">
+
+              {/* Overlay degradado sutil, se intensifica al hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/55 via-ink/10 to-transparent group-hover:from-ink/65 transition-colors duration-500" />
+
+              {/* Nombre de la categoría */}
+              <div className="absolute inset-x-0 bottom-0 pb-8 text-center">
+                <h3 className="font-serif font-light text-cream text-2xl md:text-3xl tracking-wide">
                   {cat.name}
                 </h3>
-                
-                {/* Botón circular */}
-                <div className="w-10 h-10 rounded-full border-2 border-rose-200/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-500 hover:bg-rose-200/30 hover:scale-110">
-                  <ChevronRightIcon className="w-5 h-5" />
-                </div>
               </div>
             </Link>
           ))}

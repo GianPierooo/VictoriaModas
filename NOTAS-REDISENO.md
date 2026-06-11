@@ -197,3 +197,29 @@ Stack: React 19 + Vite + Tailwind CSS 3. Trabajamos directamente sobre `main`.
   - Cero errores de consola.
 - ✅ `npm run build` sin errores; lint de HomePage sin errores (solo un
   warning preexistente del hook `useScrollAnimation`, ajeno a este cambio).
+
+### 2.2 Categorías con productos reales (2026-06-11)
+
+- ✅ Reescrita la sección `CategoryShowcase` de `HomePage.jsx`:
+  - Solo 3 categorías REALES: **Vestidos**, **Blusas** y **Pantalones**.
+    Eliminadas "Conjuntos" y "Bodys" (no existen; además enlazaban a
+    /vestidos). Abrigos fuera hasta que haya productos con foto.
+  - Fotos de producto reales en vez de Unsplash (existencia verificada):
+    vestido_lame01 negro / blusa seda francesa / pantalón scuba correa negro.
+  - Cada card: imagen vertical `aspect-[3/4]`, overlay degradado ink sutil
+    abajo (se intensifica al hover), nombre en serif cream grande, zoom
+    lento `scale-105` en 1s al hover, esquinas `rounded-lg`, link a su
+    página de categoría.
+  - Encabezado: eyebrow "Colecciones" en `tracking-luxe` clay + título
+    serif "Encuentra tu estilo" en ink, centrado, `py-24`.
+  - Fuera todo el ruido viejo: círculos flotantes con blur-3xl, borde
+    brillante interior, sombras rosa neón, botón circular del hover,
+    `rounded-3xl` y `hover:scale-105` de la card entera.
+  - Entrada al scroll conservada (hook `useScrollAnimation` existente) con
+    escalonado de 120ms por card.
+- ✅ Responsive verificado: 375px → 1 columna a ancho completo, imágenes
+  cargadas, sin overflow; 768px → 3 columnas de 219px, `py-24` aplicado.
+- ✅ Build sin errores; lint sin errores nuevos.
+- 📝 Pendiente detectado: quedan 3 fotos de Unsplash más abajo en HomePage
+  (~línea 612, sección de telas/spotlight) — candidatas para el siguiente
+  paso de la Fase 2.
