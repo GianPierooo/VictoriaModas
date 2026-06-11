@@ -95,11 +95,18 @@ export default function Header() {
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
           {/* Logo */}
           <div className="flex lg:flex-1">
-            <Link 
-              to="/" 
-              className="group font-serif text-2xl font-light tracking-wide text-ink transition-colors duration-300 hover:text-clay"
+            <Link
+              to="/"
+              className="group flex items-center gap-2.5 font-serif text-2xl font-light tracking-wide text-ink transition-colors duration-300 hover:text-clay"
             >
-              Victoria<span className="italic font-normal text-clay">Modas</span>
+              <img
+                src="/logo/isotipo.png"
+                alt=""
+                aria-hidden="true"
+                className="h-8 lg:h-10 w-auto"
+                onError={(e) => { e.currentTarget.style.display = 'none' }}
+              />
+              <span>Victoria<span className="italic font-normal text-clay">Modas</span></span>
             </Link>
           </div>
 
@@ -244,8 +251,15 @@ export default function Header() {
             <Dialog.Panel className="fixed inset-y-0 left-0 z-50 w-full overflow-y-auto bg-cream px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-ink/10">
               {/* Header del menú */}
               <div className="flex items-center justify-between">
-                <Link to="/" className="font-serif text-xl font-light tracking-wide text-ink">
-                  Victoria<span className="italic font-normal text-clay">Modas</span>
+                <Link to="/" className="flex items-center gap-2 font-serif text-xl font-light tracking-wide text-ink">
+                  <img
+                    src="/logo/isotipo.png"
+                    alt=""
+                    aria-hidden="true"
+                    className="h-8 w-auto"
+                    onError={(e) => { e.currentTarget.style.display = 'none' }}
+                  />
+                  <span>Victoria<span className="italic font-normal text-clay">Modas</span></span>
                 </Link>
                 <button
                   type="button"

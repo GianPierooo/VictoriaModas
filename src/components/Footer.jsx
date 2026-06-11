@@ -51,7 +51,22 @@ export default function Footer() {
           {/* Brand */}
           <div className="transform transition-all duration-700 hover:translate-y-[-8px]">
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-3xl animate-pulse-soft">✨</span>
+              {/* Isotipo: claro → normal → solo texto (no se ve roto si faltan archivos) */}
+              <img
+                src="/logo/isotipo-blanco.png"
+                alt=""
+                aria-hidden="true"
+                className="h-10 w-auto"
+                onError={(e) => {
+                  const img = e.currentTarget
+                  if (!img.dataset.fallback) {
+                    img.dataset.fallback = '1'
+                    img.src = '/logo/isotipo.png'
+                  } else {
+                    img.style.display = 'none'
+                  }
+                }}
+              />
               <h3 className="text-3xl font-serif font-bold tracking-tight text-gray-900">
                 Victoria<span className="text-rose-dark">Modas</span>
               </h3>

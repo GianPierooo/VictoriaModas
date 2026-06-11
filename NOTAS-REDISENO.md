@@ -133,3 +133,32 @@ Stack: React 19 + Vite + Tailwind CSS 3. Trabajamos directamente sobre `main`.
 - 📝 Límites respetados: sin sombras de color, sin bounce, sin rotaciones,
   sin gradientes llamativos; máx. 2 animaciones simultáneas, 400–700ms
   ease-out (zoom 1.2s solo como caso sin segunda imagen, según spec).
+
+### 1.4 Logo y favicon preparados con fallback (2026-06-11)
+
+- ✅ **Header**: el logo ahora es isotipo + texto tipográfico. `<img
+  src="/logo/isotipo.png">` con `h-8` móvil / `h-10` desktop junto a
+  "Victoria"+*Modas*; si la imagen no existe, `onError` la oculta y queda
+  solo el texto (la web nunca se ve rota). Mismo tratamiento en el logo del
+  menú móvil. El conjunto ícono+texto es el link a "/".
+- ✅ **Footer**: reemplazado el emoji ✨ por el isotipo con cadena de
+  fallback: `isotipo-blanco.png` → `isotipo.png` → solo texto.
+  ⚠️ El footer actual tiene fondo CLARO (gradiente rosa); si se queda claro
+  tras su rediseño, invertir el orden (primero `isotipo.png`) o la versión
+  blanca no se distinguirá. Anotado también en el LEEME.
+- ✅ Creada `public/logo/` con `LEEME.txt`: especifica `isotipo.png` (512px
+  lado mayor, fondo transparente), `isotipo-blanco.png` (versión clara) y
+  que `favicon.png` (512×512) va en `public/`.
+- ✅ **Favicon temporal** generado (System.Drawing): cuadrado cream `#FBF7F4`
+  con iniciales "VM" en serif (Georgia) color clay `#C08B7D` y filete
+  interior sutil. `public/favicon.png` (512) + `public/apple-touch-icon.png`
+  (180). Se reemplazan cuando llegue el logo real.
+- ✅ **index.html**: favicon → `/favicon.png`, añadido `apple-touch-icon`,
+  eliminadas TODAS las referencias a `/vite.svg` (icon, og:image,
+  twitter:image → ahora `/favicon.png`), y `theme-color` claro actualizado
+  de `#f7cac9` (rosa viejo) a `#FBF7F4` (cream).
+- ✅ Eliminado `public/vite.svg` (pendiente desde la Fase 0, ya reemplazado).
+- ✅ Verificado en preview: header y footer ocultan la img y muestran solo
+  texto (cadena del footer recorrida: blanco→normal→oculto); favicon y
+  apple-touch-icon servidos; simulada la llegada del logo real → la img
+  aparece a 40px junto al texto. Build sin errores, lint limpio.

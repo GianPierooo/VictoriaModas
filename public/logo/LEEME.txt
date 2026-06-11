@@ -1,0 +1,30 @@
+CARPETA DEL LOGO — VictoriaModas
+=================================
+
+Coloca aquí los archivos del isotipo (solo ícono, sin texto).
+La web ya está preparada: en cuanto existan estos archivos, aparecerán
+solos en el Header y el Footer. Si faltan, se muestra únicamente el
+logo tipográfico (nada se ve roto).
+
+Archivos esperados EN ESTA CARPETA (public/logo/):
+
+1. isotipo.png
+   - Versión principal, para fondos claros.
+   - 512 px en su lado mayor, fondo TRANSPARENTE (PNG).
+   - Se usa en el Header (h-10 desktop / h-8 móvil) y como
+     segundo fallback en el Footer.
+
+2. isotipo-blanco.png
+   - Versión clara, para fondos oscuros.
+   - Mismas medidas: 512 px lado mayor, fondo transparente.
+   - Se usa en el Footer. OJO: el footer actual tiene fondo CLARO;
+     si se queda así tras el rediseño, invertir el orden de los src
+     en Footer.jsx (primero isotipo.png) o la versión blanca no se verá.
+
+Archivo esperado EN public/ (raíz pública, NO en esta carpeta):
+
+3. favicon.png
+   - 512 x 512 px.
+   - Reemplaza al favicon temporal actual (cuadrado cream con
+     iniciales "VM" en serif). También conviene regenerar
+     apple-touch-icon.png (180 x 180) desde el mismo arte.
