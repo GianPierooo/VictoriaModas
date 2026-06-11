@@ -223,3 +223,45 @@ Stack: React 19 + Vite + Tailwind CSS 3. Trabajamos directamente sobre `main`.
 - 📝 Pendiente detectado: quedan 3 fotos de Unsplash más abajo en HomePage
   (~línea 612, sección de telas/spotlight) — candidatas para el siguiente
   paso de la Fase 2.
+
+### 2.3 Home limpio sin Unsplash ni recargo (2026-06-11)
+
+- ✅ **Limpieza global**: eliminados TODOS los divs decorativos de círculos
+  con blur (`blur-3xl` + `animate-float/breathe/pulse-soft`), líneas
+  decorativas, rombos, brillos de hover, bordes neón interiores y sombras
+  rosa. Fondos planos alternados para dar ritmo:
+  Hero **cream** → Destacados **white** → Colecciones **cream** →
+  Categorías **white** → Spotlight **cream** → Social **white**.
+- ✅ **FeaturedProducts**: encabezado nuevo (eyebrow "Destacados"
+  tracking-luxe clay + "Nuestros más vendidos" serif ink); ya usaba el
+  ProductCard dinámico en grid 2/4. CTA pill ink→clay (antes gradiente rosa
+  con sombra neón).
+- ✅ **Collections** (2 banners grandes): overlay ink limpio que se
+  intensifica al hover, texto serif cream, link subrayado fino,
+  `rounded-lg`, zoom 1s; fuera ~9 capas decorativas por banner.
+- ✅ **CategoryShowcase**: pasado a `bg-white` (alternancia) y
+  `py-20 md:py-28`; delays recortados a ≤350ms.
+- ✅ **ProductSpotlight**: imagen real conservada
+  (vestido_suplex01/azul_adelante.png); fuera radial animado y la caja
+  flotante "-24%" con `animate-float` → ahora badge pill discreto sobre la
+  foto. Título serif light "Vestido Suplex / *Moderno*" (itálica clay) en
+  vez de mayúsculas bold; detalles con punto clay; CTA pill ink.
+- ✅ **SocialFavorites**: imágenes reales conservadas (verificadas);
+  eliminado el emoji 📸 con su badge; fuera el `blur-sm` al hover y la
+  decoración de rombos; overlay ink, `rounded-lg`; CTA de Facebook pasa de
+  botón azul corporativo a pill outline ink elegante (conserva el ícono).
+- ✅ **BlogNoticias ELIMINADA por completo** (función + render): era la
+  única fuente de Unsplash restante (3 fotos) y un blog falso resta
+  credibilidad. Se reactivará cuando haya contenido real.
+- ✅ Animaciones de scroll (`useScrollAnimation`) conservadas; todas
+  recortadas a fadeInUp sutiles `duration-700` con delays ≤400ms
+  (antes había delay-500/700/1000 y duration-1000).
+- ✅ **Verificación grep**: `unsplash` en HomePage.jsx → **0 resultados**;
+  también 0 restos de `blur-3xl`, `animate-float/breathe`, grises fríos
+  (`gray-*`) ni `rose-900/400` en la página.
+- ✅ Responsive verificado (375/768/1280): 6 secciones, alternancia
+  cream/white exacta, cero imágenes rotas, cero errores de consola, sin
+  overflow horizontal en ningún tamaño (el `scrollWidth` extra del hero son
+  los acentos radiales recortados por `overflow-hidden`, invisible). Grids:
+  destacados 2→2→4, colecciones 1→2→2, categorías 1→3→3, social 1→2→3.
+- ✅ Build sin errores; lint de HomePage con 0 errores.
