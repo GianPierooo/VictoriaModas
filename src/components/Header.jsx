@@ -7,7 +7,6 @@ import {
   UserIcon,
   Bars3Icon,
   XMarkIcon,
-  HomeIcon,
   PhoneIcon,
   QuestionMarkCircleIcon,
   UserGroupIcon,
@@ -25,8 +24,7 @@ export default function Header() {
   const { items, showNotification, closeNotification } = useCart()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
   const isCartPage = location.pathname === '/carrito'
-  const isHomePage = location.pathname === '/'
-  
+
   // Links de navegación principal
   const navigation = [
     { name: 'INICIO', href: '/' },
@@ -36,13 +34,13 @@ export default function Header() {
     { name: 'VESTIDOS', href: '/vestidos' },
   ]
 
-  // Links del menú móvil con iconos
+  // Links del menú móvil
   const mobileNavigation = [
-    { name: 'Inicio', href: '/', icon: HomeIcon },
-    { name: 'Blusas', href: '/blusas', icon: HomeIcon },
-    { name: 'Pantalones', href: '/pantalones', icon: HomeIcon },
-    { name: 'Abrigos', href: '/abrigos', icon: HomeIcon },
-    { name: 'Vestidos', href: '/vestidos', icon: HomeIcon },
+    { name: 'Inicio', href: '/' },
+    { name: 'Blusas', href: '/blusas' },
+    { name: 'Pantalones', href: '/pantalones' },
+    { name: 'Abrigos', href: '/abrigos' },
+    { name: 'Vestidos', href: '/vestidos' },
   ]
 
   const supportLinks = [
@@ -81,19 +79,17 @@ export default function Header() {
       {/* Skip to content (accesibilidad) */}
       <a 
         href="#main-content" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 bg-rose text-white px-4 py-2 rounded-md"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 bg-ink text-cream px-4 py-2 rounded-md"
       >
         Saltar al contenido principal
       </a>
       
       {/* Header */}
       <header 
-        className={`fixed top-8 left-0 right-0 z-40 w-full transition-all duration-300 ${
+        className={`fixed top-8 left-0 right-0 z-40 w-full transition-all duration-500 ${
           scrolled 
-            ? 'bg-rose/30 backdrop-blur-md shadow-lg' 
-            : isHomePage
-              ? 'bg-transparent'
-              : 'bg-rose/30 backdrop-blur-sm'
+            ? 'bg-cream/90 backdrop-blur-md shadow-soft' 
+            : 'bg-transparent'
         }`}
       >
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
@@ -101,12 +97,9 @@ export default function Header() {
           <div className="flex lg:flex-1">
             <Link 
               to="/" 
-              className={`group text-2xl font-serif font-bold transition-all duration-300 ${
-                scrolled || !isHomePage ? 'text-gray-900' : 'text-white drop-shadow-lg'
-              } hover:text-rose`}
+              className="group font-serif text-2xl font-light tracking-wide text-ink transition-colors duration-300 hover:text-clay"
             >
-              <span className="inline-block transition-all duration-300 group-hover:rotate-12 group-hover:scale-125">✨</span>
-              {' '}VictoriaModas
+              Victoria<span className="italic font-normal text-clay">Modas</span>
             </Link>
           </div>
 
@@ -114,11 +107,7 @@ export default function Header() {
           <div className="flex lg:hidden">
             <button
               type="button"
-              className={`inline-flex items-center justify-center rounded-md p-2.5 transition-all ${
-                scrolled || !isHomePage 
-                  ? 'text-gray-700 hover:bg-gray-100' 
-                  : 'text-white hover:bg-white/10 drop-shadow-lg'
-              }`}
+              className="inline-flex items-center justify-center rounded-md p-2.5 text-ink hover:bg-ink/5 transition-all"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Abrir menú de navegación"
             >
@@ -132,12 +121,10 @@ export default function Header() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-all duration-300 ${
+                className={`text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all duration-300 ${
                   location.pathname === item.href
-                    ? 'text-rose border-b-2 border-rose'
-                    : scrolled || !isHomePage
-                      ? 'text-gray-700 hover:text-rose'
-                      : 'text-white drop-shadow-md hover:text-rose-200 hover:scale-105'
+                    ? 'text-ink border-b border-clay'
+                    : 'text-ink-soft hover:text-clay'
                 }`}
               >
                 {item.name}
@@ -147,13 +134,9 @@ export default function Header() {
             {/* Dropdown APOYO (Desktop) */}
             <Menu as="div" className="relative">
               <Menu.Button 
-                className={`inline-flex items-center gap-1 text-sm font-medium transition-all duration-300 ${
-                  scrolled || !isHomePage
-                    ? 'text-gray-700 hover:text-rose'
-                    : 'text-white drop-shadow-md hover:text-rose-200 hover:scale-105'
-                }`}
+                className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.15em] font-medium text-ink-soft hover:text-clay transition-all duration-300"
               >
-                APOYO
+                Ayuda
                 <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
               </Menu.Button>
               
@@ -166,7 +149,7 @@ export default function Header() {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
               >
-                <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-cream shadow-soft ring-1 ring-ink/10 focus:outline-none">
                   <div className="py-1">
                     {supportLinks.map((item) => (
                       <Menu.Item key={item.name}>
@@ -174,10 +157,10 @@ export default function Header() {
                           <Link
                             to={item.href}
                             className={`${
-                              active ? 'bg-gray-100' : ''
-                            } group flex items-center gap-2 px-4 py-2 text-sm text-gray-700`}
+                              active ? 'bg-cream-dark' : ''
+                            } group flex items-center gap-2 px-4 py-2 text-sm text-ink-soft`}
                           >
-                            <item.icon className="h-5 w-5 text-gray-400 group-hover:text-rose" />
+                            <item.icon className="h-5 w-5 text-ink-muted group-hover:text-clay" />
                             {item.name}
                           </Link>
                         )}
@@ -195,9 +178,7 @@ export default function Header() {
             <button
               onClick={() => setSearchOpen(true)}
               className={`p-2 rounded-md transition-all duration-300 ${
-                scrolled || !isHomePage
-                  ? 'text-gray-600 hover:text-rose hover:bg-gray-100'
-                  : 'text-white hover:text-rose-200 hover:bg-white/10 drop-shadow-lg hover:scale-110'
+                'text-ink-soft hover:text-clay hover:bg-ink/5'
               }`}
               aria-label="Buscar productos (Ctrl+K)"
             >
@@ -208,9 +189,7 @@ export default function Header() {
             <Link 
               to="/mi-cuenta" 
               className={`p-2 rounded-md transition-all duration-300 ${
-                scrolled || !isHomePage
-                  ? 'text-gray-600 hover:text-rose hover:bg-gray-100'
-                  : 'text-white hover:text-rose-200 hover:bg-white/10 drop-shadow-lg hover:scale-110'
+                'text-ink-soft hover:text-clay hover:bg-ink/5'
               }`}
               aria-label="Mi cuenta de usuario"
             >
@@ -221,15 +200,13 @@ export default function Header() {
             <Link 
               to="/carrito" 
               className={`relative p-2 rounded-md transition-all duration-300 ${
-                scrolled || !isHomePage
-                  ? 'text-gray-600 hover:text-rose hover:bg-gray-100'
-                  : 'text-white hover:text-rose-200 hover:bg-white/10 drop-shadow-lg hover:scale-110'
+                'text-ink-soft hover:text-clay hover:bg-ink/5'
               }`}
               aria-label={`Carrito de compras${cartCount > 0 ? ` (${cartCount} producto${cartCount !== 1 ? 's' : ''})` : ' (vacío)'}`}
             >
               <ShoppingCartIcon className="h-6 w-6" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">
+                <span className="absolute -top-1 -right-1 bg-clay-dark text-cream text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-soft">
                   {cartCount}
                 </span>
               )}
@@ -264,15 +241,15 @@ export default function Header() {
             leaveFrom="translate-x-0"
             leaveTo="-translate-x-full"
           >
-            <Dialog.Panel className="fixed inset-y-0 left-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+            <Dialog.Panel className="fixed inset-y-0 left-0 z-50 w-full overflow-y-auto bg-cream px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-ink/10">
               {/* Header del menú */}
               <div className="flex items-center justify-between">
-                <Link to="/" className="text-xl font-serif font-bold text-gray-900">
-                  <span>✨</span> VictoriaModas
+                <Link to="/" className="font-serif text-xl font-light tracking-wide text-ink">
+                  Victoria<span className="italic font-normal text-clay">Modas</span>
                 </Link>
                 <button
                   type="button"
-                  className="rounded-md p-2.5 text-gray-700 hover:bg-gray-100"
+                  className="rounded-md p-2.5 text-ink hover:bg-ink/5 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <span className="sr-only">Cerrar menú</span>
@@ -285,27 +262,27 @@ export default function Header() {
                 <div className="space-y-2 py-6">
                   {/* Navegación principal */}
                   <div className="space-y-1">
-                    {mobileNavigation.map((item) => {
-                      const Icon = item.icon
-                      return (
-                        <Link
-                          key={item.name}
-                          to={item.href}
-                          className="group flex items-center gap-3 rounded-lg px-3 py-3 text-base font-semibold text-gray-900 hover:bg-gray-50"
-                        >
-                          <Icon className="h-5 w-5 text-gray-400 group-hover:text-rose" />
-                          {item.name}
-                        </Link>
-                      )
-                    })}
+                    {mobileNavigation.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className={`flex items-center rounded-lg px-3 py-3 text-sm uppercase tracking-[0.15em] transition-colors ${
+                          location.pathname === item.href
+                            ? 'text-ink font-medium bg-cream-dark'
+                            : 'text-ink-soft font-medium hover:bg-cream-dark hover:text-clay'
+                        }`}
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
                   </div>
 
                   {/* Separador */}
-                  <div className="border-t border-gray-200 my-4"></div>
+                  <div className="border-t border-ink/10 my-4"></div>
 
                   {/* Apoyo */}
                   <div className="space-y-1">
-                    <p className="px-3 text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                    <p className="px-3 text-[10px] font-medium uppercase tracking-luxe text-ink-muted mb-2">
                       Apoyo
                     </p>
                     {supportLinks.map((item) => {
@@ -314,9 +291,9 @@ export default function Header() {
                         <Link
                           key={item.name}
                           to={item.href}
-                          className="group flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+                          className="group flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-ink-soft hover:bg-cream-dark hover:text-ink transition-colors"
                         >
-                          <Icon className="h-5 w-5 text-gray-400 group-hover:text-rose" />
+                          <Icon className="h-5 w-5 text-ink-muted group-hover:text-clay" />
                           {item.name}
                         </Link>
                       )
@@ -324,25 +301,25 @@ export default function Header() {
                   </div>
 
                   {/* Separador */}
-                  <div className="border-t border-gray-200 my-4"></div>
+                  <div className="border-t border-ink/10 my-4"></div>
 
                   {/* Acciones rápidas */}
                   <div className="grid grid-cols-2 gap-3">
                     <Link
                       to="/mi-cuenta"
-                      className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-100 px-4 py-4 text-sm font-medium text-gray-900 hover:bg-gray-200 transition-colors"
+                      className="flex flex-col items-center justify-center gap-2 rounded-lg bg-cream-dark px-4 py-4 text-sm font-medium text-ink hover:bg-rose-100 transition-colors"
                     >
                       <UserIcon className="h-6 w-6" />
                       Mi Cuenta
                     </Link>
                     <Link
                       to="/carrito"
-                      className="relative flex flex-col items-center justify-center gap-2 rounded-lg bg-rose text-white px-4 py-4 text-sm font-medium hover:bg-rose-dark transition-colors"
+                      className="relative flex flex-col items-center justify-center gap-2 rounded-lg bg-ink text-cream px-4 py-4 text-sm font-medium hover:bg-clay transition-colors"
                     >
                       <ShoppingCartIcon className="h-6 w-6" />
                       Carrito
                       {cartCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-white text-rose text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 bg-clay-dark text-cream text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                           {cartCount}
                         </span>
                       )}
@@ -352,11 +329,11 @@ export default function Header() {
               </div>
 
               {/* Footer del menú móvil */}
-              <div className="border-t border-gray-200 pt-6 mt-6">
-                <p className="text-center text-sm text-gray-500">
-                  <span className="inline-block">✨</span> VictoriaModas © 2025
+              <div className="border-t border-ink/10 pt-6 mt-6">
+                <p className="text-center font-serif text-sm text-ink-soft">
+                  Victoria<span className="italic text-clay">Modas</span> © 2026
                 </p>
-                <p className="text-center text-xs text-gray-400 mt-1">
+                <p className="text-center text-xs text-ink-muted mt-1">
                   Moda elegante y minimalista
                 </p>
               </div>

@@ -52,3 +52,41 @@ Stack: React 19 + Vite + Tailwind CSS 3. Trabajamos directamente sobre `main`.
   `.btn-secondary`, `.btn-outline` y `.btn-white` de `src/index.css` siguen
   usando `gray-900`/`white` (fríos). Migrarlas a `ink`/`cream` cuando
   rediseñemos los componentes que las usan (Header en el paso 1.2).
+
+### 1.2 Header legible y responsive (2026-06-11)
+
+- ✅ Reemplazado `src/components/Header.jsx` con la versión de `archivos-listos/`:
+  - Logo tipográfico: "Victoria" serif light + "Modas" itálica clay (sin emoji ✨).
+  - Texto del header SIEMPRE en ink/ink-soft — legible sobre fondos claros.
+  - Menú desktop en mayúsculas pequeñas con `tracking-[0.15em]`, link activo
+    con subrayado clay; estilo boutique.
+  - Al hacer scroll: `bg-cream/90 backdrop-blur-md shadow-soft`.
+  - Mismo posicionamiento que antes (`fixed top-8` bajo el AnnouncementBanner),
+    no rompe el layout.
+- ✅ CRÍTICO corregido — el menú móvil del archivo venía con estilo viejo
+  (`bg-white`, textos `gray-*`, logo con emoji, CTA `bg-rose` texto blanco,
+  © 2025). Rediseñado al sistema nuevo:
+  - Panel `bg-cream`, logo tipográfico igual al desktop, botón cerrar ink.
+  - Nav principal estilo boutique (uppercase + tracking), link activo con
+    fondo cream-dark; se eliminó el `HomeIcon` repetido 5 veces.
+  - Sección "Apoyo" con label `tracking-luxe` ink-muted e iconos con hover clay.
+  - Acciones: "Mi Cuenta" cream-dark/ink, "Carrito" ink/cream hover clay.
+  - Separadores `border-ink/10`, footer serif sin emoji, © 2026.
+- ✅ También corregidos (venían con paleta vieja en el archivo nuevo):
+  - Dropdown "Ayuda" desktop: `bg-white`/grises → cream/ink/clay.
+  - Skip-link de accesibilidad: `bg-rose text-white` (contraste pobre) → `bg-ink text-cream`.
+  - Badge contador del carrito (desktop y móvil): `bg-rose text-white` →
+    `bg-clay-dark text-cream` (mejor contraste).
+  - Eliminada variable `isHomePage` sin uso y el import de `HomeIcon`.
+- ✅ Prueba responsive (preview + estilos computados):
+  - **375px**: logo sin desborde, hamburguesa OK; menú móvil verificado
+    abierto — panel cream `#FBF7F4`, links ink-soft, activo cream-dark,
+    Carrito ink/cream; sin overflow horizontal.
+  - **768px**: hamburguesa visible (nav desktop entra en `lg`), logo Bodoni
+    Moda ink, sin overflow.
+  - **1280px**: los 10 elementos del nav en orden sin solapamientos, links
+    12px uppercase tracking 1.8px, estado scrolled aplica `bg-cream/90`
+    (verificado por estilo computado; el renderer del preview congelaba las
+    transiciones CSS, no era un bug del sitio).
+- ✅ `npm run build` compila sin errores; `eslint` del Header limpio.
+- 🔧 Añadido `.claude/launch.json` (config del preview, puerto 5180).
