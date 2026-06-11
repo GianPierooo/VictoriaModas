@@ -90,3 +90,46 @@ Stack: React 19 + Vite + Tailwind CSS 3. Trabajamos directamente sobre `main`.
     transiciones CSS, no era un bug del sitio).
 - ✅ `npm run build` compila sin errores; `eslint` del Header limpio.
 - 🔧 Añadido `.claude/launch.json` (config del preview, puerto 5180).
+
+### 1.3 Cards de producto dinámicas y responsive (2026-06-11)
+
+- ✅ Reescrito `src/components/ProductCard.jsx` tomando como base el estilo de
+  `archivos-listos/` (cream/ink/clay, foto protagonista, info mínima centrada)
+  y ampliado con las interacciones dinámicas:
+  - **Crossfade al hover** (500ms ease-out) entre la vista frontal y la
+    segunda imagen (espalda/lado) usando `images`/`colorImages`. Si el
+    producto solo tiene una imagen → zoom lento `scale(1.08)` en 1.2s.
+  - **Swatches de color**: círculos con los colores reales (mapa COLOR_HEX);
+    hover/focus/tap cambia la foto a las imágenes de ese color con
+    **crossfade de tres capas** (la imagen anterior queda debajo mientras la
+    nueva aparece con fade — sin parpadeos blancos). Swatch activo con
+    `ring-clay` + `aria-pressed`. Máximo 4 visibles + indicador "+N".
+    Área táctil de 40×40px exactos (verificado).
+  - **Quick-add "Ver detalle"**: sube con translate+fade al hover en desktop
+    (`lg:`); en móvil siempre visible y discreto (cream/90 + blur, 41px de alto).
+  - **Badge pill discreto** cream/90 con blur, uppercase `tracking-luxe`;
+    las ofertas (%) en `text-clay-dark`, el resto en ink. Nada de círculos.
+  - **Entrada al viewport** con IntersectionObserver (una vez, threshold
+    0.15): fadeInUp 700ms con escalonado por columna (`index % 4 × 90ms`).
+    Respeta `prefers-reduced-motion` (revela sin animar).
+  - Swatches fuera del `<Link>` para que tocar un color no navegue.
+- ✅ **Catálogo unificado**: eliminado el `CatalogProductCard` interno de
+  `ProductsPage.jsx` (~165 líneas duplicadas con paleta vieja); ahora home y
+  catálogo usan exactamente la misma card. De paso se eliminó código muerto
+  (`handleAddToCart`, `toggleFabric`, `availableFabrics`, `viewMode`, imports
+  sin uso) — el lint de ProductsPage pasó de 5 errores a 0.
+- ✅ **Grids responsive** unificados a 2/3/4 columnas:
+  - Catálogo: `grid-cols-2 md:grid-cols-3 xl:grid-cols-4`.
+  - Home destacados: `grid-cols-2 lg:grid-cols-4`; se quitó el wrapper
+    animado de HomePage (la entrada ahora la maneja cada card, evitando
+    doble animación).
+- ✅ Verificado en preview (estilos computados): móvil 375 → 2 col, cards
+  166px, CTA visible, swatches 40px, sin overflow; tablet 768 → 3 col de
+  227px; desktop → 4 col; swatch click cambia frente y espalda al color
+  elegido. Cero errores de consola. (El renderer del preview congela
+  transiciones/IO — verificado que opacity/transform finales son correctos
+  desactivando la transición, mismo artefacto que en 1.2.)
+- ✅ `npm run build` sin errores; lint de ProductCard y ProductsPage limpio.
+- 📝 Límites respetados: sin sombras de color, sin bounce, sin rotaciones,
+  sin gradientes llamativos; máx. 2 animaciones simultáneas, 400–700ms
+  ease-out (zoom 1.2s solo como caso sin segunda imagen, según spec).

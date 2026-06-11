@@ -255,20 +255,10 @@ function FeaturedProducts() {
           }`}></div>
         </div>
 
-        {/* Grid con animaciones escalonadas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Grid — la entrada escalonada la maneja cada ProductCard */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-5 lg:gap-x-6">
           {products.map((product, idx) => (
-            <div
-              key={product.id}
-              className={`transition-all duration-700 ${
-                isVisible 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-12'
-              }`}
-              style={{ transitionDelay: `${idx * 150 + 500}ms` }}
-            >
-              <ProductCard product={product} showSizes={false} />
-            </div>
+            <ProductCard key={product.id} product={product} index={idx} />
           ))}
         </div>
 
