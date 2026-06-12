@@ -19,11 +19,14 @@ export default {
           400: '#D89A9E',
           500: '#C77F84',
         },
-        // Terracota / nude para detalles
+        // Terracota / nude para detalles.
+        // DEFAULT y dark oscurecidos para cumplir contraste AA (4.5:1) sobre
+        // cream en texto pequeño (eyebrows, badges). light se mantiene: solo
+        // se usa como texto claro sobre fondos oscuros (footer).
         clay: {
-          DEFAULT: '#C08B7D',
+          DEFAULT: '#9C5F4E', // 4.74:1 sobre cream (antes #C08B7D = 2.73)
           light: '#D7B3A8',
-          dark: '#A06E60',
+          dark: '#8A5340',    // 5.81:1 sobre cream (antes #A06E60 = 4.03)
         },
         // Crema cálida de fondo
         cream: {
@@ -34,7 +37,7 @@ export default {
         ink: {
           DEFAULT: '#2B2424',
           soft: '#5B5150',
-          muted: '#8A7E7C',
+          muted: '#756967',   // 4.96:1 sobre cream (antes #8A7E7C = 3.68)
         },
       },
       fontFamily: {

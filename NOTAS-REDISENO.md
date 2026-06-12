@@ -724,6 +724,56 @@ contenido, header y footer) están en la identidad cálida-premium cream/ink/cla
 - ✅ Build sin errores; lint limpio (solo el warning preexistente de
   HomePage). Los `.webp` se commitean (el deploy sirve `public/` tal cual).
 
+### 5.3 Accesibilidad y pulido final (2026-06-11)
+
+- ✅ **Contraste AA (4.5:1)** — medido con WCAG. Tres tonos NO llegaban sobre
+  cream y se oscurecieron en `tailwind.config.js`:
+  | token | antes | ratio | ahora | ratio |
+  |---|---|---|---|---|
+  | `clay` | #C08B7D | 2.73 ❌ | **#9C5F4E** | 4.74 ✅ |
+  | `clay-dark` | #A06E60 | 4.03 ❌ | **#8A5340** | 5.81 ✅ |
+  | `ink-muted` | #8A7E7C | 3.68 ❌ | **#756967** | 4.96 ✅ |
+  `clay-light` se mantiene (#D7B3A8) porque solo se usa como texto claro sobre
+  ink (7.9:1). `ink`/`ink-soft` ya pasaban (14.3 / 7.2). El clay quedó un punto
+  más terracota/profundo, coherente con la estética premium.
+- ✅ **ARIA**: auditados los botones de solo ícono. Faltaban dos en
+  `SearchModal` (cerrar y limpiar) → añadidos "Cerrar búsqueda" / "Limpiar
+  búsqueda". El resto (carrito, favoritos, búsqueda, menú, cerrar menú,
+  corazón de card, cerrar filtros, cantidad) ya tenían `aria-label`/sr-only.
+- ✅ **Focus visible por teclado**: regla global en `index.css` (`:focus-visible`
+  → `outline: 2px solid clay; outline-offset: 2px`) para links, botones,
+  inputs, selects, textarea, summary y `[tabindex]`. Verificado que la regla
+  compila y usa clay.
+- ✅ **Reduced motion**: bloque `@media (prefers-reduced-motion: reduce)` en
+  `index.css` que reduce a ~0 todas las animaciones, transiciones y el
+  scroll suave. Complementa el guard de JS que ya tenía ProductCard.
+- ✅ **Lint**: `npm run lint` pasó de 5 problemas a **0 errores, 0 warnings**.
+  - `archivos-listos/` (plantillas de referencia) añadido a los ignores de
+    eslint (2 errores eran de ahí).
+  - Eliminado `src/utils/imageUtils.js` (227 líneas de utilidades muertas, sin
+    imports) → quitó 1 error.
+  - `useCart` de CartContext con `eslint-disable` explícito (igual que
+    `useWishlist`) → quitó el error preexistente de react-refresh.
+  - Capturado `ref.current` en el hook `useScrollAnimation` → quitó el warning.
+- ✅ Build sin errores.
+
+**📱 Prueba móvil exhaustiva (375px, las 12 rutas) — hallazgos y arreglos:**
+- ✅ **Cero scroll horizontal** en las 12 rutas (home, vestidos, blusas,
+  pantalones, abrigos, producto, carrito, checkout, favoritos, nosotros,
+  contacto, FAQ). `scrollWidth` = 375 en todas.
+- 🔧 **Swatches de color encogían a 34px** en cards con 4+ colores (flex los
+  comprimía). Fijados a 40×40 con `flex-shrink-0` + `flex-wrap`. (ProductCard)
+- 🔧 **"Vaciar carrito" medía 16px de alto** (texto suelto). Subido a 32px con
+  `py-2`. (CartPage)
+- ℹ️ El acento radial decorativo del hero se extiende más allá del viewport
+  pero está recortado por `overflow-hidden` (no genera scroll). No es un fallo.
+- ℹ️ Las 2 "imágenes rotas" del home son los placeholders del isotipo
+  (`/logo/isotipo.png`, aún inexistente); su `onError` las oculta y se ve el
+  logo de texto — el fallback de la Fase 1.4 funcionando.
+- ✅ Sin texto cortado, imágenes deformadas ni elementos encimados; todos los
+  controles táctiles ≥ 40px tras los arreglos. Cero errores de consola en
+  producción (en dev hay ruido de HMR de `createRoot`, inexistente en build).
+
 📝 Pendientes menores que quedan (no críticos):
 - `CartNotification.jsx`: aún con estética rosa/gris vieja (y el swatch usa el
   nombre del color en español como CSS, que no renderiza). Candidato a pulir.

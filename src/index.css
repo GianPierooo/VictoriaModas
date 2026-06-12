@@ -3,6 +3,38 @@
 @tailwind utilities;
 
 /* ============================================
+   ACCESIBILIDAD
+   ============================================ */
+@layer base {
+  /* Foco visible por teclado en todos los elementos interactivos.
+     Se usa :focus-visible para no molestar al clic con mouse. */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid theme('colors.clay.DEFAULT');
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/* Respeta "reducir movimiento": desactiva animaciones, transiciones y
+   scroll suave para quien lo pide en su sistema. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
    CUSTOM COMPONENT CLASSES
    ============================================ */
 @layer components {

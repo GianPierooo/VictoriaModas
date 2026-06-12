@@ -167,7 +167,7 @@ export default function ProductCard({ product, index = 0 }) {
 
       {/* Swatches de color (fuera del Link para no navegar al tocarlos) */}
       {swatchColors.length > 1 && (
-        <div className="mt-2 flex items-center justify-center">
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-y-1">
           {swatchColors.map((color) => (
             <button
               key={color}
@@ -175,7 +175,7 @@ export default function ProductCard({ product, index = 0 }) {
               onMouseEnter={() => setActiveColor(color)}
               onFocus={() => setActiveColor(color)}
               onClick={() => setActiveColor(color)}
-              className="relative flex h-10 w-10 items-center justify-center"
+              className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center"
               title={color}
               aria-label={`Ver color ${color}`}
               aria-pressed={activeColor === color}

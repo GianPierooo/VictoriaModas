@@ -106,11 +106,11 @@ export default function CartPage() {
                 </ul>
 
                 {/* Vaciar carrito */}
-                <div className="pt-6">
+                <div className="pt-4">
                   <button
                     type="button"
                     onClick={clearCart}
-                    className="text-xs uppercase tracking-[0.15em] text-ink-muted transition-colors hover:text-clay"
+                    className="inline-block py-2 text-xs uppercase tracking-[0.15em] text-ink-muted transition-colors hover:text-clay"
                   >
                     Vaciar carrito
                   </button>
