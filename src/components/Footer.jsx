@@ -14,11 +14,11 @@ export default function Footer() {
     setIsVisible(true)
   }, [])
 
+  // Abrigos oculto hasta tener stock (ver nota en Header.jsx para reactivar)
   const categories = [
     { name: 'Vestidos', href: '/vestidos' },
     { name: 'Pantalones', href: '/pantalones' },
     { name: 'Blusas', href: '/blusas' },
-    { name: 'Abrigos', href: '/abrigos' },
   ]
 
   const support = [

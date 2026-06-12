@@ -26,11 +26,14 @@ export default function Header() {
   const isCartPage = location.pathname === '/carrito'
 
   // Links de navegación principal
+  // ABRIGOS: oculto hasta tener stock con fotos (la página sigue activa en
+  // /abrigos mostrando "Próximamente"). Para reactivarlo, descomenta la
+  // línea de ABRIGOS de abajo Y la de "Abrigos" en `mobileNavigation`.
   const navigation = [
     { name: 'INICIO', href: '/' },
     { name: 'BLUSAS', href: '/blusas' },
     { name: 'PANTALONES', href: '/pantalones' },
-    { name: 'ABRIGOS', href: '/abrigos' },
+    // { name: 'ABRIGOS', href: '/abrigos' }, // ← descomentar para reactivar Abrigos
     { name: 'VESTIDOS', href: '/vestidos' },
   ]
 
@@ -39,7 +42,7 @@ export default function Header() {
     { name: 'Inicio', href: '/' },
     { name: 'Blusas', href: '/blusas' },
     { name: 'Pantalones', href: '/pantalones' },
-    { name: 'Abrigos', href: '/abrigos' },
+    // { name: 'Abrigos', href: '/abrigos' }, // ← descomentar para reactivar Abrigos
     { name: 'Vestidos', href: '/vestidos' },
   ]
 

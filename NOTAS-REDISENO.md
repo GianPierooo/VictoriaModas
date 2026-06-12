@@ -489,6 +489,27 @@ coherente de arriba a abajo con el sistema cálido-premium.
 - 🎯 Deja el terreno listo para migrar a panel admin / backend: solo habría
   que cambiar la implementación de los 3 helpers, sin tocar componentes.
 
+### 4.2 Abrigos en estado próximamente (2026-06-11)
+
+- ✅ **Header**: ítem "ABRIGOS"/"Abrigos" oculto del menú desktop y del menú
+  móvil. NO se borró: ambas líneas quedaron **comentadas** con una nota clara
+  arriba del array `navigation` indicando exactamente qué descomentar (las dos
+  líneas `// { ... '/abrigos' }`) para reactivarlo.
+- ✅ **Footer**: eliminada la categoría "Abrigos" de la lista (con comentario
+  que remite a la nota del Header para reactivar).
+- ✅ **AbrigosPage** convertida en estado "Próximamente" elegante (sin tocar
+  su ruta en main.jsx): usa `Layout`, fondo cream, eyebrow "Próximamente"
+  clay, título serif "Abrigos y chaquetas, *muy pronto*", texto cálido breve
+  y 3 CTAs outline a Vestidos / Blusas / Pantalones. Lleva además un
+  comentario con los 3 pasos para reactivar la categoría cuando haya stock.
+- ✅ La ruta `/abrigos` sigue activa: si alguien llega por URL directa ve el
+  estado Próximamente en vez de un catálogo vacío.
+- ✅ Verificado en preview: ABRIGOS ausente del nav desktop, del menú móvil
+  (Inicio/Blusas/Pantalones/Vestidos) y de las categorías del footer; página
+  centrada y sin overflow en desktop (1280) y móvil (375), CTAs apilados de
+  46px en móvil. Cero errores de consola.
+- ✅ Build sin errores; lint limpio.
+
 📝 Pendientes para fases siguientes (estética vieja aún viva):
 - **Footer**: gradiente rosa con `border-t-4 border-rose-dark`, emoji ✨ ya
   retirado del logo (Fase 1.4) pero el resto sigue con grises/rosa viejo.
