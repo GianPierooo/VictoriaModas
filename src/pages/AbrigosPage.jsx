@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout.jsx'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 // NOTA: la categoría Abrigos aún no tiene productos con foto. Mientras tanto
 // se muestra un estado "Próximamente". Cuando llegue el stock:
@@ -8,6 +9,11 @@ import Layout from '../components/Layout.jsx'
 //        <ProductsPage products={getProductsByCategory('abrigos')} title="ABRIGOS Y CHAQUETAS" />
 //   3) Reactiva el ítem "Abrigos" del menú en Header.jsx (ver nota allí)
 export default function AbrigosPage() {
+  useDocumentMeta({
+    title: 'Abrigos y chaquetas | Victoria Modas',
+    description: 'Pronto sumaremos abrigos y chaquetas a la colección. Mientras tanto, descubre vestidos, blusas y pantalones.',
+  })
+
   const categorias = [
     { name: 'Vestidos', href: '/vestidos' },
     { name: 'Blusas', href: '/blusas' },

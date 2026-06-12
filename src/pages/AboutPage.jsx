@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout.jsx'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 const TELAS = [
   { nombre: 'Scuba', detalle: 'Estructura y caída impecable, perfecta para siluetas modernas.' },
@@ -25,6 +26,11 @@ const COMPROMISOS = [
 ]
 
 export default function AboutPage() {
+  useDocumentMeta({
+    title: 'Nuestra historia | Victoria Modas',
+    description: 'Victoria Modas nace en Gamarra, Lima. Años vistiendo a la mujer peruana con telas premium, ahora directo a la clienta final.',
+  })
+
   return (
     <Layout>
       <div className="bg-white">

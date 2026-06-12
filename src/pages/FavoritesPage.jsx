@@ -4,9 +4,14 @@ import Layout from '../components/Layout.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import { useWishlist } from '../context/WishlistContext.jsx'
 import { getProductById } from '../data/products.js'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 export default function FavoritesPage() {
   const { favorites } = useWishlist()
+  useDocumentMeta({
+    title: 'Tus favoritos | Victoria Modas',
+    description: 'Las prendas que guardaste para volver a ellas cuando quieras.',
+  })
 
   // Resolver ids → productos; descartar ids que ya no existan
   const products = favorites.map(getProductById).filter(Boolean)

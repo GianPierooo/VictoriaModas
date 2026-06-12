@@ -629,6 +629,52 @@ coherente de arriba a abajo con el sistema cálido-premium.
 diseño, home, catálogo, producto, carrito/checkout, favoritos, páginas de
 contenido, header y footer) están en la identidad cálida-premium cream/ink/clay.
 
+---
+
+## Fase 5 — SEO y técnico
+
+### 5.1 SEO completo: meta, OG, sitemap, JSON-LD (2026-06-11)
+
+- ✅ **Hook propio `src/hooks/useDocumentMeta.js`** (sin dependencias nuevas):
+  actualiza `document.title`, meta description y, en espejo, og:title/
+  og:description y twitter:title/description al montar cada página. Acepta un
+  `jsonLd` opcional que inyecta un `<script type="application/ld+json">` y lo
+  limpia al desmontar (verificado: el schema Product desaparece al salir del
+  producto).
+- ✅ **Títulos/descripciones únicos por ruta** aplicados con el hook:
+  / · /vestidos · /blusas · /pantalones · /nosotros · /contacto ·
+  /preguntas-frecuentes · /producto/:id (título dinámico `{nombre} | Victoria
+  Modas`). Extra: también /favoritos, /carrito, /checkout, /mi-cuenta y
+  /abrigos, para que no quede un título obsoleto al navegar.
+- ✅ **index.html**: OG y Twitter Cards completos → og:type=website,
+  og:site_name, og:locale=es_PE, og:url=https://victoriamodas.store,
+  og:title/description, og:image=…/og-image.jpg (1200×630, con width/height),
+  twitter:card=summary_large_image + title/description/image. theme-color
+  consolidado a `#FBF7F4` (se quitó la variante dark, el sitio no tiene dark
+  mode). Añadido `<link rel="canonical">`. URLs migradas de victoriamodas.com
+  → victoriamodas.store. Marca normalizada a "Victoria Modas".
+- ✅ **`public/og-image.jpg`** generado (placeholder 1200×630: cream con
+  "Victoria Modas" en serif clay + tagline). Reemplazable por uno con el
+  logo real.
+- ✅ **`public/robots.txt`**: `User-agent: * / Allow: /` + `Sitemap:
+  https://victoriamodas.store/sitemap.xml`.
+- ✅ **`public/sitemap.xml`**: 8 rutas estáticas (home, vestidos, blusas,
+  pantalones, nosotros, contacto, preguntas-frecuentes, favoritos) + las 6
+  URLs de producto reales, con changefreq/priority.
+- ✅ **JSON-LD**:
+  - `Organization` estático en index.html (nombre, url, logo, og-image,
+    email, dirección Gamarra/Lima/PE, sameAs Facebook).
+  - `Product` dinámico en ProductPage (name, description, brand "Victoria
+    Modas", category, image[] con URLs absolutas). **Sin price** (modelo por
+    WhatsApp), según lo pedido.
+- ✅ `<html lang="es">` confirmado.
+- ✅ Verificado en preview: títulos/descripciones cambian por ruta; en el
+  producto conviven Organization + Product y el Product se limpia al salir;
+  robots.txt, sitemap.xml y og-image.jpg se sirven (200, content-type
+  correcto). Build sin errores; lint sin errores nuevos (solo el warning
+  preexistente del hook de scroll de HomePage). Archivos estáticos presentes
+  en `dist/`.
+
 📝 Pendientes menores que quedan (no críticos):
 - `CartNotification.jsx`: aún con estética rosa/gris vieja (y el swatch usa el
   nombre del color en español como CSS, que no renderiza). Candidato a pulir.
@@ -638,3 +684,4 @@ contenido, header y footer) están en la identidad cálida-premium cream/ink/cla
 - Logos reales: soltar `isotipo.png` / `isotipo-blanco.png` en `public/logo/`
   y `favicon.png` real en `public/` (ver `public/logo/LEEME.txt`).
 - Foto real del taller/tienda en AboutPage (hay placeholder + comentario).
+- `public/og-image.jpg`: placeholder; reemplazar por uno con el logo real.

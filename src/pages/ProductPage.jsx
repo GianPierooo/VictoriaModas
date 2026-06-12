@@ -12,6 +12,9 @@ import ProductCard from '../components/ProductCard.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { COLOR_HEX } from '../utils/colorMap.js'
 import { getProductById, getProductsByCategory } from '../data/products.js'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
+
+const SITE_URL = 'https://victoriamodas.store'
 
 const WHATSAPP_NUMBER = '51993357672'
 
@@ -84,6 +87,23 @@ export default function ProductPage() {
 
   const categoryPath = `/${product.category}`
   const categoryLabel = product.category.charAt(0).toUpperCase() + product.category.slice(1)
+
+  // SEO: título dinámico + JSON-LD Product (sin price: el modelo es por WhatsApp)
+  const productJsonLd = useMemo(() => ({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    image: (product.images || [product.image]).map(src => `${SITE_URL}${src}`),
+    category: categoryLabel,
+    brand: { '@type': 'Brand', name: 'Victoria Modas' },
+  }), [product, categoryLabel])
+
+  useDocumentMeta({
+    title: `${product.name} | Victoria Modas`,
+    description: product.description,
+    jsonLd: productJsonLd,
+  })
 
   const accordion = [
     {

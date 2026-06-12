@@ -1,10 +1,16 @@
 import { Link } from 'react-router-dom'
 import { UserCircleIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 // Página honesta: las cuentas de usuario aún no existen. Mostramos un estado
 // "Próximamente" en vez de un panel decorativo con enlaces a "#".
 export default function AccountPage() {
+  useDocumentMeta({
+    title: 'Mi cuenta | Victoria Modas',
+    description: 'Pronto podrás crear tu cuenta y seguir tus pedidos. Por ahora, coordinamos todo por WhatsApp.',
+  })
+
   return (
     <Layout>
       <div className="bg-cream">

@@ -4,10 +4,12 @@ import Layout from '../components/Layout.jsx'
 import QuantitySelector from '../components/QuantitySelector'
 import { useCart } from '../context/CartContext.jsx'
 import { cartItemKey } from '../utils/cart.js'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart } = useCart()
   const totalItems = items.reduce((sum, it) => sum + it.quantity, 0)
+  useDocumentMeta({ title: 'Tu carrito | Victoria Modas' })
 
   return (
     <Layout>

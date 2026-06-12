@@ -4,6 +4,7 @@ import { ChevronLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { generateOrderMessage, openWhatsApp } from '../utils/whatsappUtils.js'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 const REQUIRED_FIELDS = ['nombre', 'telefono', 'ciudad']
 
@@ -17,6 +18,7 @@ export default function CheckoutPage() {
   })
   const [errors, setErrors] = useState({})
   const [confirmed, setConfirmed] = useState(false)
+  useDocumentMeta({ title: 'Finalizar pedido | Victoria Modas' })
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 

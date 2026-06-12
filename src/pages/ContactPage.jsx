@@ -6,6 +6,7 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 const WHATSAPP_NUMBER = '51993357672'
 const CONTACT_EMAIL = 'victoriamodas1053@gmail.com'
@@ -41,6 +42,11 @@ export default function ContactPage() {
   const [errors, setErrors] = useState({})
   const [sending, setSending] = useState(false)
   const [status, setStatus] = useState(null) // 'success' | 'whatsapp' | null
+
+  useDocumentMeta({
+    title: 'Contacto | Victoria Modas',
+    description: 'Escríbenos por WhatsApp, correo o Facebook. Atención cercana para resolver tus dudas sobre prendas, tallas y pedidos. Lima, Perú.',
+  })
 
   const handleChange = (e) => {
     const { name, value } = e.target

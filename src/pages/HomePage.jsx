@@ -5,6 +5,7 @@ import Header from '../components/Header.jsx'
 import Footer from '../components/Footer.jsx'
 import AnnouncementBanner from '../components/AnnouncementBanner.jsx'
 import ProductCard from '../components/ProductCard.jsx'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 // ============= HERO EDITORIAL =============
 function Hero() {
@@ -487,6 +488,11 @@ function SocialFavorites() {
 
 // ============= HOMEPAGE PRINCIPAL =============
 export default function HomePage() {
+  useDocumentMeta({
+    title: 'Victoria Modas — Moda femenina elegante | Lima, Perú',
+    description: 'Moda femenina elegante desde Gamarra, Lima. Vestidos, blusas y pantalones en telas premium: scuba, suplex, lamé y seda francesa. Pedidos por WhatsApp.',
+  })
+
   return (
     <>
       <AnnouncementBanner />

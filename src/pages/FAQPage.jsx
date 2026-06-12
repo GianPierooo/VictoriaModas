@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Disclosure, Transition } from '@headlessui/react'
 import { ChevronUpIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
+import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 // Textos base — afinar redacción según evolucione el negocio
 const FAQS = [
@@ -42,6 +43,11 @@ const FAQS = [
 ]
 
 export default function FAQPage() {
+  useDocumentMeta({
+    title: 'Preguntas frecuentes | Victoria Modas',
+    description: 'Cómo comprar, métodos de pago (Yape, Plin, transferencia), envíos a Lima y provincias, cambios y ventas por mayor. Todo lo que necesitas saber.',
+  })
+
   return (
     <Layout>
       <div className="bg-white">
