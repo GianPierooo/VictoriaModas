@@ -438,6 +438,57 @@ coherente de arriba a abajo con el sistema cálido-premium.
   sin overflow horizontal; cero errores de consola.
 - ✅ Build sin errores; lint de archivos nuevos/tocados limpio.
 
+---
+
+## Fase 4 — Arquitectura y páginas restantes
+
+### 4.1 Productos centralizados en un solo archivo (2026-06-11)
+
+- ✅ Creado **`src/data/products.js`** como fuente ÚNICA: array `PRODUCTS`
+  con los 6 productos y todos sus campos (id, name, description, badge,
+  category, image, images, sizes, colors, fabric, colorImages). Antes
+  estaban DUPLICADOS en las páginas de categoría + el `MOCK_PRODUCTS` de
+  ProductPage, con riesgo de desincronización.
+- ✅ Helpers exportados: `getProductById(id)`, `getProductsByCategory(category)`
+  (case-insensitive), `searchProducts(query)` (busca en nombre, categoría y
+  tela; vacío → []).
+- ✅ **Decisiones de fusión** (cuando las dos fuentes diferían):
+  - `description` → versión de MOCK (es la que muestra el detalle → la
+    página de producto queda idéntica).
+  - `fabric` → forma corta (Lame, Rit, Suplex, Seda francesa, Scuba) → el
+    filtro de tela del catálogo conserva exactamente sus etiquetas.
+  - `category` → slug minúscula (vestidos/blusas/pantalones), coincide con
+    las URLs; ProductPage capitaliza para el breadcrumb.
+  - `image` = `images[0]`; `images`, `colorImages`, `sizes`, `colors` eran
+    idénticas entre fuentes y se conservan.
+- ✅ Refactor de consumidores:
+  - VestidosPage, BlusasPage, PantalonesPage, AbrigosPage → `getProductsByCategory()`,
+    cada una pasó de ~60–135 líneas a **9 líneas**. Dejaron de pasar la prop
+    `filters` (ProductsPage ya deriva tallas/telas/colores de los productos,
+    con los mismos labels y conteos que los hardcodeados).
+  - ProductPage → `getProductById()`; eliminados el `MOCK_PRODUCTS` local
+    (~210 líneas), el helper `toCardProduct` y el mapa `CATEGORY_PATH`.
+    Relacionados ahora con `getProductsByCategory().filter(...)`.
+  - SearchModal → `searchProducts()`; eliminado su `ALL_PRODUCTS` local.
+- ✅ **VERIFICACIÓN CRÍTICA (no perder nada)**:
+  - Diff de rutas de imagen viejas (git HEAD: 3 páginas + ProductPage) vs
+    nuevo archivo: **69 rutas únicas en ambos, 0 diferencias** (ni perdidas
+    ni cambiadas).
+  - Firma por producto: 6 productos, mismo orden por categoría, cada color
+    con sus 3 imágenes, sizes/fabric/badge correctos, `image===images[0]`.
+  - En preview: catálogo idéntico (Vestidos 3 / Pantalones 2 / Abrigos
+    vacío), detalle ok (swatch Camello carga sus imágenes, relacionados
+    correctos), filtro de tela derivado muestra Lame/Rit/Suplex y filtra
+    bien. Cero errores de consola.
+  - Único cambio de texto menor y documentado: el acordeón "Detalles y tela"
+    ahora lee "Confeccionado en {tela corta}." (p.ej. "en scuba.") en vez de
+    la forma larga del MOCK; el contenido sigue siendo correcto.
+- ✅ Responsive sin cambios (refactor de datos, no de layout): catálogo 2 col
+  y detalle 1 col en móvil, sin overflow.
+- ✅ Build sin errores; lint limpio en todos los archivos tocados.
+- 🎯 Deja el terreno listo para migrar a panel admin / backend: solo habría
+  que cambiar la implementación de los 3 helpers, sin tocar componentes.
+
 📝 Pendientes para fases siguientes (estética vieja aún viva):
 - **Footer**: gradiente rosa con `border-t-4 border-rose-dark`, emoji ✨ ya
   retirado del logo (Fase 1.4) pero el resto sigue con grises/rosa viejo.

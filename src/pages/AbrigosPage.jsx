@@ -1,20 +1,11 @@
-import React from 'react';
-import ProductsPage from '../components/ProductsPage';
+import ProductsPage from '../components/ProductsPage'
+import { getProductsByCategory } from '../data/products.js'
 
-const AbrigosPage = () => {
-  const products = [];
-
+export default function AbrigosPage() {
   return (
-    <ProductsPage 
-      products={products}
+    <ProductsPage
+      products={getProductsByCategory('abrigos')}
       title="ABRIGOS Y CHAQUETAS"
-      category="abrigos"
-      filters={{
-        availableSizes: [],
-        availableFabrics: []
-      }}
     />
-  );
-};
-
-export default AbrigosPage;
+  )
+}

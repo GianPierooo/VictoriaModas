@@ -11,244 +11,16 @@ import QuantitySelector from '../components/QuantitySelector'
 import ProductCard from '../components/ProductCard.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { COLOR_HEX } from '../utils/colorMap.js'
+import { getProductById, getProductsByCategory } from '../data/products.js'
 
 const WHATSAPP_NUMBER = '51993357672'
 
-// Rutas de catálogo por categoría (para el breadcrumb)
-const CATEGORY_PATH = {
-  Vestidos: '/vestidos',
-  Blusas: '/blusas',
-  Pantalones: '/pantalones',
-}
-
-// Mock products database
-const MOCK_PRODUCTS = {
-  'blusa-seda-francesa': {
-    name: 'Blusa Seda Francesa',
-    category: 'Blusas',
-    fabric: 'Seda francesa premium',
-    sizes: ['XS', 'S', 'M', 'L'],
-    colors: ['Azul', 'Negro', 'Plomo'],
-    description: 'Blusa elegante confeccionada en seda francesa premium. Diseño sofisticado y versátil, perfecta para looks casuales y formales.',
-    images: [
-      '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_delante.png',
-      '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_azul_atras.png',
-      '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_azul_delado.png'
-    ],
-    colorImages: {
-      'Azul': [
-        '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_delante.png',
-        '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_azul_atras.png',
-        '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_azul_delado.png'
-      ],
-      'Negro': [
-        '/imagenes/blusas/blusa_seda_francesa/negro_adelante.png',
-        '/imagenes/blusas/blusa_seda_francesa/negro_atras.png',
-        '/imagenes/blusas/blusa_seda_francesa/negro_delado.png'
-      ],
-      'Plomo': [
-        '/imagenes/blusas/blusa_seda_francesa/plomo_adelante.png',
-        '/imagenes/blusas/blusa_seda_francesa/plomo_atras.png',
-        '/imagenes/blusas/blusa_seda_francesa/plomo_delado.png'
-      ]
-    }
-  },
-  'pantalon-scuba-vena': {
-    name: 'Pantalón Scuba Vena',
-    category: 'Pantalones',
-    fabric: 'Scuba premium',
-    sizes: ['S', 'M', 'L'],
-    colors: ['Negro', 'Azul', 'Camello', 'Vino', 'Plomo'],
-    description: 'Pantalón cómodo en tela scuba. Corte wide-leg con caída impecable y comodidad superior.',
-    images: [
-      '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png',
-      '/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_atras.png',
-      '/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_delado.png'
-    ],
-    colorImages: {
-      'Negro': [
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_atras.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_Scuba_negro_delado.png'
-      ],
-      'Azul': [
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_azul_defrente.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_azul_atras.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_azul_delado.png'
-      ],
-      'Camello': [
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_camello_adelante.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_camello_atras.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_camello_delado.png'
-      ],
-      'Vino': [
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_adelante.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_atras.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_delado.png'
-      ],
-      'Plomo': [
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_plomo_adelante.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_plomo_atras.png',
-        '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_plomo_delado.png'
-      ]
-    }
-  },
-  'pantalon-scuba-correa': {
-    name: 'Pantalón Scuba con Correa',
-    category: 'Pantalones',
-    fabric: 'Scuba premium',
-    sizes: ['S', 'M', 'L'],
-    colors: ['Beach', 'Negro', 'Azul', 'Plomo'],
-    description: 'Pantalón scuba moderno con correa decorativa, ideal para looks elegantes. Comodidad y estilo en una sola prenda.',
-    images: [
-      '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_beach.png',
-      '/imagenes/pantalones/pantalon_scuba_correa/p_correa_atras_beach.png',
-      '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delado_beach.png'
-    ],
-    colorImages: {
-      'Beach': [
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_beach.png',
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_atras_beach.png',
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delado_beach.png'
-      ],
-      'Negro': [
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_negro.png',
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_atras_negro.png',
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delado_negro.png'
-      ],
-      'Azul': [
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_azul.png',
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_atras_azul.png',
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delado_azul.png'
-      ],
-      'Plomo': [
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_plomo.png',
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_atras_plomo.png',
-        '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delado_plomo.png'
-      ]
-    }
-  },
-  'vestido-lame-elegante': {
-    name: 'Vestido Lame Elegante',
-    category: 'Vestidos',
-    fabric: 'Tela lame premium',
-    sizes: ['S', 'M', 'L'],
-    colors: ['Plomo', 'Negro', 'Azul', 'Vino'],
-    description: 'Vestido elegante en tela lame con brillo sutil y caída impecable. Perfecto para ocasiones especiales.',
-    images: [
-      '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png',
-      '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_atras.png',
-      '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_delado.png'
-    ],
-    colorImages: {
-      'Plomo': [
-        '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png',
-        '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_atras.png',
-        '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_delado.png'
-      ],
-      'Negro': [
-        '/imagenes/vestidos/vestido_lame01/negro_adelante.png',
-        '/imagenes/vestidos/vestido_lame01/negro_atras.png',
-        '/imagenes/vestidos/vestido_lame01/negro_delado.png'
-      ],
-      'Azul': [
-        '/imagenes/vestidos/vestido_lame01/azul_adelante.png',
-        '/imagenes/vestidos/vestido_lame01/azul_atras.png',
-        '/imagenes/vestidos/vestido_lame01/azul_delado.png'
-      ],
-      'Vino': [
-        '/imagenes/vestidos/vestido_lame01/vino_defrente.png',
-        '/imagenes/vestidos/vestido_lame01/vino_atras.png',
-        '/imagenes/vestidos/vestido_lame01/vino_delado.png'
-      ]
-    }
-  },
-  'vestido-suplex-moderno': {
-    name: 'Vestido Suplex Moderno',
-    category: 'Vestidos',
-    fabric: 'Suplex de alta calidad',
-    sizes: ['S', 'M', 'L'],
-    colors: ['Azul', 'Blanco', 'Negro', 'Vino'],
-    description: 'Vestido moderno en suplex de alta calidad. Ajuste perfecto al cuerpo con diseño versátil y elegante.',
-    images: [
-      '/imagenes/vestidos/vestido_suplex01/azul_adelante.png',
-      '/imagenes/vestidos/vestido_suplex01/azul_atras.png',
-      '/imagenes/vestidos/vestido_suplex01/azul_delado.png'
-    ],
-    colorImages: {
-      'Azul': [
-        '/imagenes/vestidos/vestido_suplex01/azul_adelante.png',
-        '/imagenes/vestidos/vestido_suplex01/azul_atras.png',
-        '/imagenes/vestidos/vestido_suplex01/azul_delado.png'
-      ],
-      'Blanco': [
-        '/imagenes/vestidos/vestido_suplex01/blanco_adelante.png',
-        '/imagenes/vestidos/vestido_suplex01/blanco_atras.png',
-        '/imagenes/vestidos/vestido_suplex01/blanco_delado.png'
-      ],
-      'Negro': [
-        '/imagenes/vestidos/vestido_suplex01/negro_adelante.png',
-        '/imagenes/vestidos/vestido_suplex01/negro_atras.png',
-        '/imagenes/vestidos/vestido_suplex01/negro_delado.png'
-      ],
-      'Vino': [
-        '/imagenes/vestidos/vestido_suplex01/vino_adelante.png',
-        '/imagenes/vestidos/vestido_suplex01/vino_atras.png',
-        '/imagenes/vestidos/vestido_suplex01/vino_delado.png'
-      ]
-    }
-  },
-  'vestido-rit-elegante': {
-    name: 'Vestido Rit Elegante',
-    category: 'Vestidos',
-    fabric: 'Tela Rit de alta calidad',
-    sizes: ['S', 'M', 'L'],
-    colors: ['Beige', 'Negro', 'Plomo'],
-    description: 'Vestido elegante en tela Rit de primera calidad. Diseño sofisticado y moderno con excelente caída.',
-    images: [
-      '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delante.png',
-      '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_atras.png',
-      '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delado.png'
-    ],
-    colorImages: {
-      'Beige': [
-        '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delante.png',
-        '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_atras.png',
-        '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delado.png'
-      ],
-      'Negro': [
-        '/imagenes/vestidos/vestido_rit02/vestido_rit_negro_delante.png',
-        '/imagenes/vestidos/vestido_rit02/vestido_rit_negro_atras.png',
-        '/imagenes/vestidos/vestido_rit02/vestido_rit_negro_delado.png'
-      ],
-      'Plomo': [
-        '/imagenes/vestidos/vestido_rit02/vestido_rit_plomo_delante.png',
-        '/imagenes/vestidos/vestido_rit02/vestido_rit_plomo_atras.png',
-        '/imagenes/vestidos/vestido_rit02/vestido_rit_plomo_delado.png'
-      ]
-    }
-  }
-}
-
-// Construye el objeto que consume ProductCard a partir de una entrada mock
-function toCardProduct(id, p) {
-  const base = p.colorImages?.[p.colors[0]] || p.images || []
-  return {
-    id,
-    name: p.name,
-    category: p.category,
-    image: base[0],
-    images: base,
-    colors: p.colors,
-    colorImages: p.colorImages,
-  }
-}
 
 export default function ProductPage() {
   const { id } = useParams()
   const { addItem } = useCart()
-  const productId = MOCK_PRODUCTS[id] ? id : 'vestido-suplex-moderno'
-  const product = MOCK_PRODUCTS[productId]
+  const product = getProductById(id) || getProductById('vestido-suplex-moderno')
+  const productId = product.id
 
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedColor, setSelectedColor] = useState(product.colors[0])
@@ -306,12 +78,12 @@ export default function ProductPage() {
   )}`
 
   // Relacionados: misma categoría, excluyendo el actual
-  const relatedProducts = Object.entries(MOCK_PRODUCTS)
-    .filter(([key, p]) => key !== productId && p.category === product.category)
+  const relatedProducts = getProductsByCategory(product.category)
+    .filter(p => p.id !== productId)
     .slice(0, 4)
-    .map(([key, p]) => toCardProduct(key, p))
 
-  const categoryPath = CATEGORY_PATH[product.category] || '/vestidos'
+  const categoryPath = `/${product.category}`
+  const categoryLabel = product.category.charAt(0).toUpperCase() + product.category.slice(1)
 
   const accordion = [
     {
@@ -336,7 +108,7 @@ export default function ProductPage() {
           <nav className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-ink-muted" aria-label="Breadcrumb">
             <Link to="/" className="transition-colors hover:text-clay">Inicio</Link>
             <ChevronRightIcon className="h-3 w-3" />
-            <Link to={categoryPath} className="transition-colors hover:text-clay">{product.category}</Link>
+            <Link to={categoryPath} className="transition-colors hover:text-clay">{categoryLabel}</Link>
             <ChevronRightIcon className="h-3 w-3" />
             <span className="text-ink-soft">{product.name}</span>
           </nav>

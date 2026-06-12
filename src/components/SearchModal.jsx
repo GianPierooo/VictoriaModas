@@ -2,51 +2,7 @@ import { useState, useEffect, useRef, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { Dialog, Transition } from '@headlessui/react'
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
-
-// Productos reales de VictoriaModas para búsqueda
-const ALL_PRODUCTS = [
-  // Blusas
-  { 
-    id: 'blusa-seda-francesa', 
-    name: 'Blusa Seda Francesa', 
-    category: 'blusas', 
-    image: '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_delante.png' 
-  },
-  
-  // Pantalones
-  { 
-    id: 'pantalon-scuba-vena', 
-    name: 'Pantalón Scuba Vena', 
-    category: 'pantalones', 
-    image: '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png' 
-  },
-  { 
-    id: 'pantalon-scuba-correa', 
-    name: 'Pantalón Scuba con Correa', 
-    category: 'pantalones', 
-    image: '/imagenes/pantalones/pantalon_scuba_correa/p_correa_delante_negro.png' 
-  },
-  
-  // Vestidos
-  { 
-    id: 'vestido-lame-elegante', 
-    name: 'Vestido Lame Elegante', 
-    category: 'vestidos', 
-    image: '/imagenes/vestidos/vestido_lame01/negro_adelante.png' 
-  },
-  { 
-    id: 'vestido-suplex-moderno', 
-    name: 'Vestido Suplex Moderno', 
-    category: 'vestidos', 
-    image: '/imagenes/vestidos/vestido_suplex01/azul_adelante.png' 
-  },
-  { 
-    id: 'vestido-rit-elegante', 
-    name: 'Vestido Rit Elegante', 
-    category: 'vestidos', 
-    image: '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delante.png' 
-  }
-]
+import { searchProducts } from '../data/products.js'
 
 export default function SearchModal({ isOpen, onClose }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -71,14 +27,10 @@ export default function SearchModal({ isOpen, onClose }) {
     }
 
     setIsLoading(true)
-    
+
     // Simular delay de búsqueda
     setTimeout(() => {
-      const results = ALL_PRODUCTS.filter(product => 
-        product.name.toLowerCase().includes(term.toLowerCase()) ||
-        product.category.toLowerCase().includes(term.toLowerCase())
-      )
-      setSearchResults(results)
+      setSearchResults(searchProducts(term))
       setIsLoading(false)
     }, 300)
   }
