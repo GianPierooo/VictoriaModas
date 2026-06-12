@@ -1,62 +1,37 @@
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import {
-  MapPinIcon,
-  EnvelopeIcon,
-  ClockIcon,
-} from '@heroicons/react/24/outline'
+
+const WHATSAPP_NUMBER = '51993357672'
+const CONTACT_EMAIL = 'victoriamodas1053@gmail.com'
+const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61555283742078'
+
+// Abrigos oculto hasta tener stock (ver nota en Header.jsx para reactivar)
+const tienda = [
+  { name: 'Vestidos', href: '/vestidos' },
+  { name: 'Blusas', href: '/blusas' },
+  { name: 'Pantalones', href: '/pantalones' },
+]
+
+const ayuda = [
+  { name: 'Contacto', href: '/contacto' },
+  { name: 'Preguntas frecuentes', href: '/preguntas-frecuentes' },
+  { name: 'Nosotros', href: '/nosotros' },
+  { name: 'Favoritos', href: '/favoritos' },
+]
 
 export default function Footer() {
-  const [isVisible, setIsVisible] = useState(false)
-  const currentYear = new Date().getFullYear()
-
-  useEffect(() => {
-    setIsVisible(true)
-  }, [])
-
-  // Abrigos oculto hasta tener stock (ver nota en Header.jsx para reactivar)
-  const categories = [
-    { name: 'Vestidos', href: '/vestidos' },
-    { name: 'Pantalones', href: '/pantalones' },
-    { name: 'Blusas', href: '/blusas' },
-  ]
-
-  const support = [
-    { name: 'Seguimiento de pedido', href: '#' },
-    { name: 'Políticas de envío', href: '#' },
-    { name: 'Términos y condiciones', href: '#' },
-    { name: 'Preguntas frecuentes', href: '/preguntas-frecuentes' },
-    { name: 'Contáctanos', href: '/contacto' },
-  ]
-
-  const about = [
-    { name: 'Nuestras tiendas', href: '#' },
-    { name: 'Nosotros', href: '/nosotros' },
-    { name: 'Política de datos', href: '#' },
-    { name: 'Bases legales', href: '#' },
-  ]
-
   return (
-    <footer className="relative bg-gradient-to-br from-rose via-rose-50 to-rose-100 overflow-hidden border-t-4 border-rose-dark">
-      {/* Decorative animated elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-radial-rose opacity-40 pointer-events-none animate-pulse-soft"></div>
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-radial-rose opacity-30 pointer-events-none animate-float"></div>
-      <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-gradient-radial-rose opacity-20 pointer-events-none animate-pulse-soft"></div>
-      
-      <div className={`w-full px-8 py-20 lg:px-20 lg:py-24 relative z-10 transition-all duration-1000 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-      }`}>
-        {/* Grid principal */}
-        <div className="grid grid-cols-1 gap-16 md:grid-cols-2 lg:grid-cols-4">
-          {/* Brand */}
-          <div className="transform transition-all duration-700 hover:translate-y-[-8px]">
-            <div className="flex items-center gap-3 mb-6">
-              {/* Isotipo: claro → normal → solo texto (no se ve roto si faltan archivos) */}
+    <footer className="bg-ink text-cream">
+      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Marca */}
+          <div>
+            <Link to="/" className="inline-flex items-center gap-2.5">
+              {/* Isotipo claro → normal → solo texto (no se ve roto si faltan archivos) */}
               <img
                 src="/logo/isotipo-blanco.png"
                 alt=""
                 aria-hidden="true"
-                className="h-10 w-auto"
+                className="h-9 w-auto"
                 onError={(e) => {
                   const img = e.currentTarget
                   if (!img.dataset.fallback) {
@@ -67,140 +42,123 @@ export default function Footer() {
                   }
                 }}
               />
-              <h3 className="text-3xl font-serif font-bold tracking-tight text-gray-900">
-                Victoria<span className="text-rose-dark">Modas</span>
-              </h3>
-            </div>
-            <p className="text-gray-700 text-base mb-8 leading-relaxed font-light italic">
-              Elegancia, modernidad y versatilidad para la mujer de hoy.
+              <span className="font-serif text-2xl font-light tracking-wide text-cream">
+                Victoria<span className="italic font-normal text-clay-light">Modas</span>
+              </span>
+            </Link>
+            <p className="mt-5 max-w-xs text-sm font-light leading-relaxed text-cream/60">
+              Moda femenina con intención · Lima, Perú
             </p>
-            
-            {/* Social Media */}
-            <div className="flex gap-4 mb-8">
-              <a 
-                href="https://www.facebook.com/profile.php?id=61555283742078" 
-                target="_blank" 
+
+            {/* Redes sociales */}
+            <div className="mt-7 flex gap-3">
+              <a
+                href={FACEBOOK_URL}
+                target="_blank"
                 rel="noopener noreferrer"
-                className="w-14 h-14 rounded-full bg-white border-2 border-rose hover:border-rose-dark text-rose hover:bg-rose hover:text-white flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-rose-lg hover:rotate-12"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-cream/20 text-cream/70 transition-colors duration-300 hover:border-cream hover:text-cream"
                 aria-label="Facebook"
               >
-                <svg className="w-6 h-6 transition-transform duration-300" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </a>
-              <a 
-                href="https://wa.me/51993357672" 
-                target="_blank" 
+
+              {/* Descomentar cuando se creen las cuentas de Instagram y TikTok:
+              <a
+                href="https://instagram.com/victoriamodas"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="w-14 h-14 rounded-full bg-white border-2 border-green-400 hover:border-green-600 text-green-600 hover:bg-green-500 hover:text-white flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg hover:rotate-12"
-                aria-label="WhatsApp"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-cream/20 text-cream/70 transition-colors duration-300 hover:border-cream hover:text-cream"
+                aria-label="Instagram"
               >
-                <svg className="w-7 h-7 transition-transform duration-300" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
                 </svg>
               </a>
+              <a
+                href="https://tiktok.com/@victoriamodas"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-cream/20 text-cream/70 transition-colors duration-300 hover:border-cream hover:text-cream"
+                aria-label="TikTok"
+              >
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+                </svg>
+              </a>
+              */}
             </div>
+          </div>
 
-            {/* Información de contacto */}
-            <div className="space-y-4 text-sm text-gray-700">
-              <p className="flex items-start gap-3 hover:text-gray-900 transition-all duration-300 hover:translate-x-2">
-                <MapPinIcon className="h-5 w-5 flex-shrink-0 mt-0.5 text-rose-dark" />
-                <span className="font-medium">
-                  Galería Naranja - Puesto 47-48<br />
-                  Calle Misti con Huascarán
-                </span>
-              </p>
-              <p className="flex items-center gap-3 hover:text-gray-900 transition-all duration-300 hover:translate-x-2">
-                <EnvelopeIcon className="h-5 w-5 flex-shrink-0 text-rose-dark" />
-                <a href="mailto:victoriamodas1053@gmail.com" className="hover:text-rose-dark transition-colors font-medium">
-                  victoriamodas1053@gmail.com
+          {/* Tienda */}
+          <div>
+            <h3 className="mb-4 text-[11px] uppercase tracking-luxe text-cream/50">Tienda</h3>
+            <ul className="space-y-1">
+              {tienda.map((item) => (
+                <li key={item.name}>
+                  <Link
+                    to={item.href}
+                    className="inline-block py-1.5 text-sm font-light text-cream/70 transition-colors duration-300 hover:text-cream"
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Ayuda */}
+          <div>
+            <h3 className="mb-4 text-[11px] uppercase tracking-luxe text-cream/50">Ayuda</h3>
+            <ul className="space-y-1">
+              {ayuda.map((item) => (
+                <li key={item.name}>
+                  <Link
+                    to={item.href}
+                    className="inline-block py-1.5 text-sm font-light text-cream/70 transition-colors duration-300 hover:text-cream"
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contacto */}
+          <div>
+            <h3 className="mb-4 text-[11px] uppercase tracking-luxe text-cream/50">Contacto</h3>
+            <ul className="space-y-1 text-sm font-light text-cream/70">
+              <li>
+                <a
+                  href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block py-1.5 transition-colors duration-300 hover:text-cream"
+                >
+                  WhatsApp +51 993 357 672
                 </a>
-              </p>
-              <p className="flex items-center gap-3 hover:text-gray-900 transition-all duration-300 hover:translate-x-2">
-                <ClockIcon className="h-5 w-5 flex-shrink-0 text-rose-dark" />
-                <span className="font-medium">Lun-Sáb: 4:00 AM - 3:00 PM</span>
-              </p>
-              <p className="text-xs text-gray-600 italic font-semibold">✨ WhatsApp disponible 24/7</p>
-            </div>
-
-            {/* Libro de reclamaciones */}
-            <button className="mt-8 flex items-center gap-3 text-xs font-bold text-gray-900 hover:text-white transition-all duration-300 bg-white/60 hover:bg-rose border-2 border-rose/50 hover:border-rose-dark rounded-xl px-5 py-3 hover:scale-105 hover:shadow-rose-lg">
-              <span className="text-lg">📖</span>
-              LIBRO DE RECLAMACIONES
-            </button>
-          </div>
-
-          {/* Servicio al Cliente */}
-          <div className="transform transition-all duration-700 hover:translate-y-[-8px]">
-            <h4 className="text-base font-bold uppercase tracking-wider mb-6 text-gray-900 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose animate-pulse-soft"></span>
-              Servicio al Cliente
-            </h4>
-            <div className="w-16 h-1 bg-gradient-to-r from-rose-dark via-rose to-transparent mb-6 rounded-full"></div>
-            <ul className="space-y-4">
-              {support.map((item, index) => (
-                <li key={item.name} className="transform transition-all duration-300 hover:translate-x-3" style={{ transitionDelay: `${index * 50}ms` }}>
-                  <Link 
-                    to={item.href} 
-                    className="text-sm text-gray-700 hover:text-rose-dark transition-all duration-300 inline-flex items-center gap-3 group font-medium"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-rose/60 group-hover:bg-rose-dark transition-all duration-300 group-hover:scale-150 group-hover:shadow-lg"></span>
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Nosotros */}
-          <div className="transform transition-all duration-700 hover:translate-y-[-8px]">
-            <h4 className="text-base font-bold uppercase tracking-wider mb-6 text-gray-900 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose animate-pulse-soft"></span>
-              Nosotros
-            </h4>
-            <div className="w-16 h-1 bg-gradient-to-r from-rose-dark via-rose to-transparent mb-6 rounded-full"></div>
-            <ul className="space-y-4">
-              {about.map((item, index) => (
-                <li key={item.name} className="transform transition-all duration-300 hover:translate-x-3" style={{ transitionDelay: `${index * 50}ms` }}>
-                  <Link 
-                    to={item.href} 
-                    className="text-sm text-gray-700 hover:text-rose-dark transition-all duration-300 inline-flex items-center gap-3 group font-medium"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-rose/60 group-hover:bg-rose-dark transition-all duration-300 group-hover:scale-150 group-hover:shadow-lg"></span>
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Categorías */}
-          <div className="transform transition-all duration-700 hover:translate-y-[-8px]">
-            <h4 className="text-base font-bold uppercase tracking-wider mb-6 text-gray-900 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose animate-pulse-soft"></span>
-              Categorías
-            </h4>
-            <div className="w-16 h-1 bg-gradient-to-r from-rose-dark via-rose to-transparent mb-6 rounded-full"></div>
-            <ul className="space-y-4">
-              {categories.map((item, index) => (
-                <li key={item.name} className="transform transition-all duration-300 hover:translate-x-3" style={{ transitionDelay: `${index * 50}ms` }}>
-                  <Link 
-                    to={item.href} 
-                    className="text-sm text-gray-700 hover:text-rose-dark transition-all duration-300 inline-flex items-center gap-3 group font-medium"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-rose/60 group-hover:bg-rose-dark transition-all duration-300 group-hover:scale-150 group-hover:shadow-lg"></span>
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
+              </li>
+              <li>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="inline-block break-all py-1.5 transition-colors duration-300 hover:text-cream"
+                >
+                  {CONTACT_EMAIL}
+                </a>
+              </li>
+              <li className="py-1.5 text-cream/50">Gamarra, Lima — Perú</li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-20 pt-10 border-t-2 border-rose-dark/30">
-          <p className="text-center text-base text-gray-800 transition-all duration-300 hover:text-gray-900 font-medium">
-            © {currentYear} <span className="text-rose-dark font-bold text-lg">VictoriaModas</span>. Todos los derechos reservados.
+        {/* Línea final */}
+        <div className="mt-14 flex flex-col items-center gap-2 border-t border-cream/10 pt-8 text-center sm:flex-row sm:justify-between sm:text-left">
+          <p className="text-xs font-light text-cream/50">
+            © 2026 Victoria Modas — Lima, Perú
+          </p>
+          <p className="text-xs font-light italic text-cream/40">
+            Hecho con cariño en Gamarra
           </p>
         </div>
       </div>
@@ -215,7 +173,7 @@ export default function Footer() {
         aria-label="Escríbenos por WhatsApp"
       >
         <svg className="h-7 w-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
         </svg>
         {/* Tooltip discreto (solo desktop) */}
         <span className="pointer-events-none absolute right-16 hidden whitespace-nowrap rounded-full bg-ink px-4 py-2 text-xs font-light text-cream opacity-0 shadow-soft transition-opacity duration-300 group-hover:opacity-100 lg:block">

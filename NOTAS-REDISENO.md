@@ -594,11 +594,47 @@ coherente de arriba a abajo con el sistema cálido-premium.
   sin overflow en ninguna; cero errores de consola; 0 unsplash/blur-3xl.
 - ✅ Build sin errores; lint limpio.
 
-📝 Pendientes para fases siguientes (estética vieja aún viva):
-- **Footer**: gradiente rosa con `border-t-4 border-rose-dark`, emoji ✨ ya
-  retirado del logo (Fase 1.4) pero el resto sigue con grises/rosa viejo.
-- Páginas internas: About, Contact, FAQ.
+### 4.5 Footer premium oscuro (2026-06-11)
+
+- ✅ `Footer.jsx` reescrito por completo: fondo **ink** con texto **cream**
+  (contraste boutique que cierra el sitio). Fuera el gradiente rosa, los 3
+  círculos `blur-3xl` animados, el "LIBRO DE RECLAMACIONES" con emoji 📖, el
+  "✨ WhatsApp 24/7", los links a `#` (seguimiento, políticas, bases legales,
+  política de datos, nuestras tiendas) y las animaciones `hover:translate`/
+  `rotate-12` recargadas.
+- ✅ **4 columnas** (1 en móvil, 2 en `sm`, 4 en `lg`):
+  - Marca: isotipo claro (cadena de fallback blanco→normal→solo texto, ahora
+    el isotipo-blanco SÍ corresponde al fondo oscuro) + logo tipográfico
+    ("Modas" en clay-light) + tagline "Moda femenina con intención · Lima, Perú".
+  - **Tienda**: Vestidos, Blusas, Pantalones (sin Abrigos).
+  - **Ayuda**: Contacto, Preguntas frecuentes, Nosotros, Favoritos.
+  - **Contacto**: WhatsApp +51 993 357 672 (link wa.me), correo
+    victoriamodas1053@gmail.com, y "Gamarra, Lima — Perú".
+- ✅ **Redes**: Facebook activo (link del footer anterior). Instagram y TikTok
+  añadidos pero **comentados** en el código, con sus íconos SVG listos y el
+  comentario "Descomentar cuando se creen las cuentas".
+- ✅ **Línea final** (border-top hairline `border-cream/10`): "© 2026 Victoria
+  Modas — Lima, Perú" + "Hecho con cariño en Gamarra" (apilados y centrados en
+  móvil, a los extremos en `sm+`). Año fijo 2026 (ya no `new Date()`).
+- ✅ Conservado intacto el botón flotante de WhatsApp (Fase 2.4): #25D366,
+  bottom-6 right-6, tooltip desktop.
+- ✅ Sin emojis, sin links muertos a `#`. Contraste verificado: marca cream,
+  "Modas" clay-light, links cream/70→cream al hover, títulos cream/50.
+- ✅ Responsive (375/768/1280): 4→2→1 columnas, links de texto con área táctil
+  de 32px (subida desde 16px con `py-1.5`), Facebook 40px, sin overflow en
+  ningún tamaño, cero errores de consola.
+- ✅ Build sin errores; lint limpio.
+
+🎉 **Rediseño 2026 completo**: todas las superficies del sitio (sistema de
+diseño, home, catálogo, producto, carrito/checkout, favoritos, páginas de
+contenido, header y footer) están en la identidad cálida-premium cream/ink/clay.
+
+📝 Pendientes menores que quedan (no críticos):
 - `CartNotification.jsx`: aún con estética rosa/gris vieja (y el swatch usa el
   nombre del color en español como CSS, que no renderiza). Candidato a pulir.
-- `src/index.css`: las clases `.btn-*` aún usan `gray-900`/`white`.
+- `src/index.css`: las clases `.btn-*` aún usan `gray-900`/`white` (ya no se
+  usan en las páginas rediseñadas; revisar referencias antes de migrarlas).
 - `src/test-tailwind.html`: archivo de prueba sobrante, confirmar si se borra.
+- Logos reales: soltar `isotipo.png` / `isotipo-blanco.png` en `public/logo/`
+  y `favicon.png` real en `public/` (ver `public/logo/LEEME.txt`).
+- Foto real del taller/tienda en AboutPage (hay placeholder + comentario).
