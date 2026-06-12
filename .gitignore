@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Plantillas de referencia del rediseño (su contenido ya está aplicado;
+# se conservan localmente pero no se suben al repo/deploy)
+archivos-listos/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
