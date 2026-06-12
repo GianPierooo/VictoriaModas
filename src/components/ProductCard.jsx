@@ -1,15 +1,31 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { HeartIcon } from '@heroicons/react/24/outline'
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { COLOR_HEX } from '../utils/colorMap.js'
+import { useWishlist } from '../context/WishlistContext.jsx'
 
 const MAX_SWATCHES = 4
 
 export default function ProductCard({ product, index = 0 }) {
   const { id, name, image, badge, category, colors, colorImages } = product
 
+  const { isFavorite, toggleFavorite } = useWishlist()
+  const fav = isFavorite(id)
+  const [pop, setPop] = useState(false)
+
   const [activeColor, setActiveColor] = useState(null)
   const [inView, setInView] = useState(false)
   const rootRef = useRef(null)
+
+  const handleToggleFavorite = (e) => {
+    // El corazón vive dentro del <Link>: evitar navegar al togglear
+    e.preventDefault()
+    e.stopPropagation()
+    toggleFavorite(id)
+    setPop(true)
+    setTimeout(() => setPop(false), 220)
+  }
 
   // Imágenes vigentes: las del color activo, o las generales del producto
   const images = useMemo(() => {
@@ -78,6 +94,23 @@ export default function ProductCard({ product, index = 0 }) {
               {badge}
             </span>
           )}
+
+          {/* Favorito */}
+          <button
+            type="button"
+            onClick={handleToggleFavorite}
+            aria-label={fav ? `Quitar ${name} de favoritos` : `Guardar ${name} en favoritos`}
+            aria-pressed={fav}
+            className="absolute top-2 right-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-cream/80 backdrop-blur-sm transition-colors duration-300 hover:bg-cream"
+          >
+            {fav ? (
+              <HeartIconSolid
+                className={`h-5 w-5 text-clay transition-transform duration-200 ${pop ? 'scale-125' : 'scale-100'}`}
+              />
+            ) : (
+              <HeartIcon className="h-5 w-5 text-ink-soft transition-transform duration-200 active:scale-90" />
+            )}
+          </button>
 
           {/* Capa base: imagen anterior (para el crossfade al cambiar de color) */}
           <img

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { CartProvider } from './context/CartContext.jsx'
+import { WishlistProvider } from './context/WishlistContext.jsx'
 import './index.css' // ← Solo Tailwind CSS
 import HomePage from './pages/HomePage.jsx'
 import VestidosPage from './pages/VestidosPage.jsx'
@@ -15,6 +16,7 @@ import CheckoutPage from './pages/CheckoutPage.jsx'
 import ProductPage from './pages/ProductPage.jsx'
 import CartPage from './pages/CartPage.jsx'
 import AccountPage from './pages/AccountPage.jsx'
+import FavoritesPage from './pages/FavoritesPage.jsx'
 
 const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -28,13 +30,16 @@ const router = createBrowserRouter([
   { path: '/producto/:id', element: <ProductPage /> },
   { path: '/carrito', element: <CartPage /> },
   { path: '/checkout', element: <CheckoutPage /> },
+  { path: '/favoritos', element: <FavoritesPage /> },
   { path: '/mi-cuenta', element: <AccountPage /> },
 ])
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <CartProvider>
-      <RouterProvider router={router} />
+      <WishlistProvider>
+        <RouterProvider router={router} />
+      </WishlistProvider>
     </CartProvider>
   </StrictMode>,
 )

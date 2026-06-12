@@ -510,10 +510,55 @@ coherente de arriba a abajo con el sistema cálido-premium.
   46px en móvil. Cero errores de consola.
 - ✅ Build sin errores; lint limpio.
 
+### 4.3 Favoritos funcionales + mi cuenta honesta (2026-06-11)
+
+**Parte A — Mi Cuenta:**
+- ✅ Eliminado el icono de usuario del Header desktop; en su lugar va el
+  corazón de favoritos (ver parte B). En el menú móvil, la acción rápida
+  "Mi Cuenta" pasó a ser "Favoritos". Ya no se enlaza /mi-cuenta desde el
+  header (icono `UserIcon` eliminado de imports y de ambos sitios).
+- ✅ `AccountPage` reescrita como página honesta "Próximamente" (cream,
+  serif "Tu cuenta, *muy pronto*", texto cálido, CTAs a Seguir comprando y
+  Ver favoritos). Se mantiene la ruta /mi-cuenta. Eliminados los enlaces a
+  "#" del panel decorativo anterior (verificado: sin links rotos).
+
+**Parte B — Favoritos reales (localStorage, sin backend):**
+- ✅ Nuevo `src/context/WishlistContext.jsx` (espejo de CartContext): guarda
+  un array de ids en localStorage bajo `vm_wishlist`. Expone
+  `toggleFavorite(id)`, `isFavorite(id)`, `favorites` y `count`. Carga
+  defensiva (no-array/duplicados/ids no-string se descartan). Funciones con
+  `useCallback` para no recrear el value en cada render.
+- ✅ App envuelta con `WishlistProvider` en main.jsx (dentro de CartProvider).
+- ✅ **Corazón en cada ProductCard** (arriba a la derecha): contorno
+  (`HeartIcon`) cuando no es favorito, relleno clay (`HeartIconSolid`)
+  cuando sí. Click hace `preventDefault`+`stopPropagation` para NO navegar
+  al producto (el corazón vive dentro del `<Link>`). Microinteracción: pop
+  `scale-125` 220ms al marcar + `active:scale-90`. Área táctil 40×40px.
+- ✅ **Página `/favoritos`** (registrada en main.jsx): resuelve ids →
+  productos con `getProductById` (descarta ids inexistentes) y los muestra
+  con el ProductCard, mismo grid que el catálogo (2/3/4 col). Vacío
+  elegante: `HeartIcon`, serif "Aún no has guardado favoritos" + CTA a
+  /vestidos.
+- ✅ **Corazón en el Header** junto al carrito → /favoritos, con badge
+  contador clay-dark (mismo estilo que el del carrito). También en la acción
+  rápida del menú móvil, con su badge.
+- ✅ Verificado en preview (todo el flujo, desktop + móvil):
+  - Header sin /mi-cuenta, con corazón → /favoritos; badge aparece/crece/
+    desaparece según el conteo.
+  - Marcar 2 corazones en el catálogo NO navega; persisten en localStorage;
+    /favoritos los muestra; quitar desde la propia página actualiza en vivo;
+    vaciar muestra el estado vacío serif. Persistencia tras reload OK.
+  - Móvil 375: corazón de card 40×40, menú móvil con "Favoritos" (badge) y
+    sin "Mi Cuenta", /favoritos en 2 col, sin overflow. Cero errores de
+    consola.
+- ✅ Build sin errores; lint limpio (el hook `useWishlist` lleva un
+  `eslint-disable` explícito de `react-refresh/only-export-components`, como
+  patrón limpio para el archivo de contexto).
+
 📝 Pendientes para fases siguientes (estética vieja aún viva):
 - **Footer**: gradiente rosa con `border-t-4 border-rose-dark`, emoji ✨ ya
   retirado del logo (Fase 1.4) pero el resto sigue con grises/rosa viejo.
-- Páginas internas: About, Contact, FAQ, AccountPage.
+- Páginas internas: About, Contact, FAQ.
 - `CartNotification.jsx`: aún con estética rosa/gris vieja (y el swatch usa el
   nombre del color en español como CSS, que no renderiza). Candidato a pulir.
 - `src/index.css`: las clases `.btn-*` aún usan `gray-900`/`white`.

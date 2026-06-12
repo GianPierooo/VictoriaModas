@@ -1,10 +1,10 @@
 import { Fragment, useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Dialog, Transition, Menu } from '@headlessui/react'
-import { 
-  MagnifyingGlassIcon, 
-  ShoppingCartIcon, 
-  UserIcon,
+import {
+  MagnifyingGlassIcon,
+  ShoppingCartIcon,
+  HeartIcon,
   Bars3Icon,
   XMarkIcon,
   PhoneIcon,
@@ -13,6 +13,7 @@ import {
   ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import { useCart } from '../context/CartContext.jsx'
+import { useWishlist } from '../context/WishlistContext.jsx'
 import SearchModal from './SearchModal.jsx'
 import CartNotification from './CartNotification.jsx'
 
@@ -22,6 +23,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
   const { items, showNotification, closeNotification } = useCart()
+  const { count: favCount } = useWishlist()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
   const isCartPage = location.pathname === '/carrito'
 
@@ -195,17 +197,20 @@ export default function Header() {
               <MagnifyingGlassIcon className="h-6 w-6" />
             </button>
             
-            {/* Mi cuenta */}
-            <Link 
-              to="/mi-cuenta" 
-              className={`p-2 rounded-md transition-all duration-300 ${
-                'text-ink-soft hover:text-clay hover:bg-ink/5'
-              }`}
-              aria-label="Mi cuenta de usuario"
+            {/* Favoritos */}
+            <Link
+              to="/favoritos"
+              className="relative p-2 rounded-md text-ink-soft hover:text-clay hover:bg-ink/5 transition-all duration-300"
+              aria-label={`Favoritos${favCount > 0 ? ` (${favCount})` : ''}`}
             >
-              <UserIcon className="h-6 w-6" />
+              <HeartIcon className="h-6 w-6" />
+              {favCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-clay-dark text-cream text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-soft">
+                  {favCount}
+                </span>
+              )}
             </Link>
-            
+
             {/* Carrito */}
             <Link 
               to="/carrito" 
@@ -323,11 +328,16 @@ export default function Header() {
                   {/* Acciones rápidas */}
                   <div className="grid grid-cols-2 gap-3">
                     <Link
-                      to="/mi-cuenta"
-                      className="flex flex-col items-center justify-center gap-2 rounded-lg bg-cream-dark px-4 py-4 text-sm font-medium text-ink hover:bg-rose-100 transition-colors"
+                      to="/favoritos"
+                      className="relative flex flex-col items-center justify-center gap-2 rounded-lg bg-cream-dark px-4 py-4 text-sm font-medium text-ink hover:bg-rose-100 transition-colors"
                     >
-                      <UserIcon className="h-6 w-6" />
-                      Mi Cuenta
+                      <HeartIcon className="h-6 w-6" />
+                      Favoritos
+                      {favCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-clay-dark text-cream text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                          {favCount}
+                        </span>
+                      )}
                     </Link>
                     <Link
                       to="/carrito"
