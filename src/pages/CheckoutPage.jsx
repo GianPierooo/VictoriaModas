@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
+import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { generateOrderMessage, openWhatsApp } from '../utils/whatsappUtils.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
@@ -220,7 +221,7 @@ export default function CheckoutPage() {
                   {items.map((item, idx) => (
                     <li key={idx} className="flex gap-3">
                       <div className="h-16 w-12 flex-shrink-0 overflow-hidden rounded-md bg-cream-dark">
-                        <img src={item.image} alt={item.name} className="h-full w-full object-cover object-top" />
+                        <ResponsiveImage src={item.image} alt={item.name} className="h-full w-full object-cover object-top" loading="lazy" width={64} height={80} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-serif text-sm font-light text-ink">{item.name}</p>

@@ -4,6 +4,7 @@ import { HeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { COLOR_HEX } from '../utils/colorMap.js'
 import { useWishlist } from '../context/WishlistContext.jsx'
+import ResponsiveImage from './ResponsiveImage.jsx'
 
 const MAX_SWATCHES = 4
 
@@ -113,16 +114,18 @@ export default function ProductCard({ product, index = 0 }) {
           </button>
 
           {/* Capa base: imagen anterior (para el crossfade al cambiar de color) */}
-          <img
+          <ResponsiveImage
             src={prevFrontRef.current}
             alt=""
             aria-hidden="true"
             className="absolute inset-0 h-full w-full object-cover object-top"
             loading="lazy"
+            width={900}
+            height={1200}
           />
 
           {/* Imagen frontal vigente: entra con fade sobre la anterior */}
-          <img
+          <ResponsiveImage
             key={front}
             src={front}
             alt={name}
@@ -133,16 +136,20 @@ export default function ProductCard({ product, index = 0 }) {
                 : 'transition-transform duration-[1200ms] ease-out group-hover:scale-[1.08]'
             }`}
             loading="lazy"
+            width={900}
+            height={1200}
           />
 
           {/* Segunda vista (espalda/lado): crossfade al hover */}
           {back && (
-            <img
+            <ResponsiveImage
               src={back}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover object-top opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
               loading="lazy"
+              width={900}
+              height={1200}
             />
           )}
 

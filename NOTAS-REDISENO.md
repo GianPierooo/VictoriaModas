@@ -675,6 +675,55 @@ contenido, header y footer) están en la identidad cálida-premium cream/ink/cla
   preexistente del hook de scroll de HomePage). Archivos estáticos presentes
   en `dist/`.
 
+### 5.2 Code-splitting + imágenes WebP (2026-06-11)
+
+- ✅ **Code-splitting por ruta** (`main.jsx`): las 13 páginas pasaron a
+  `React.lazy()` + `<Suspense>`. Cada ruta se descarga solo al visitarse.
+  Fallback `PageLoader` elegante (fondo cream, nombre tipográfico centrado con
+  `motion-safe:animate-pulse-soft`), importado de forma eager para estar
+  disponible al instante.
+- ✅ **manualChunks** (`vite.config.js`): todo `node_modules` va a chunks
+  cacheables aparte del código de la app → `vendor` (react, react-dom,
+  react-router + libs) y `ui` (@headlessui + @heroicons). El entry dejó de
+  arrastrar código de librería.
+- ✅ **Imágenes → WebP**:
+  - `scripts/optimize-images.mjs` (sharp como devDependency) recorre
+    `public/imagenes/` y genera un `.webp` por cada png/jpg, conservando los
+    originales. Idempotente (salta los que ya están al día). Script en
+    package.json: `npm run optimize-images`. Ejecutado: **73 webp generados**.
+  - `ResponsiveImage.jsx` reescrito como `<picture>` con `<source>` webp +
+    `<img>` png de fallback (deriva la ruta webp del src). Aplicado en: hero,
+    ProductCard (las 3 capas del crossfade), galería de producto (principal +
+    miniaturas), las 4 secciones de imagen del home y los thumbnails de
+    carrito/checkout. Verificado: el navegador carga `.webp` en todos.
+- ✅ **CLS / prioridad de carga**: contenedores con `aspect-[]` (ya
+  existentes) reservan el espacio → sin saltos. Imagen del hero y principal
+  del producto con `loading="eager"` + `fetchPriority="high"`; el resto
+  `loading="lazy"`. Se añadieron `width`/`height` a las imágenes.
+- ✅ Responsive verificado (375/1280): hero/cards/galería sirven webp, el
+  crossfade de color y el toggle de favorito (sobre la `<picture>`) siguen
+  funcionando, navegación lazy OK, carrito tras recarga sirve webp, sin
+  overflow, cero errores de consola.
+
+  **📊 Antes / después de tamaños (build de producción):**
+
+  | | Antes (5.1) | Después (5.2) |
+  |---|---|---|
+  | JS app | **1 bundle de 519.71 KB** (gzip 151.98) | dividido en chunks |
+  | `vendor` (react/router/libs) | — | 298 KB (gzip 96.7) · cacheado |
+  | `ui` (headlessui/heroicons) | — | 99.4 KB (gzip 30.9) · cacheado |
+  | entry `index` | (dentro del bundle) | **6.84 KB** (gzip 2.73) |
+  | app compartida | — | 31.5 KB (gzip 7.8) |
+  | chunks por ruta | — | 0.3 – 15.5 KB c/u (lazy) |
+  | **Imágenes** | **68.7 MB PNG** | **1.5 MB WebP (−98%)** |
+
+  El gran win real-world es la imagen (−98%, el peso dominante de la web) más
+  que el JS: el total de JS es parecido (mismo código), pero ahora `vendor`/
+  `ui` se cachean entre navegaciones y deploys, el entry es minúsculo, y cada
+  ruta carga solo su porción (0.4–4 KB gzip) en vez de los ~152 KB completos.
+- ✅ Build sin errores; lint limpio (solo el warning preexistente de
+  HomePage). Los `.webp` se commitean (el deploy sirve `public/` tal cual).
+
 📝 Pendientes menores que quedan (no críticos):
 - `CartNotification.jsx`: aún con estética rosa/gris vieja (y el swatch usa el
   nombre del color en español como CSS, que no renderiza). Candidato a pulir.

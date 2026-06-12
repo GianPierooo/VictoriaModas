@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { XMarkIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import QuantitySelector from '../components/QuantitySelector'
+import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { cartItemKey } from '../utils/cart.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
@@ -52,11 +53,13 @@ export default function CartPage() {
                           to={`/producto/${item.id}`}
                           className="block h-32 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-cream-dark md:h-40 md:w-32"
                         >
-                          <img
+                          <ResponsiveImage
                             src={item.image}
                             alt={item.name}
                             className="h-full w-full object-cover object-top"
                             loading="lazy"
+                            width={128}
+                            height={160}
                           />
                         </Link>
 

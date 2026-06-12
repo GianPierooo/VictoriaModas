@@ -9,6 +9,7 @@ import {
 import Layout from '../components/Layout.jsx'
 import QuantitySelector from '../components/QuantitySelector'
 import ProductCard from '../components/ProductCard.jsx'
+import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { COLOR_HEX } from '../utils/colorMap.js'
 import { getProductById, getProductsByCategory } from '../data/products.js'
@@ -150,7 +151,7 @@ export default function ProductPage() {
                         }`}
                         aria-label={`Ver imagen ${idx + 1}`}
                       >
-                        <img src={src} alt="" aria-hidden="true" className="h-full w-full object-cover object-top" loading="lazy" />
+                        <ResponsiveImage src={src} alt="" aria-hidden="true" className="h-full w-full object-cover object-top" loading="lazy" width={160} height={213} />
                       </button>
                     ))}
                   </div>
@@ -162,13 +163,16 @@ export default function ProductPage() {
                   onTouchStart={onTouchStart}
                   onTouchEnd={onTouchEnd}
                 >
-                  <img
+                  <ResponsiveImage
                     key={mainImage}
                     src={mainImage}
                     alt={product.name}
                     className="h-full w-full object-cover object-top"
                     style={{ animation: 'fadeIn 0.4s ease-out both' }}
                     loading="eager"
+                    fetchPriority="high"
+                    width={900}
+                    height={1200}
                   />
                 </div>
               </div>

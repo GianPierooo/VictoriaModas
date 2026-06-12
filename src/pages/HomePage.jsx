@@ -5,6 +5,7 @@ import Header from '../components/Header.jsx'
 import Footer from '../components/Footer.jsx'
 import AnnouncementBanner from '../components/AnnouncementBanner.jsx'
 import ProductCard from '../components/ProductCard.jsx'
+import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 // ============= HERO EDITORIAL =============
@@ -49,10 +50,14 @@ function Hero() {
         {/* Columna imagen */}
         <div className="order-1 lg:order-2 animate-fadeIn">
           <div className="relative aspect-[4/5] max-w-md mx-auto rounded-[1.5rem] overflow-hidden bg-cream-dark shadow-rose-lg">
-            <img
+            <ResponsiveImage
               src="/imagenes/vestidos/vestido_suplex01/azul_adelante.png"
               alt="Vestido de la nueva colección Victoria Modas"
               className="w-full h-full object-cover object-top"
+              loading="eager"
+              fetchPriority="high"
+              width={800}
+              height={1000}
             />
             {/* Marco interior elegante */}
             <div className="absolute inset-4 border border-cream/40 rounded-[1rem] pointer-events-none" />
@@ -219,7 +224,7 @@ function Collections() {
               }`}
               style={{ transitionDelay: `${idx * 150}ms` }}
             >
-              <img
+              <ResponsiveImage
                 src={collection.image}
                 alt={collection.title}
                 className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-105"
@@ -295,7 +300,7 @@ function CategoryShowcase() {
               }`}
               style={{ transitionDelay: `${idx * 100 + 100}ms` }}
             >
-              <img
+              <ResponsiveImage
                 src={cat.img}
                 alt={cat.name}
                 className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-105"
@@ -332,7 +337,7 @@ function ProductSpotlight() {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
             <div className="group relative aspect-[3/4] max-w-md mx-auto lg:max-w-none overflow-hidden rounded-lg bg-cream-dark">
-              <img
+              <ResponsiveImage
                 src="/imagenes/vestidos/vestido_suplex01/azul_adelante.png"
                 alt="Vestido Suplex Moderno"
                 className="w-full h-full object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-105"
@@ -442,7 +447,7 @@ function SocialFavorites() {
               }`}
               style={{ transitionDelay: `${idx * 100 + 100}ms` }}
             >
-              <img
+              <ResponsiveImage
                 src={item.image}
                 alt={item.name}
                 className="w-full h-full object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-105"
