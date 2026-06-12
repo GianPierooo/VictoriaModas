@@ -555,6 +555,45 @@ coherente de arriba a abajo con el sistema cálido-premium.
   `eslint-disable` explícito de `react-refresh/only-export-components`, como
   patrón limpio para el archivo de contexto).
 
+### 4.4 Páginas Nosotros, Contacto y FAQ reales (2026-06-11)
+
+- ✅ **AboutPage (/nosotros)** reescrita con la historia real y tono cálido
+  en primera persona: encabezado "De Gamarra, *directo a ti*" + 3 secciones:
+  "Nuestra historia" (nace en Gamarra, años de mostrador, ahora directo a la
+  clienta final), "Nuestras telas" (lista editorial con Scuba, Suplex, Lamé,
+  Seda Francesa y Rit con su detalle), "Nuestro compromiso" (calidad,
+  atención cercana, hecho en Perú). La foto de Unsplash → placeholder cream
+  con el nombre tipográfico y comentario en el código: "REEMPLAZAR por foto
+  real del taller o de la tienda". CTA final a la colección.
+- ✅ **ContactPage (/contacto)** rediseñada: formulario editorial border-b
+  hairline (nombre / correo o teléfono / mensaje) con validación sutil
+  (borde clay al enfocar, rojo suave + mensaje si falta; verificado submit
+  vacío → 3 errores). Datos reales al lado en tarjeta cream: WhatsApp
+  +51 993 357 672, correo victoriamodas1053@gmail.com, Facebook (link del
+  footer) y horario placeholder "Lun a Sáb, 9am - 7pm" (comentado para
+  ajustar).
+  - **EmailJS**: ⚠️ hallazgo — las credenciales YA estaban hardcodeadas en
+    el archivo (service/templates/publicKey). Ahora se leen de variables de
+    entorno `VITE_EMAILJS_*` con esas credenciales como respaldo (el envío
+    actual no se rompe). Si no hubiera ninguna → fallback directo a
+    WhatsApp; y si `emailjs.send` FALLA en runtime → también abre WhatsApp
+    con el mensaje pre-armado (la clienta nunca queda sin canal). Antes se
+    enviaban 2 correos (admin+cliente); ahora 1 (admin) — el template de
+    cliente queda en la config por si se reactiva.
+- ✅ **FAQPage (/preguntas-frecuentes)** reescrita: acordeón minimal con
+  `Disclosure` + separadores hairline (mismo patrón que el de ProductPage),
+  con las 5 preguntas del modelo real: cómo comprar (carrito→WhatsApp),
+  métodos de pago (Yape/Plin/transferencia/efectivo contra entrega en Lima),
+  envíos (Lima 2-4 días; provincias Shalom/Olva 4-7), cambios (7 días, sin
+  uso, por WhatsApp), mayoreo (sí, mención a Gamarra). Textos marcados como
+  base editable. CTA final a /contacto. Eliminados el buscador interno, las
+  categorías con emojis (📦) y los blur del diseño viejo.
+- ✅ Responsive verificado (375/768/1280): nosotros 1 col→historia 2 col y
+  compromisos 3 col; contacto con campos lado a lado en md+, submit 48px
+  full-width en móvil; FAQ con botones de acordeón de 68–96px de alto;
+  sin overflow en ninguna; cero errores de consola; 0 unsplash/blur-3xl.
+- ✅ Build sin errores; lint limpio.
+
 📝 Pendientes para fases siguientes (estética vieja aún viva):
 - **Footer**: gradiente rosa con `border-t-4 border-rose-dark`, emoji ✨ ya
   retirado del logo (Fase 1.4) pero el resto sigue con grises/rosa viejo.
