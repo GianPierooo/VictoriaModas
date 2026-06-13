@@ -6,6 +6,7 @@ import Footer from '../components/Footer.jsx'
 import AnnouncementBanner from '../components/AnnouncementBanner.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
+import PageTransition from '../motion/PageTransition.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 // ============= HERO EDITORIAL =============
@@ -503,14 +504,14 @@ export default function HomePage() {
     <>
       <AnnouncementBanner />
       <Header />
-      <main id="main-content">
+      <PageTransition id="main-content">
         <Hero />
         <FeaturedProducts />
         <Collections />
         <CategoryShowcase />
         <ProductSpotlight />
         <SocialFavorites />
-      </main>
+      </PageTransition>
       <Footer />
     </>
   )

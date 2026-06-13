@@ -1,4 +1,5 @@
 import { LazyMotion, MotionConfig } from 'framer-motion'
+import { devMotionForced } from './reducedMotion.js'
 
 // Carga diferida de features (no infla el bundle inicial).
 const loadFeatures = () => import('./features.js').then((mod) => mod.default)
@@ -13,7 +14,9 @@ const loadFeatures = () => import('./features.js').then((mod) => mod.default)
 export default function MotionProvider({ children }) {
   return (
     <LazyMotion features={loadFeatures} strict>
-      <MotionConfig reducedMotion="user">{children}</MotionConfig>
+      <MotionConfig reducedMotion={devMotionForced() ? 'never' : 'user'}>
+        {children}
+      </MotionConfig>
     </LazyMotion>
   )
 }

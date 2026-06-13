@@ -21,6 +21,15 @@
   }
 }
 
+/* Transición de entrada de página (contenido principal al navegar). */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: pageEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Respeta "reducir movimiento": desactiva animaciones, transiciones y
    scroll suave para quien lo pide en su sistema. */
 @media (prefers-reduced-motion: reduce) {
@@ -31,6 +40,11 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  /* Animaciones con fill-mode que mantienen un estado oculto: desactivarlas
+     por completo para que el contenido quede visible (no atascado en opacity 0). */
+  .page-enter {
+    animation: none !important;
   }
 }
 

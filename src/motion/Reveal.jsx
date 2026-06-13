@@ -1,5 +1,6 @@
-import { m, useReducedMotion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { fadeUp, staggerContainer } from './variants.js'
+import { useReducedMotionPref } from './reducedMotion.js'
 
 // Reveal al entrar en viewport (una sola vez). Si el usuario prefiere
 // movimiento reducido, se renderiza en su estado final sin animar.
@@ -12,7 +13,7 @@ export function Reveal({
   delay,
   ...rest
 }) {
-  const reduce = useReducedMotion()
+  const reduce = useReducedMotionPref()
   const MComp = m[as] || m.div
   return (
     <MComp
@@ -39,7 +40,7 @@ export function Stagger({
   amount = 0.15,
   ...rest
 }) {
-  const reduce = useReducedMotion()
+  const reduce = useReducedMotionPref()
   const MComp = m[as] || m.div
   return (
     <MComp

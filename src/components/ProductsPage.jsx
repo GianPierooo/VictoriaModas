@@ -9,6 +9,7 @@ import AnnouncementBanner from './AnnouncementBanner.jsx'
 import Header from './Header.jsx'
 import Footer from './Footer.jsx'
 import ProductCard from './ProductCard.jsx'
+import PageTransition from '../motion/PageTransition.jsx'
 import { COLOR_HEX } from '../utils/colorMap.js'
 
 // "VESTIDOS ELEGANTES" → "Vestidos elegantes"
@@ -212,7 +213,7 @@ export default function ProductsPage({ products = [], title = "Productos", filte
       <AnnouncementBanner />
       <Header />
 
-      <main className="min-h-screen bg-white pt-28">
+      <PageTransition className="min-h-screen bg-white pt-28">
         {/* Cabecera de categoría */}
         <section className="bg-cream py-14 md:py-20">
           <div className="mx-auto max-w-7xl px-6 text-center lg:px-8">
@@ -314,7 +315,7 @@ export default function ProductsPage({ products = [], title = "Productos", filte
             </div>
           )}
         </div>
-      </main>
+      </PageTransition>
 
       {/* Panel de filtros móvil (bottom sheet) */}
       <Transition show={mobileFiltersOpen} as={Fragment}>
