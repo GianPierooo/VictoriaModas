@@ -157,9 +157,9 @@ export default function ProductPage() {
                   </div>
                 )}
 
-                {/* Imagen principal */}
+                {/* Imagen principal — zoom suave al hover en desktop */}
                 <div
-                  className="relative aspect-[3/4] flex-1 overflow-hidden rounded-lg bg-cream-dark"
+                  className="group/zoom relative aspect-[3/4] flex-1 overflow-hidden rounded-lg bg-cream-dark"
                   onTouchStart={onTouchStart}
                   onTouchEnd={onTouchEnd}
                 >
@@ -167,7 +167,7 @@ export default function ProductPage() {
                     key={mainImage}
                     src={mainImage}
                     alt={product.name}
-                    className="h-full w-full object-cover object-top"
+                    className="h-full w-full object-cover object-top transition-transform duration-[900ms] ease-out lg:group-hover/zoom:scale-110"
                     style={{ animation: 'fadeIn 0.4s ease-out both' }}
                     loading="eager"
                     fetchPriority="high"

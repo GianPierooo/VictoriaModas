@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react'
 import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import Header from '../components/Header.jsx'
 import Footer from '../components/Footer.jsx'
@@ -7,6 +6,7 @@ import AnnouncementBanner from '../components/AnnouncementBanner.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import PageTransition from '../motion/PageTransition.jsx'
+import { useInViewReveal } from '../motion/useInViewReveal.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 // ============= HERO EDITORIAL =============
@@ -18,38 +18,38 @@ function Hero() {
       <div className="absolute -bottom-40 -left-40 w-[32rem] h-[32rem] bg-gradient-radial-rose rounded-full pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-10 items-center min-h-[88vh] py-20">
-        {/* Columna texto */}
-        <div className="order-2 lg:order-1 text-center lg:text-left animate-fadeInUp">
-          <p className="text-[11px] uppercase tracking-luxe text-clay mb-6">
+        {/* Columna texto — entrada escalonada línea por línea */}
+        <div className="order-2 lg:order-1 text-center lg:text-left">
+          <p className="hero-line text-[11px] uppercase tracking-luxe text-clay mb-6" style={{ animationDelay: '0.05s' }}>
             Nueva colección · 2026
           </p>
-          <h1 className="font-serif font-light text-ink leading-[1.05] text-5xl md:text-6xl lg:text-7xl mb-8">
+          <h1 className="hero-line font-serif font-light text-ink leading-[1.05] text-5xl md:text-6xl lg:text-7xl mb-8" style={{ animationDelay: '0.16s' }}>
             Elegancia
             <span className="block italic text-clay">hecha para ti</span>
           </h1>
-          <p className="text-ink-soft text-base md:text-lg max-w-md mx-auto lg:mx-0 mb-10 leading-relaxed font-light">
+          <p className="hero-line text-ink-soft text-base md:text-lg max-w-md mx-auto lg:mx-0 mb-10 leading-relaxed font-light" style={{ animationDelay: '0.3s' }}>
             Vestidos, blusas y abrigos en telas premium. Piezas pensadas para
             la mujer que viste con intención.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+          <div className="hero-line flex flex-col sm:flex-row gap-4 justify-center lg:justify-start" style={{ animationDelay: '0.42s' }}>
             <Link
               to="/vestidos"
-              className="group inline-flex items-center justify-center bg-ink text-cream px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:bg-clay"
+              className="group inline-flex items-center justify-center bg-ink text-cream px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:bg-clay active:scale-[0.98]"
             >
               Explorar colección
               <ChevronRightIcon className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
               to="/nosotros"
-              className="inline-flex items-center justify-center border border-ink/20 text-ink px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:border-ink hover:bg-ink/[0.03]"
+              className="inline-flex items-center justify-center border border-ink/20 text-ink px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:border-ink hover:bg-ink/[0.03] active:scale-[0.98]"
             >
               Nuestra historia
             </Link>
           </div>
         </div>
 
-        {/* Columna imagen */}
-        <div className="order-1 lg:order-2 animate-fadeIn">
+        {/* Columna imagen — fade + leve escala */}
+        <div className="order-1 lg:order-2 hero-image" style={{ animationDelay: '0.12s' }}>
           <div className="relative aspect-[4/5] max-w-md mx-auto rounded-[1.5rem] overflow-hidden bg-cream-dark shadow-rose-lg">
             <ResponsiveImage
               src="/imagenes/vestidos/vestido_suplex01/azul_adelante.png"
@@ -66,43 +66,19 @@ function Hero() {
         </div>
       </div>
 
-      {/* Indicador scroll */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 text-ink-muted animate-pulse-soft">
+      {/* Indicador scroll con bounce suave continuo */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 text-ink-muted">
         <span className="text-[10px] uppercase tracking-luxe">Descubre</span>
-        <ChevronDownIcon className="w-4 h-4" />
+        <ChevronDownIcon className="descubre-bounce w-4 h-4" />
       </div>
     </section>
   )
 }
 
-// ============= SCROLL ANIMATION HOOK =============
+// Reveal al scroll (robusto: con fallback si IO no está/ no dispara).
+// Delega en useInViewReveal para compartir la lógica con las cards.
 function useScrollAnimation() {
-  const [isVisible, setIsVisible] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const node = ref.current
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.1 }
-    )
-
-    if (node) {
-      observer.observe(node)
-    }
-
-    return () => {
-      if (node) {
-        observer.unobserve(node)
-      }
-    }
-  }, [])
-
-  return [ref, isVisible]
+  return useInViewReveal({ amount: 0.1 })
 }
 
 // ============= PRODUCTOS DESTACADOS =============

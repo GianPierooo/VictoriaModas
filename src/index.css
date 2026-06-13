@@ -48,6 +48,34 @@
   transform: none;
 }
 
+/* Entrada del hero: cada línea aparece escalonada (fade + slide-up).
+   El delay por línea se pasa con style={{ animationDelay }}. */
+@keyframes heroLineIn {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-line {
+  animation: heroLineIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Imagen del hero: fade + leve escala de entrada. */
+@keyframes heroImageIn {
+  from { opacity: 0; transform: scale(1.05); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.hero-image {
+  animation: heroImageIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Indicador "Descubre ↓": bounce vertical suave y continuo. */
+@keyframes descubreBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(5px); }
+}
+.descubre-bounce {
+  animation: descubreBounce 2.4s ease-in-out infinite;
+}
+
 /* "Pop" satisfactorio del corazón de favoritos al marcarlo (overshoot
    contenido, sin rebote exagerado). */
 @keyframes heartPop {
@@ -57,6 +85,16 @@
 }
 .heart-pop {
   animation: heartPop 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+/* Pop del contador (carrito/favoritos) al cambiar el número. */
+@keyframes countPop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.count-pop {
+  animation: countPop 0.35s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 
 /* Respeta "reducir movimiento": desactiva animaciones, transiciones y
@@ -73,7 +111,11 @@
   /* Animaciones/estados que mantienen contenido oculto: neutralizarlos para
      que quede visible (no atascado en opacity 0) cuando hay reduced-motion. */
   .page-enter,
-  .heart-pop {
+  .heart-pop,
+  .count-pop,
+  .hero-line,
+  .hero-image,
+  .descubre-bounce {
     animation: none !important;
   }
   .reveal {

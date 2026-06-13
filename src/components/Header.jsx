@@ -21,6 +21,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [hidden, setHidden] = useState(false)
   const location = useLocation()
   const { items, showNotification, closeNotification } = useCart()
   const { count: favCount } = useWishlist()
@@ -54,13 +55,33 @@ export default function Header() {
     { name: 'Preguntas Frecuentes', href: '/preguntas-frecuentes', icon: QuestionMarkCircleIcon },
   ]
 
-  // Detectar scroll
+  // Detectar scroll: fondo al bajar + ocultar al hacer scroll hacia abajo,
+  // mostrar al subir (patrón moderno de e-commerce). rAF para no trabar.
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10)
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    let lastY = window.scrollY
+    let ticking = false
+    const update = () => {
+      const y = window.scrollY
+      setScrolled(y > 10)
+      // Oculta solo más allá del banner+header; siempre visible arriba
+      // y al subir. Si el menú móvil está abierto, no ocultar.
+      if (!mobileMenuOpen) {
+        if (y > lastY && y > 120) setHidden(true)
+        else if (y < lastY) setHidden(false)
+      }
+      lastY = y
+      ticking = false
+    }
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(update)
+      }
+    }
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [mobileMenuOpen])
 
   // Atajo de teclado para búsqueda (Ctrl+K)
   useEffect(() => {
@@ -90,12 +111,12 @@ export default function Header() {
       </a>
       
       {/* Header */}
-      <header 
-        className={`fixed top-8 left-0 right-0 z-40 w-full transition-all duration-500 ${
-          scrolled 
-            ? 'bg-cream/90 backdrop-blur-md shadow-soft' 
+      <header
+        className={`fixed top-8 left-0 right-0 z-40 w-full transition-all duration-500 ease-out ${
+          scrolled
+            ? 'bg-cream/90 backdrop-blur-md shadow-soft'
             : 'bg-transparent'
-        }`}
+        } ${hidden ? '-translate-y-[140%]' : 'translate-y-0'}`}
       >
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
           {/* Logo */}
@@ -205,7 +226,7 @@ export default function Header() {
             >
               <HeartIcon className="h-6 w-6" />
               {favCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-clay-dark text-cream text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-soft">
+                <span key={favCount} className="count-pop absolute -top-1 -right-1 bg-clay-dark text-cream text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-soft">
                   {favCount}
                 </span>
               )}
@@ -221,7 +242,7 @@ export default function Header() {
             >
               <ShoppingCartIcon className="h-6 w-6" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-clay-dark text-cream text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-soft">
+                <span key={cartCount} className="count-pop absolute -top-1 -right-1 bg-clay-dark text-cream text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-soft">
                   {cartCount}
                 </span>
               )}
