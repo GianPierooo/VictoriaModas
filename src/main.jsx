@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { CartProvider } from './context/CartContext.jsx'
 import { WishlistProvider } from './context/WishlistContext.jsx'
-import MotionProvider from './motion/MotionProvider.jsx'
 import PageLoader from './components/PageLoader.jsx'
 import './index.css' // ← Solo Tailwind CSS
 
@@ -45,12 +44,10 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <MotionProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <RouterProvider router={router} />
-        </WishlistProvider>
-      </CartProvider>
-    </MotionProvider>
+    <CartProvider>
+      <WishlistProvider>
+        <RouterProvider router={router} />
+      </WishlistProvider>
+    </CartProvider>
   </StrictMode>,
 )
