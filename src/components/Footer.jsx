@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import ChatWidget from './ChatWidget.jsx'
 
 const WHATSAPP_NUMBER = '51993357672'
 const CONTACT_EMAIL = 'victoriamodas1053@gmail.com'
@@ -180,6 +181,11 @@ export default function Footer() {
           ¿Tienes dudas? Escríbenos
         </span>
       </a>
+
+      {/* Asistente on-site (abajo-izquierda; no choca con WhatsApp abajo-derecha).
+          Vive aquí, junto al botón de WhatsApp, para aparecer en todas las
+          páginas (el Footer es el único elemento presente en todas ellas). */}
+      <ChatWidget />
     </footer>
   )
 }
