@@ -32,4 +32,16 @@ export default defineConfig([
       'react/jsx-uses-vars': 'error',
     },
   },
+  // Funciones serverless (/api): corren en Node, no en el navegador.
+  {
+    files: ['api/**/*.js'],
+    languageOptions: {
+      globals: { ...globals.node },
+      parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+    },
+    rules: {
+      // No son componentes React → la regla de Fast Refresh no aplica.
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])
