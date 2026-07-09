@@ -5,6 +5,7 @@ import Layout from '../components/Layout.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { generateOrderMessage, openWhatsApp } from '../utils/whatsappUtils.js'
+import { buildOrderPayload, registerOrder } from '../utils/orderUtils.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 const REQUIRED_FIELDS = ['nombre', 'telefono', 'ciudad']
@@ -39,6 +40,10 @@ export default function CheckoutPage() {
       setErrors(nextErrors)
       return
     }
+    // Registra el pedido en la hoja en SEGUNDO PLANO (sin await): si falla, el
+    // flujo de WhatsApp continúa igual. Va antes de openWhatsApp para no perder
+    // el gesto de clic (evita bloqueo de popup).
+    registerOrder(buildOrderPayload(formData, items))
     openWhatsApp(generateOrderMessage(formData, items))
     setConfirmed(true)
     window.scrollTo({ top: 0, behavior: 'instant' })

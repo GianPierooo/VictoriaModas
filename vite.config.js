@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 // Dev-only: sirve /api/stock y /api/pedido ejecutando los MISMOS handlers
 // serverless que en producción, para probar los endpoints end-to-end con
@@ -28,7 +30,10 @@ function devApi() {
         },
       }
       try {
-        const { default: handler } = await import(importPath)
+        // Ruta absoluta desde la raíz del proyecto (el import relativo se
+        // resolvería contra el archivo temporal de Vite, no contra el repo).
+        const abs = pathToFileURL(path.resolve(process.cwd(), importPath)).href
+        const { default: handler } = await import(abs)
         const url = new URL(req.originalUrl || req.url, 'http://localhost')
         const query = Object.fromEntries(url.searchParams)
         const raw = req.method === 'GET' || req.method === 'HEAD' ? '' : await readBody(req)
@@ -52,8 +57,8 @@ function devApi() {
     apply: 'serve',
     configureServer(server) {
       if (!process.env.STOCK_SOURCE) process.env.STOCK_SOURCE = 'mock'
-      mount(server, '/api/stock', './api/stock.js')
-      mount(server, '/api/pedido', './api/pedido.js')
+      mount(server, '/api/stock', 'api/stock.js')
+      mount(server, '/api/pedido', 'api/pedido.js')
     },
   }
 }
