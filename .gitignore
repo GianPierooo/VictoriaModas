@@ -26,3 +26,5 @@ archivos-listos/
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
