@@ -108,17 +108,28 @@ async function readFromGraph() {
   return normalizeMatrix(json.values || [])
 }
 
-// ---- Fuente B: Google Sheet (API pública con API key) ----
+// ---- Fuente B: Google Sheet vía Apps Script web app (doGet → JSON) ----
+// La URL del web app (SHEETS_WEBAPP_URL) es SECRETA: solo desde process.env,
+// NUNCA al cliente. Se cachea unos segundos para no golpear el Apps Script en
+// cada request (los serverless "calientes" reutilizan este módulo).
+let sheetsCache = null // { at: number(ms), rows: [] }
+const SHEETS_TTL_MS = 15000
+
 async function readFromSheets() {
-  const id = requireEnv('GOOGLE_SHEETS_ID')
-  const apiKey = requireEnv('GOOGLE_SHEETS_API_KEY')
-  const url =
-    `https://sheets.googleapis.com/v4/spreadsheets/${id}` +
-    `/values/${encodeURIComponent(WORKSHEET)}?key=${apiKey}`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Sheets HTTP ${res.status}`)
+  const url = requireEnv('SHEETS_WEBAPP_URL')
+
+  const now = Date.now()
+  if (sheetsCache && now - sheetsCache.at < SHEETS_TTL_MS) return sheetsCache.rows
+
+  const res = await fetch(url, { redirect: 'follow' })
+  if (!res.ok) throw new Error(`Sheets webapp HTTP ${res.status}`)
   const json = await res.json()
-  return normalizeMatrix(json.values || [])
+  // Acepta { rows: [...] } (formato del Apps Script) o un array pelado.
+  const list = Array.isArray(json) ? json : json.rows || json.data || []
+  const rows = normalizeRows(list)
+
+  sheetsCache = { at: now, rows }
+  return rows
 }
 
 // ------------------------------------------------------------
@@ -154,6 +165,31 @@ function normalizeMatrix(values) {
       canal: get('canal'),
       // Los precios se leen pero NUNCA se exponen (ver toPublic).
       activo: get('activo'),
+    })
+  }
+  return rows
+}
+
+// Array de objetos (claves = encabezados de la hoja) → shape interno.
+// Tolerante a mayúsculas/espacios en las claves. Descarta filas sin id.
+function normalizeRows(list) {
+  if (!Array.isArray(list)) return []
+  const rows = []
+  for (const raw of list) {
+    if (!raw || typeof raw !== 'object') continue
+    const o = {}
+    for (const k of Object.keys(raw)) o[String(k).trim().toLowerCase()] = raw[k]
+    const id = String(o.id ?? '').trim()
+    if (!id) continue
+    rows.push({
+      id,
+      nombre: o.nombre,
+      color: String(o.color ?? '').trim(),
+      talla: String(o.talla ?? '').trim(),
+      stock: toNumber(o.stock),
+      canal: o.canal,
+      // Los precios se leen pero NUNCA se exponen (ver toPublic).
+      activo: o.activo,
     })
   }
   return rows
