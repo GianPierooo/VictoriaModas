@@ -1,37 +1,59 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Dev-only: sirve /api/stock ejecutando el MISMO handler serverless que en
-// producción, para probar el endpoint end-to-end con `npm run dev` (en prod
-// lo sirve Vercel). Por defecto usa STOCK_SOURCE=mock en local si no hay otra
-// fuente configurada, para ver el indicador con datos de ejemplo.
+// Dev-only: sirve /api/stock y /api/pedido ejecutando los MISMOS handlers
+// serverless que en producción, para probar los endpoints end-to-end con
+// `npm run dev` (en prod los sirve Vercel). Para /api/stock, por defecto usa
+// STOCK_SOURCE=mock en local si no hay otra fuente configurada.
 function devApi() {
+  // Lee el cuerpo crudo de la request (para POST).
+  const readBody = (req) =>
+    new Promise((resolve) => {
+      let data = ''
+      req.on('data', (c) => (data += c))
+      req.on('end', () => resolve(data))
+      req.on('error', () => resolve(''))
+    })
+
+  const mount = (server, route, importPath) => {
+    server.middlewares.use(route, async (req, res) => {
+      const shim = {
+        _code: 200,
+        setHeader: (k, v) => res.setHeader(k, v),
+        status(c) { this._code = c; return this },
+        json(o) {
+          res.statusCode = this._code
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(o))
+        },
+      }
+      try {
+        const { default: handler } = await import(importPath)
+        const url = new URL(req.originalUrl || req.url, 'http://localhost')
+        const query = Object.fromEntries(url.searchParams)
+        const raw = req.method === 'GET' || req.method === 'HEAD' ? '' : await readBody(req)
+        let body = raw
+        try {
+          body = raw ? JSON.parse(raw) : {}
+        } catch {
+          body = raw
+        }
+        await handler({ method: req.method, query, body }, shim)
+      } catch (err) {
+        res.statusCode = 500
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ ok: false, error: String(err && err.message) }))
+      }
+    })
+  }
+
   return {
-    name: 'dev-api-stock',
+    name: 'dev-api',
     apply: 'serve',
     configureServer(server) {
-      server.middlewares.use('/api/stock', async (req, res) => {
-        try {
-          const { default: handler } = await import('./api/stock.js')
-          const url = new URL(req.originalUrl || req.url, 'http://localhost')
-          const query = Object.fromEntries(url.searchParams)
-          if (!process.env.STOCK_SOURCE) process.env.STOCK_SOURCE = 'mock'
-          const shim = {
-            _code: 200,
-            setHeader: (k, v) => res.setHeader(k, v),
-            status(c) { this._code = c; return this },
-            json(o) {
-              res.statusCode = this._code
-              res.setHeader('Content-Type', 'application/json')
-              res.end(JSON.stringify(o))
-            },
-          }
-          await handler({ method: req.method, query }, shim)
-        } catch (err) {
-          res.statusCode = 500
-          res.end(JSON.stringify({ ok: false, error: String(err && err.message) }))
-        }
-      })
+      if (!process.env.STOCK_SOURCE) process.env.STOCK_SOURCE = 'mock'
+      mount(server, '/api/stock', './api/stock.js')
+      mount(server, '/api/pedido', './api/pedido.js')
     },
   }
 }
