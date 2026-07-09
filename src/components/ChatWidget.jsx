@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PRODUCTS, getProductById, getProductsByCategory } from '../data/products.js'
 import { COLOR_HEX } from '../utils/colorMap.js'
+import { useStock, estadoStyle } from '../hooks/useStock.js'
 
 // Paleta (CLAUDE.md)
 const C = {
@@ -223,6 +224,7 @@ export default function ChatWidget() {
   const [view, setView] = useState('home')
   const [color, setColor] = useState(null)
   const [size, setSize] = useState(null)
+  const { getEstado } = useStock()
 
   const [vType, vArg] = view.split(':')
 
@@ -358,6 +360,7 @@ export default function ChatWidget() {
     if (vType === 'prod') {
       const p = getProductById(vArg)
       if (!p) return null
+      const stock = estadoStyle(getEstado(p.id, color, size))
       const waMsg = `Hola 👋 Me interesa "${p.name}" (color ${color}, talla ${size}). ¿Está disponible?`
       return (
         <>
@@ -444,6 +447,28 @@ export default function ChatWidget() {
               </button>
             ))}
           </div>
+
+          {/* Disponibilidad en vivo (discreta; oculta si no hay hoja conectada) */}
+          {stock && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                margin: '0 0 12px',
+                fontSize: 11,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: stock.color,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{ width: 6, height: 6, borderRadius: 999, background: stock.dot, display: 'inline-block' }}
+              />
+              {stock.label}
+            </div>
+          )}
 
           <WhatsAppCTA message={waMsg} label="Consultar por WhatsApp" />
           <div style={{ height: 8 }} />

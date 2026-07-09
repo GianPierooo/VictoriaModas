@@ -14,6 +14,7 @@ import { useCart } from '../context/CartContext.jsx'
 import { COLOR_HEX } from '../utils/colorMap.js'
 import { getProductById, getProductsByCategory } from '../data/products.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
+import { useStock, estadoStyle } from '../hooks/useStock.js'
 
 const SITE_URL = 'https://victoriamodas.store'
 
@@ -30,6 +31,11 @@ export default function ProductPage() {
   const [selectedColor, setSelectedColor] = useState(product.colors[0])
   const [selectedSize, setSelectedSize] = useState(product.sizes[0])
   const [quantity, setQuantity] = useState(1)
+
+  // Stock en vivo (si la hoja no está conectada, estado = 'consultar' y el
+  // indicador no se muestra; no altera el diseño).
+  const { getEstado } = useStock()
+  const stockStyle = estadoStyle(getEstado(productId, selectedColor, selectedSize))
 
   // Al cambiar de producto (navegación entre detalles), reiniciar selección
   useEffect(() => {
@@ -245,6 +251,22 @@ export default function ProductPage() {
                     })}
                   </div>
                 </div>
+
+                {/* Disponibilidad en vivo (discreto; oculto si no hay hoja conectada) */}
+                {stockStyle && (
+                  <div
+                    className="mb-7 flex items-center gap-2 text-[11px] uppercase tracking-[0.12em]"
+                    style={{ color: stockStyle.color }}
+                    aria-live="polite"
+                  >
+                    <span
+                      className="inline-block h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: stockStyle.dot }}
+                      aria-hidden="true"
+                    />
+                    {stockStyle.label}
+                  </div>
+                )}
 
                 {/* Cantidad */}
                 <div className="mb-8">

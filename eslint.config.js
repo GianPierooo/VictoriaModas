@@ -32,9 +32,11 @@ export default defineConfig([
       'react/jsx-uses-vars': 'error',
     },
   },
-  // Funciones serverless (/api): corren en Node, no en el navegador.
+  // Código que corre en Node, no en el navegador:
+  //  · /api      → funciones serverless
+  //  · vite.config.js → config + middleware de dev (usa process.env)
   {
-    files: ['api/**/*.js'],
+    files: ['api/**/*.js', 'vite.config.js'],
     languageOptions: {
       globals: { ...globals.node },
       parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
