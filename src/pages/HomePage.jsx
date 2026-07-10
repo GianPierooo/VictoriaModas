@@ -206,66 +206,101 @@ function FeaturedProducts() {
   )
 }
 
-// ============= COLECCIONES VISUALES =============
+// ============= COLECCIONES — banners full-bleed =============
 function Collections() {
   const [ref, isVisible] = useScrollAnimation()
-  
+
+  // `fabricImage` es opcional: si el dueño sube una foto de la tela en detalle
+  // (p. ej. /imagenes/telas/lame-detalle.png), se usa en el inset; si no, el
+  // inset muestra un acercamiento de la misma prenda. Nada se rompe si falta.
   const collections = [
     {
       id: 'vestidos-elegantes',
-      title: 'Vestidos Elegantes',
-      description: 'Lame, Rit y Suplex de alta calidad',
+      title: 'Vestidos elegantes',
+      description: 'Lamé, rit y suplex de alta calidad, con caída impecable.',
+      fabric: 'Tela lamé',
       image: '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png',
-      link: '/vestidos'
+      fabricImage: null,
+      link: '/vestidos',
+      align: 'left',
     },
     {
       id: 'pantalones-modernos',
-      title: 'Pantalones Modernos',
-      description: 'Comodidad y estilo en tela scuba',
+      title: 'Pantalones modernos',
+      description: 'Comodidad y estructura en tela scuba, con un corte que estiliza.',
+      fabric: 'Tela scuba',
       image: '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png',
-      link: '/pantalones'
-    }
+      fabricImage: null,
+      link: '/pantalones',
+      align: 'right',
+    },
   ]
 
   return (
-    <section ref={ref} className="bg-cream py-20 md:py-28">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {collections.map((collection, idx) => (
+    <section ref={ref} className="bg-cream">
+      <div className="flex flex-col">
+        {collections.map((c, idx) => {
+          const textLeft = c.align === 'left'
+          return (
             <Link
-              key={collection.id}
-              to={collection.link}
-              className={`group relative h-[480px] md:h-[560px] overflow-hidden rounded-lg bg-cream-dark transition-all duration-700 ease-out ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              key={c.id}
+              to={c.link}
+              className={`group relative block h-[72vh] min-h-[460px] w-full overflow-hidden bg-cream-dark transition-all duration-700 ease-out ${
+                isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
               }`}
-              style={{ transitionDelay: `${idx * 150}ms` }}
+              style={{ transitionDelay: `${idx * 140}ms` }}
             >
               <ResponsiveImage
-                src={collection.image}
-                alt={collection.title}
-                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-105"
+                src={c.image}
+                alt={c.title}
+                className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-105"
                 loading="lazy"
               />
 
-              {/* Overlay degradado sutil, se intensifica al hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/15 to-transparent group-hover:from-ink/70 transition-colors duration-500" />
+              {/* Overlay elegante hacia el lado del texto */}
+              <div
+                className={`absolute inset-0 ${textLeft ? 'bg-gradient-to-r' : 'bg-gradient-to-l'} from-ink/75 via-ink/30 to-transparent`}
+              />
+
+              {/* Detalle de la tela en grande (inset, lado opuesto al texto) */}
+              <figure
+                className={`absolute bottom-8 hidden md:block ${textLeft ? 'right-10' : 'left-10'}`}
+              >
+                <div className="h-52 w-40 overflow-hidden rounded-lg border border-cream/30 shadow-soft">
+                  <ResponsiveImage
+                    src={c.fabricImage || c.image}
+                    alt=""
+                    aria-hidden="true"
+                    className={`h-full w-full object-cover ${c.fabricImage ? 'object-center' : 'scale-[2.4] object-[50%_38%]'}`}
+                    loading="lazy"
+                  />
+                </div>
+                <figcaption className="mt-2 text-center text-[10px] uppercase tracking-luxe text-cream/80">
+                  {c.fabric}
+                </figcaption>
+              </figure>
 
               {/* Contenido */}
-              <div className="absolute inset-0 flex flex-col items-start justify-end p-8 md:p-10">
-                <h3 className="font-serif font-light text-cream text-3xl md:text-4xl mb-2">
-                  {collection.title}
-                </h3>
-                <p className="text-cream/80 mb-5 font-light">
-                  {collection.description}
-                </p>
-                <span className="inline-flex items-center gap-2 text-cream text-xs uppercase tracking-[0.2em] border-b border-cream/40 pb-1 transition-all duration-500 group-hover:gap-3 group-hover:border-cream">
-                  Explorar colección
-                  <ChevronRightIcon className="w-4 h-4" />
-                </span>
+              <div
+                className={`absolute inset-0 flex flex-col justify-center px-8 md:px-16 lg:px-24 ${
+                  textLeft ? 'items-start text-left' : 'items-end text-right'
+                }`}
+              >
+                <div className="max-w-md">
+                  <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay-light">Colección</p>
+                  <h3 className="mb-4 font-serif text-4xl font-light leading-[1.05] text-cream md:text-6xl">
+                    {c.title}
+                  </h3>
+                  <p className="mb-6 font-light leading-relaxed text-cream/80">{c.description}</p>
+                  <span className="inline-flex items-center gap-2 border-b border-cream/40 pb-1 text-xs uppercase tracking-[0.2em] text-cream transition-all duration-500 group-hover:gap-3 group-hover:border-cream">
+                    Explorar la colección
+                    <ChevronRightIcon className="h-4 w-4" />
+                  </span>
+                </div>
               </div>
             </Link>
-          ))}
-        </div>
+          )
+        })}
       </div>
     </section>
   )
