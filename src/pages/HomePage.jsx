@@ -170,50 +170,36 @@ function FeaturedProducts() {
   return (
     <section
       ref={ref}
-      className="bg-white py-20 md:py-28"
+      className="bg-white py-24 md:py-36"
       aria-labelledby="featured-title"
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Encabezado */}
-        <div className="text-center mb-14">
-          <p className={`text-[11px] uppercase tracking-luxe text-clay mb-4 transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}>
-            Destacados
-          </p>
-          <h2
-            id="featured-title"
-            className={`font-serif font-light text-ink text-4xl md:text-5xl mb-4 transition-all duration-700 delay-100 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        {/* Encabezado editorial: título a la izquierda, enlace a la derecha */}
+        <div
+          className={`mb-16 flex flex-col gap-6 border-b border-ink/10 pb-8 transition-all duration-700 sm:flex-row sm:items-end sm:justify-between ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`}
+        >
+          <div>
+            <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Destacados</p>
+            <h2 id="featured-title" className="font-serif text-5xl font-light leading-[1.05] text-ink md:text-6xl">
+              Los más deseados
+            </h2>
+          </div>
+          <Link
+            to="/vestidos"
+            className="group inline-flex items-center gap-2 self-start text-xs uppercase tracking-[0.2em] text-ink-soft transition-colors hover:text-clay sm:self-auto sm:pb-2"
           >
-            Nuestros más vendidos
-          </h2>
-          <p className={`text-ink-soft font-light transition-all duration-700 delay-200 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}>
-            Las prendas que enamoran a nuestras clientas
-          </p>
+            Ver todo
+            <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
 
-        {/* Grid — la entrada escalonada la maneja cada ProductCard */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-5 lg:gap-x-6">
+        {/* Grid — cards más grandes y con más aire; cada ProductCard escalona su entrada */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-14 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8">
           {products.map((product, idx) => (
             <ProductCard key={product.id} product={product} index={idx} />
           ))}
-        </div>
-
-        {/* CTA */}
-        <div className={`mt-14 text-center transition-all duration-700 delay-200 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}>
-          <Link
-            to="/vestidos"
-            className="group inline-flex items-center justify-center bg-ink text-cream px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:bg-clay"
-          >
-            Ver colección completa
-            <ChevronRightIcon className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-          </Link>
         </div>
       </div>
     </section>
