@@ -157,9 +157,9 @@ export default function ProductPage() {
   return (
     <Layout>
       <div className="bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:py-12">
+        <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-16">
           {/* Breadcrumb */}
-          <nav className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-ink-muted" aria-label="Breadcrumb">
+          <nav className="mb-10 flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-ink-muted" aria-label="Breadcrumb">
             <Link to="/" className="transition-colors hover:text-clay">Inicio</Link>
             <ChevronRightIcon className="h-3 w-3" />
             <Link to={categoryPath} className="transition-colors hover:text-clay">{categoryLabel}</Link>
@@ -167,7 +167,7 @@ export default function ProductPage() {
             <span className="text-ink-soft">{product.name}</span>
           </nav>
 
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-5 lg:gap-12">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-5 lg:gap-14">
             {/* Galería (60%) */}
             <div className="lg:col-span-3">
               <div className="flex flex-col-reverse gap-4 lg:flex-row lg:gap-5">
@@ -225,13 +225,13 @@ export default function ProductPage() {
             {/* Info (40%) */}
             <div className="lg:col-span-2">
               <div className="lg:sticky lg:top-28">
-                <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">
+                <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.04s' }}>
                   {product.category}
                 </p>
-                <h1 className="mb-6 font-serif text-4xl font-light leading-[1.1] text-ink md:text-5xl">
+                <h1 className="hero-line mb-6 font-serif text-4xl font-light leading-[1.1] text-ink md:text-5xl" style={{ animationDelay: '0.12s' }}>
                   {product.name}
                 </h1>
-                <p className="mb-9 max-w-md font-light leading-relaxed text-ink-soft">
+                <p className="hero-line mb-9 max-w-md font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.2s' }}>
                   {product.description}
                 </p>
 
@@ -293,7 +293,7 @@ export default function ProductPage() {
                 {/* Disponibilidad en vivo (discreto; oculto si no hay hoja conectada) */}
                 {stockStyle && (
                   <div
-                    className="mb-7 flex items-center gap-2 text-[11px] uppercase tracking-[0.12em]"
+                    className="mb-8 flex items-center gap-2 text-[11px] uppercase tracking-[0.12em]"
                     style={{ color: stockStyle.color }}
                     aria-live="polite"
                   >
