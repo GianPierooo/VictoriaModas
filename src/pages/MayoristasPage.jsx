@@ -154,9 +154,13 @@ export default function MayoristasPage() {
         <div className="bg-white">
           <div className="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center px-6 py-20 lg:px-8">
             <div className="text-center">
-              <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">Acceso mayoristas</p>
-              <h1 className="mb-4 font-serif text-4xl font-light text-ink">Canal de mayoreo</h1>
-              <p className="mb-10 font-light leading-relaxed text-ink-soft">
+              <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
+                Acceso mayoristas
+              </p>
+              <h1 className="hero-line mb-5 font-serif text-5xl font-light leading-[1.05] text-ink" style={{ animationDelay: '0.16s' }}>
+                Canal de mayoreo
+              </h1>
+              <p className="hero-line mb-10 font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.28s' }}>
                 Sección privada para clientas mayoristas. Ingresa tu código de acceso para ver
                 precios por mayor y disponibilidad.
               </p>
@@ -205,10 +209,14 @@ export default function MayoristasPage() {
     <Layout>
       <div className="bg-white">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-14">
-          <div className="mb-10">
-            <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">Mayoristas · confidencial</p>
-            <h1 className="font-serif text-4xl font-light text-ink md:text-5xl">Catálogo de mayoreo</h1>
-            <p className="mt-4 max-w-2xl font-light leading-relaxed text-ink-soft">
+          <div className="mb-14">
+            <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
+              Mayoristas · confidencial
+            </p>
+            <h1 className="hero-line font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl" style={{ animationDelay: '0.14s' }}>
+              Catálogo de mayoreo
+            </h1>
+            <p className="hero-line mt-5 max-w-2xl font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.24s' }}>
               Precios por mayor y disponibilidad en vivo. Elige cantidades por color y talla, y
               envíanos el pedido por WhatsApp.
             </p>
@@ -232,22 +240,22 @@ export default function MayoristasPage() {
           ) : (
             <div className="space-y-12 pb-32">
               {grouped.map(({ product, variants }) => (
-                <section key={product.id} className="border-b border-ink/10 pb-10">
-                  <div className="mb-6 flex gap-5">
-                    <div className="h-28 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-cream-dark">
+                <section key={product.id} className="border-b border-ink/10 pb-12">
+                  <div className="mb-7 flex items-center gap-6">
+                    <div className="aspect-[3/4] w-24 flex-shrink-0 overflow-hidden rounded-xl bg-cream-dark md:w-28">
                       <ResponsiveImage
                         src={product.image}
                         alt={product.name}
                         className="h-full w-full object-cover object-top"
                         loading="lazy"
-                        width={160}
-                        height={224}
+                        width={200}
+                        height={266}
                       />
                     </div>
                     <div>
-                      <p className="mb-1 text-[10px] uppercase tracking-luxe text-clay">{product.category}</p>
-                      <h2 className="font-serif text-2xl font-light text-ink">{product.name}</h2>
-                      <p className="mt-1 text-sm font-light text-ink-muted">{product.fabric}</p>
+                      <p className="mb-1.5 text-[10px] uppercase tracking-luxe text-clay">{product.category}</p>
+                      <h2 className="font-serif text-2xl font-light leading-tight text-ink md:text-3xl">{product.name}</h2>
+                      <p className="mt-1.5 text-sm font-light text-ink-muted">{product.fabric}</p>
                     </div>
                   </div>
 
