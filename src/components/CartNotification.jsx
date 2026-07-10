@@ -1,95 +1,91 @@
+// Notificación al añadir al carrito — mismo lenguaje boutique del sitio
+// (cream/ink/clay, serif, hairlines). Entra con un fade+slide discreto que
+// respeta prefers-reduced-motion (las animaciones se neutralizan en CSS).
 import { Link } from 'react-router-dom'
-import { XMarkIcon, ShoppingCartIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon } from '@heroicons/react/24/solid'
+import ResponsiveImage from './ResponsiveImage.jsx'
+import { COLOR_HEX } from '../utils/colorMap.js'
 
 export default function CartNotification({ isOpen, onClose, cartItems }) {
   if (!isOpen) return null
-  
+
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
-    <div className="fixed top-20 right-4 z-50 w-full max-w-sm bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden animate-slide-in-right">
+    <div
+      className="animate-fadeInRight fixed right-4 top-24 z-50 w-full max-w-sm overflow-hidden rounded-2xl bg-cream shadow-soft ring-1 ring-ink/10"
+      role="status"
+      aria-live="polite"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-rose-50 to-white border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-rose flex items-center justify-center">
-            <ShoppingCartIcon className="w-5 h-5 text-white" />
-          </div>
+      <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
+        <div className="flex items-center gap-2.5">
+          <CheckCircleIcon className="h-5 w-5 flex-shrink-0 text-clay" />
           <div>
-            <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-              <CheckCircleIcon className="w-5 h-5 text-green-500" />
-              Mi Carrito
+            <p className="font-serif text-base font-light text-ink">Añadido al carrito</p>
+            <p className="text-[10px] uppercase tracking-luxe text-ink-muted">
+              {totalItems} pieza{totalItems !== 1 ? 's' : ''} en total
             </p>
-            <p className="text-xs text-gray-500">{totalItems} producto{totalItems !== 1 ? 's' : ''}</p>
           </div>
         </div>
-        <button 
-          className="p-1 hover:bg-gray-100 rounded-md transition-colors" 
+        <button
+          type="button"
+          className="rounded-md p-1.5 text-ink-muted transition-colors hover:text-ink"
           onClick={onClose}
-          aria-label="Cerrar carrito"
+          aria-label="Cerrar notificación"
         >
-          <XMarkIcon className="w-5 h-5 text-gray-500" />
+          <XMarkIcon className="h-5 w-5" />
         </button>
       </div>
-      
-      {/* Body */}
-      <div className="max-h-96 overflow-y-auto p-4">
-        {cartItems.length === 0 ? (
-          <div className="text-center py-8">
-            <ShoppingCartIcon className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-600 font-medium">Tu carrito está vacío</p>
-            <p className="text-sm text-gray-400 mt-1">Agrega productos para comenzar</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {cartItems.map((item, index) => (
-              <div key={`${item.id}-${index}`} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-16 h-16 flex-shrink-0 bg-white rounded-md overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.name} 
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium text-gray-900 truncate">{item.name}</h4>
-                  <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                    {item.selectedColor && (
-                      <span className="flex items-center gap-1">
-                        <span className="w-3 h-3 rounded-full border border-gray-300" style={{backgroundColor: item.selectedColor.toLowerCase()}}></span>
-                        {item.selectedColor}
-                      </span>
-                    )}
-                    {item.selectedSize && (
-                      <span className="px-2 py-0.5 bg-gray-200 rounded">
-                        {item.selectedSize}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-gray-600">Cantidad: × {item.quantity}</span>
-                  </div>
+
+      {/* Items */}
+      <div className="max-h-72 overflow-y-auto px-5 py-4">
+        <ul className="divide-y divide-ink/5">
+          {cartItems.map((item, index) => (
+            <li key={`${item.id}-${index}`} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+              <div className="aspect-[3/4] w-12 flex-shrink-0 overflow-hidden rounded-lg bg-cream-dark">
+                <ResponsiveImage
+                  src={item.image}
+                  alt={item.name}
+                  className="h-full w-full object-cover object-top"
+                  loading="lazy"
+                  width={96}
+                  height={128}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="truncate font-serif text-sm font-light text-ink">{item.name}</h4>
+                <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-ink-muted">
+                  {item.selectedColor && (
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className="h-3 w-3 flex-shrink-0 rounded-full border border-ink/15"
+                        style={{ backgroundColor: COLOR_HEX[item.selectedColor] || '#CCCCCC' }}
+                        aria-hidden="true"
+                      />
+                      {item.selectedColor}
+                    </span>
+                  )}
+                  {item.selectedSize && <span>· {item.selectedSize}</span>}
+                  <span>· ×{item.quantity}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </li>
+          ))}
+        </ul>
       </div>
-      
+
       {/* Footer */}
-      {cartItems.length > 0 && (
-        <div className="p-4 bg-gray-50 border-t border-gray-200">
-          <Link 
-            to="/carrito" 
-            className="w-full flex items-center justify-center gap-2 bg-rose hover:bg-rose-dark text-white px-4 py-3 rounded-full text-sm font-medium transition-colors"
-            onClick={onClose}
-          >
-            <span>Ver carrito completo</span>
-            <ArrowRightIcon className="w-4 h-4" />
-          </Link>
-        </div>
-      )}
+      <div className="border-t border-ink/10 px-5 py-4">
+        <Link
+          to="/carrito"
+          onClick={onClose}
+          className="block w-full rounded-full bg-ink py-3 text-center text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
+        >
+          Ver carrito
+        </Link>
+      </div>
     </div>
   )
 }

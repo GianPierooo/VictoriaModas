@@ -10,11 +10,13 @@ import PageTransition from '../motion/PageTransition.jsx'
 import { useInViewReveal } from '../motion/useInViewReveal.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
-// ── Assets del hero. El dueño puede subir el video real a /videos/hero.mp4;
-//    si no existe, el hero usa la imagen editorial de respaldo sin romperse. ──
-const HERO_VIDEO_WEBM = '/videos/hero.webm'
-const HERO_VIDEO = '/videos/hero.mp4'
-const HERO_IMAGE = '/imagenes/vestidos/vestido_suplex01/azul_adelante.png'
+// ── Assets del hero: rutas centralizadas en src/config/assets.js (el dueño
+//    sube el archivo y encaja solo; si no existe, hay fallback y nada se rompe).
+import { ASSETS } from '../config/assets.js'
+
+const HERO_VIDEO_WEBM = ASSETS.heroVideoWebm
+const HERO_VIDEO = ASSETS.heroVideoMp4
+const HERO_IMAGE = ASSETS.heroImage
 
 // ¿El usuario pidió menos movimiento? (se respeta en video y animaciones)
 function usePrefersReducedMotion() {
@@ -212,9 +214,9 @@ function FeaturedProducts() {
 function Collections() {
   const [ref, isVisible] = useScrollAnimation()
 
-  // `fabricImage` es opcional: si el dueño sube una foto de la tela en detalle
-  // (p. ej. /imagenes/telas/lame-detalle.png), se usa en el inset; si no, el
-  // inset muestra un acercamiento de la misma prenda. Nada se rompe si falta.
+  // `fabricImage` viene de src/config/assets.js: si el dueño sube la foto de
+  // la tela en detalle, se usa en el inset; si es null, el inset muestra un
+  // acercamiento de la misma prenda. Nada se rompe si falta.
   const collections = [
     {
       id: 'vestidos-elegantes',
@@ -222,7 +224,7 @@ function Collections() {
       description: 'Lamé, rit y suplex de alta calidad, con caída impecable.',
       fabric: 'Tela lamé',
       image: '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png',
-      fabricImage: null,
+      fabricImage: ASSETS.fabricLame,
       link: '/vestidos',
       align: 'left',
     },
@@ -232,7 +234,7 @@ function Collections() {
       description: 'Comodidad y estructura en tela scuba, con un corte que estiliza.',
       fabric: 'Tela scuba',
       image: '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png',
-      fabricImage: null,
+      fabricImage: ASSETS.fabricScuba,
       link: '/pantalones',
       align: 'right',
     },
@@ -385,9 +387,10 @@ function CategoryShowcase() {
 function ProductSpotlight() {
   const [ref, isVisible] = useScrollAnimation()
 
-  // Hook opcional: foto de la tela en detalle (si el dueño la sube).
+  // Foto de la tela en detalle desde la config central (null → acercamiento
+  // de la propia prenda).
   const SPOTLIGHT_IMAGE = '/imagenes/vestidos/vestido_suplex01/azul_adelante.png'
-  const FABRIC_IMAGE = null
+  const FABRIC_IMAGE = ASSETS.fabricSuplex
 
   const details = [
     { label: 'Tela', value: 'Suplex de alta calidad' },

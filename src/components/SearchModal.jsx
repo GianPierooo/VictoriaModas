@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Dialog, Transition } from '@headlessui/react'
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { searchProducts } from '../data/products.js'
+import ResponsiveImage from './ResponsiveImage.jsx'
 
 export default function SearchModal({ isOpen, onClose }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -73,45 +74,45 @@ export default function SearchModal({ isOpen, onClose }) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all">
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-cream shadow-soft ring-1 ring-ink/10 transition-all">
                 {/* Header */}
-                <div className="border-b border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <Dialog.Title className="text-lg font-semibold text-gray-900">
-                      Buscar productos
+                <div className="border-b border-ink/10 p-6">
+                  <div className="mb-5 flex items-center justify-between">
+                    <Dialog.Title className="font-serif text-2xl font-light text-ink">
+                      Buscar
                     </Dialog.Title>
                     <div className="flex items-center gap-2">
-                      <kbd className="px-2 py-1 text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-300 rounded">
+                      <kbd className="rounded border border-ink/15 bg-cream-dark px-2 py-1 text-[10px] uppercase tracking-[0.1em] text-ink-muted">
                         Esc
                       </kbd>
                       <button
                         onClick={onClose}
-                        className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="rounded-md p-1.5 text-ink-muted transition-colors hover:text-ink"
                         aria-label="Cerrar búsqueda"
                       >
-                        <XMarkIcon className="w-6 h-6" />
+                        <XMarkIcon className="h-6 w-6" />
                       </button>
                     </div>
                   </div>
 
-                  {/* Search Input */}
+                  {/* Input hairline */}
                   <div className="relative">
-                    <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <MagnifyingGlassIcon className="absolute left-0 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-muted" />
                     <input
                       ref={inputRef}
                       type="text"
-                      placeholder="Buscar blusas, pantalones, vestidos..."
+                      placeholder="Vestidos, blusas, scuba, seda…"
                       value={searchTerm}
                       onChange={(e) => handleSearch(e.target.value)}
-                      className="w-full pl-12 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose focus:border-transparent"
+                      className="w-full border-b border-ink/20 bg-transparent py-3 pl-9 pr-10 font-light text-ink placeholder:text-ink-muted/50 transition-colors focus:border-clay focus:outline-none"
                     />
                     {searchTerm && (
                       <button
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-ink-muted transition-colors hover:text-ink"
                         onClick={() => handleSearch('')}
                         aria-label="Limpiar búsqueda"
                       >
-                        <XMarkIcon className="w-5 h-5" />
+                        <XMarkIcon className="h-5 w-5" />
                       </button>
                     )}
                   </div>
@@ -121,43 +122,44 @@ export default function SearchModal({ isOpen, onClose }) {
                 <div className="max-h-96 overflow-y-auto p-6">
                   {isLoading && (
                     <div className="flex flex-col items-center justify-center py-12">
-                      <div className="w-8 h-8 border-4 border-rose border-t-transparent rounded-full animate-spin"></div>
-                      <p className="mt-3 text-sm text-gray-600">Buscando productos...</p>
+                      <p className="motion-safe:animate-pulse-soft text-sm font-light text-ink-muted">Buscando…</p>
                     </div>
                   )}
 
                   {!isLoading && searchTerm && searchResults.length === 0 && (
-                    <div className="text-center py-12">
-                      <MagnifyingGlassIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-1">No se encontraron productos</h3>
-                      <p className="text-sm text-gray-500">Intenta con otros términos de búsqueda</p>
+                    <div className="py-12 text-center">
+                      <h3 className="mb-2 font-serif text-xl font-light text-ink">Nada por aquí</h3>
+                      <p className="text-sm font-light text-ink-muted">Prueba con otra palabra: una tela, una prenda o una categoría.</p>
                     </div>
                   )}
 
                   {!isLoading && searchTerm && searchResults.length > 0 && (
                     <>
-                      <p className="text-sm text-gray-600 mb-4">
-                        {searchResults.length} producto{searchResults.length !== 1 ? 's' : ''} encontrado{searchResults.length !== 1 ? 's' : ''}
+                      <p className="mb-4 text-[10px] uppercase tracking-luxe text-ink-muted">
+                        {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''}
                       </p>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {searchResults.map((product) => (
                           <Link
                             key={product.id}
-                            to={`/${product.category}`}
-                            className="flex gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                            to={`/producto/${product.id}`}
+                            className="group flex items-center gap-4 rounded-xl p-2.5 transition-colors hover:bg-cream-dark"
                             onClick={onClose}
                           >
-                            <div className="w-16 h-16 flex-shrink-0 bg-white rounded-md overflow-hidden">
-                              <img 
-                                src={product.image} 
+                            <div className="aspect-[3/4] w-14 flex-shrink-0 overflow-hidden rounded-lg bg-cream-dark">
+                              <ResponsiveImage
+                                src={product.image}
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                className="h-full w-full object-cover object-top"
+                                loading="lazy"
+                                width={112}
+                                height={149}
                               />
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-medium text-gray-900 truncate">{product.name}</h3>
-                              <p className="text-xs text-gray-500 capitalize mt-1">{product.category}</p>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="truncate font-serif text-base font-light text-ink transition-colors group-hover:text-clay">{product.name}</h3>
+                              <p className="mt-0.5 text-[10px] uppercase tracking-luxe text-ink-muted">{product.category}</p>
                             </div>
                           </Link>
                         ))}
@@ -167,12 +169,12 @@ export default function SearchModal({ isOpen, onClose }) {
 
                   {!searchTerm && (
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Búsquedas populares</h3>
+                      <h3 className="mb-4 text-[10px] uppercase tracking-luxe text-ink-muted">Búsquedas populares</h3>
                       <div className="flex flex-wrap gap-2">
                         {popularSearches.map((tag) => (
                           <button
                             key={tag}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-sm text-gray-700 rounded-full transition-colors"
+                            className="rounded-full border border-ink/20 px-4 py-2 text-xs uppercase tracking-[0.1em] text-ink-soft transition-colors hover:border-ink hover:text-ink"
                             onClick={() => handleSearch(tag)}
                           >
                             {tag}
