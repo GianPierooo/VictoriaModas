@@ -62,7 +62,25 @@ export function useStock() {
     return it ? it.estado : 'consultar'
   }
 
-  return { ready: !!state, source: state?.source || 'none', getEstado }
+  // Estado AGREGADO por producto (todas sus variantes): útil en cards/listas
+  // donde aún no hay color/talla elegidos. Prioridad: alguna disponible →
+  // 'disponible'; si no, alguna en últimas → 'ultimas'; si todas agotadas →
+  // 'agotado'; sin datos → 'consultar'.
+  const getEstadoProducto = (id) => {
+    if (!state) return 'consultar'
+    const pid = String(id).toLowerCase()
+    let any = false
+    let best = 'agotado'
+    for (const it of state.byKey.values()) {
+      if (String(it.id).toLowerCase() !== pid) continue
+      any = true
+      if (it.estado === 'disponible') return 'disponible'
+      if (it.estado === 'ultimas') best = 'ultimas'
+    }
+    return any ? best : 'consultar'
+  }
+
+  return { ready: !!state, source: state?.source || 'none', getEstado, getEstadoProducto }
 }
 
 // Estilo del indicador por estado (paleta clay/ink). Devuelve null para

@@ -214,16 +214,19 @@ export default function ProductsPage({ products = [], title = "Productos", filte
       <Header />
 
       <PageTransition className="min-h-screen bg-white pt-28">
-        {/* Cabecera de categoría */}
-        <section className="bg-cream py-14 md:py-20">
+        {/* Cabecera editorial de categoría — entrada secuenciada */}
+        <section className="bg-cream py-16 md:py-24">
           <div className="mx-auto max-w-7xl px-6 text-center lg:px-8">
-            <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">
+            <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
               Colección
             </p>
-            <h1 className="mb-3 font-serif text-4xl font-light text-ink md:text-5xl">
+            <h1
+              className="hero-line mb-4 font-serif text-5xl font-light leading-[1.05] tracking-[-0.01em] text-ink md:text-6xl"
+              style={{ animationDelay: '0.16s' }}
+            >
               {toSentenceCase(title)}
             </h1>
-            <p className="text-sm font-light text-ink-muted">
+            <p className="hero-line text-sm font-light text-ink-muted" style={{ animationDelay: '0.28s' }}>
               {sortedProducts.length} pieza{sortedProducts.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -288,27 +291,28 @@ export default function ProductsPage({ products = [], title = "Productos", filte
           </div>
         </div>
 
-        {/* Grid de productos */}
-        <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 lg:px-8">
+        {/* Grid de productos — cards grandes, con aire */}
+        <div className="mx-auto max-w-7xl px-6 py-14 md:py-20 lg:px-8">
           {sortedProducts.length > 0 ? (
-            <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-14 sm:gap-x-6 md:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
               {sortedProducts.map((product, i) => (
                 <ProductCard key={product.id} product={product} index={i} />
               ))}
             </div>
           ) : (
-            /* Estado vacío */
-            <div className="py-24 text-center">
-              <h2 className="mb-3 font-serif text-2xl font-light text-ink md:text-3xl">
-                No encontramos piezas con esos filtros
+            /* Estado vacío con dirección clara */
+            <div className="mx-auto max-w-md py-24 text-center">
+              <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Sin resultados</p>
+              <h2 className="mb-4 font-serif text-3xl font-light leading-[1.1] text-ink md:text-4xl">
+                Nada con esos filtros
               </h2>
-              <p className="mb-8 font-light text-ink-soft">
-                Prueba con otra combinación o revisa toda la colección.
+              <p className="mb-10 font-light leading-relaxed text-ink-soft">
+                Prueba con otra combinación o vuelve a ver toda la colección.
               </p>
               <button
                 type="button"
                 onClick={clearAllFilters}
-                className="inline-flex items-center justify-center rounded-full bg-ink px-9 py-4 text-xs uppercase tracking-[0.2em] text-cream transition-all duration-500 hover:bg-clay"
+                className="inline-flex items-center justify-center rounded-full bg-ink px-9 py-4 text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
               >
                 Limpiar filtros
               </button>

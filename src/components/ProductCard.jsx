@@ -6,6 +6,7 @@ import { COLOR_HEX } from '../utils/colorMap.js'
 import { useWishlist } from '../context/WishlistContext.jsx'
 import ResponsiveImage from './ResponsiveImage.jsx'
 import { useInViewReveal } from '../motion/useInViewReveal.js'
+import { useStock } from '../hooks/useStock.js'
 
 const MAX_SWATCHES = 4
 
@@ -15,6 +16,12 @@ export default function ProductCard({ product, index = 0 }) {
   const { isFavorite, toggleFavorite } = useWishlist()
   const fav = isFavorite(id)
   const [revealRef, inView] = useInViewReveal({ amount: 0.15 })
+
+  // Stock agregado del producto (todas sus variantes). Solo se señala la
+  // urgencia ('ultimas') o el agotado; 'disponible'/'consultar' no muestran
+  // nada para no ensuciar la card.
+  const { getEstadoProducto } = useStock()
+  const estadoProducto = getEstadoProducto(id)
 
   const [activeColor, setActiveColor] = useState(null)
 
@@ -177,6 +184,15 @@ export default function ProductCard({ product, index = 0 }) {
             <h3 className="font-serif text-base sm:text-lg text-ink font-light leading-snug group-hover:text-clay transition-colors duration-300">
               {name}
             </h3>
+            {(estadoProducto === 'ultimas' || estadoProducto === 'agotado') && (
+              <p
+                className={`mt-1.5 text-[10px] uppercase tracking-[0.18em] ${
+                  estadoProducto === 'ultimas' ? 'text-clay-dark' : 'text-ink-muted'
+                }`}
+              >
+                {estadoProducto === 'ultimas' ? 'Últimas piezas' : 'Agotado'}
+              </p>
+            )}
           </div>
         </Link>
       </div>
