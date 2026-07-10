@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { UserCircleIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
@@ -15,15 +14,14 @@ export default function AccountPage() {
     <Layout>
       <div className="bg-cream">
         <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-6 py-20 text-center lg:px-8">
-          <UserCircleIcon className="mb-6 h-16 w-16 text-ink/20" strokeWidth={1} />
-          <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">
+          <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
             Próximamente
           </p>
-          <h1 className="mb-5 font-serif text-4xl font-light leading-tight text-ink md:text-5xl">
+          <h1 className="hero-line mb-6 font-serif text-5xl font-light leading-[1.05] text-ink md:text-6xl" style={{ animationDelay: '0.16s' }}>
             Tu cuenta,
             <span className="block italic text-clay">muy pronto</span>
           </h1>
-          <p className="mb-10 max-w-md font-light leading-relaxed text-ink-soft">
+          <p className="hero-line mb-10 max-w-md font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.28s' }}>
             Estamos preparando un espacio donde podrás crear tu cuenta y seguir
             tus pedidos. Mientras tanto, coordinamos todo contigo por WhatsApp.
           </p>

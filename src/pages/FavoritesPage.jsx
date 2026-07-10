@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { HeartIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import { useWishlist } from '../context/WishlistContext.jsx'
@@ -19,22 +18,26 @@ export default function FavoritesPage() {
   return (
     <Layout>
       <div className="bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-14">
-          {/* Encabezado */}
-          <div className="mb-10">
-            <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">Tu selección</p>
-            <h1 className="font-serif text-4xl font-light text-ink md:text-5xl">Favoritos</h1>
+        <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-16">
+          {/* Encabezado — entrada secuenciada */}
+          <div className="mb-12">
+            <p className="hero-line mb-3 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
+              Tu selección
+            </p>
+            <h1 className="hero-line font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl" style={{ animationDelay: '0.14s' }}>
+              Favoritos
+            </h1>
           </div>
 
           {products.length === 0 ? (
-            /* Vacío */
-            <div className="py-20 text-center">
-              <HeartIcon className="mx-auto mb-6 h-16 w-16 text-ink/20" strokeWidth={1} />
-              <h2 className="mb-3 font-serif text-2xl font-light text-ink md:text-3xl">
-                Aún no has guardado favoritos
+            /* Vacío — invitación con dirección */
+            <div className="mx-auto max-w-md py-24 text-center">
+              <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Aún sin favoritos</p>
+              <h2 className="mb-4 font-serif text-3xl font-light leading-[1.1] text-ink md:text-4xl">
+                Guarda lo que te enamore
               </h2>
-              <p className="mb-8 font-light text-ink-soft">
-                Toca el corazón en cualquier prenda para guardarla aquí y volver a ella cuando quieras.
+              <p className="mb-10 font-light leading-relaxed text-ink-soft">
+                Toca el corazón en cualquier prenda para volver a ella cuando quieras.
               </p>
               <Link
                 to="/vestidos"
@@ -44,7 +47,7 @@ export default function FavoritesPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-14 sm:gap-x-6 md:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
               {products.map((product, i) => (
                 <ProductCard key={product.id} product={product} index={i} />
               ))}

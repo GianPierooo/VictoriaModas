@@ -24,14 +24,14 @@ export default function AbrigosPage() {
     <Layout>
       <div className="bg-cream">
         <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-6 py-20 text-center lg:px-8">
-          <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">
+          <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
             Próximamente
           </p>
-          <h1 className="mb-5 font-serif text-4xl font-light leading-tight text-ink md:text-5xl">
+          <h1 className="hero-line mb-6 font-serif text-5xl font-light leading-[1.05] text-ink md:text-6xl" style={{ animationDelay: '0.16s' }}>
             Abrigos y chaquetas,
             <span className="block italic text-clay">muy pronto</span>
           </h1>
-          <p className="mb-10 max-w-md font-light leading-relaxed text-ink-soft">
+          <p className="hero-line mb-10 max-w-md font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.28s' }}>
             Estamos preparando una selección de abrigos y chaquetas a la altura
             de la colección. Mientras tanto, descubre lo que ya tenemos para ti.
           </p>
