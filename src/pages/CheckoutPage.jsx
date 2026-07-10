@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, CheckCircleIcon, TruckIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
@@ -54,22 +54,25 @@ export default function CheckoutPage() {
     return (
       <Layout>
         <div className="bg-white">
-          <div className="mx-auto max-w-xl px-6 py-24 text-center lg:px-8">
-            <CheckCircleIcon className="mx-auto mb-6 h-16 w-16 text-clay" strokeWidth={1} />
-            <h1 className="mb-4 font-serif text-3xl font-light text-ink md:text-4xl">
-              ¡Pedido enviado!
+          <div className="mx-auto max-w-xl px-6 py-24 text-center lg:px-8 lg:py-32">
+            <CheckCircleIcon className="hero-line mx-auto mb-8 h-14 w-14 text-clay" strokeWidth={1} style={{ animationDelay: '0.05s' }} />
+            <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.14s' }}>
+              Gracias, {formData.nombre.split(' ')[0]}
+            </p>
+            <h1 className="hero-line mb-5 font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl" style={{ animationDelay: '0.22s' }}>
+              Pedido enviado
             </h1>
-            <p className="mb-10 font-light leading-relaxed text-ink-soft">
+            <p className="hero-line mx-auto mb-12 max-w-md font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.32s' }}>
               Te responderemos pronto por WhatsApp para confirmar disponibilidad y
-              coordinar el pago y el envío. Gracias por elegir Victoria Modas, {formData.nombre.split(' ')[0]}.
+              coordinar el pago y la entrega.
             </p>
 
-            {/* Resumen */}
-            <div className="mb-10 rounded-lg bg-cream p-6 text-left">
-              <p className="mb-4 text-[10px] uppercase tracking-luxe text-ink-muted">Tu pedido</p>
-              <ul className="space-y-3">
+            {/* Resumen del pedido */}
+            <div className="mb-12 rounded-xl bg-cream p-7 text-left lg:p-8">
+              <p className="mb-5 text-[10px] uppercase tracking-luxe text-ink-muted">Tu pedido</p>
+              <ul className="divide-y divide-ink/10">
                 {items.map((item, idx) => (
-                  <li key={idx} className="flex items-center justify-between gap-4 text-sm">
+                  <li key={idx} className="flex items-center justify-between gap-4 py-3 text-sm first:pt-0 last:pb-0">
                     <span className="font-light text-ink">
                       {item.name}
                       <span className="text-ink-muted">
@@ -130,17 +133,21 @@ export default function CheckoutPage() {
     <Layout>
       <div className="bg-white">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-14">
-          {/* Encabezado */}
-          <div className="mb-10">
+          {/* Encabezado — entrada secuenciada */}
+          <div className="mb-12">
             <Link
               to="/carrito"
-              className="mb-5 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.12em] text-ink-muted transition-colors hover:text-clay"
+              className="mb-6 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.12em] text-ink-muted transition-colors hover:text-clay"
             >
               <ChevronLeftIcon className="h-4 w-4" />
               Volver al carrito
             </Link>
-            <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">Casi listo</p>
-            <h1 className="font-serif text-4xl font-light text-ink md:text-5xl">Finalizar pedido</h1>
+            <p className="hero-line mb-3 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
+              Casi listo
+            </p>
+            <h1 className="hero-line font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl" style={{ animationDelay: '0.14s' }}>
+              Finalizar pedido
+            </h1>
           </div>
 
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-12">
@@ -210,17 +217,30 @@ export default function CheckoutPage() {
 
                 <button
                   type="submit"
-                  className="block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay md:w-auto md:px-12"
+                  className="block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-all duration-500 hover:bg-clay active:scale-[0.99] md:w-auto md:px-12"
                 >
                   Enviar pedido por WhatsApp
                 </button>
+
+                {/* Línea de confianza */}
+                <div className="flex flex-col gap-2 pt-1 text-[11px] font-light text-ink-muted sm:flex-row sm:items-center sm:gap-5">
+                  <span className="inline-flex items-center gap-1.5">
+                    <TruckIcon className="h-4 w-4 text-clay" />
+                    Envío gratis desde S/ 200
+                  </span>
+                  <span className="hidden text-ink/20 sm:inline">·</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <ArrowPathIcon className="h-4 w-4 text-clay" />
+                    Cambios dentro de 7 días
+                  </span>
+                </div>
               </form>
             </div>
 
             {/* Resumen */}
             <div className="lg:col-span-1">
-              <div className="rounded-lg bg-cream p-6 lg:sticky lg:top-28">
-                <h2 className="mb-6 font-serif text-xl font-light text-ink">Resumen</h2>
+              <div className="rounded-xl bg-cream p-7 lg:sticky lg:top-28 lg:p-8">
+                <h2 className="mb-6 font-serif text-2xl font-light text-ink">Resumen</h2>
 
                 <ul className="mb-6 space-y-4">
                   {items.map((item, idx) => (
