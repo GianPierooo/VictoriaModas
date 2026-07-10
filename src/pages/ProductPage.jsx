@@ -325,15 +325,15 @@ export default function ProductPage() {
                   </span>
                 </div>
 
-                {/* Acordeón */}
-                <div className="mt-10 border-t border-ink/10">
+                {/* Acordeón — hairlines refinados */}
+                <div className="mt-12 border-t border-ink/10">
                   {accordion.map((item) => (
                     <Disclosure key={item.title}>
                       {({ open }) => (
                         <div className="border-b border-ink/10">
-                          <Disclosure.Button className="flex w-full items-center justify-between py-4 text-left text-xs uppercase tracking-[0.15em] text-ink transition-colors hover:text-clay">
+                          <Disclosure.Button className="flex w-full items-center justify-between py-5 text-left text-xs uppercase tracking-[0.15em] text-ink transition-colors hover:text-clay">
                             {item.title}
-                            <ChevronUpIcon className={`h-4 w-4 text-ink-muted transition-transform duration-300 ${open ? '' : 'rotate-180'}`} />
+                            <ChevronUpIcon className={`h-4 w-4 flex-shrink-0 text-ink-muted transition-transform duration-300 ${open ? '' : 'rotate-180'}`} />
                           </Disclosure.Button>
                           <Transition
                             enter="transition duration-200 ease-out"
@@ -343,7 +343,7 @@ export default function ProductPage() {
                             leaveFrom="opacity-100 translate-y-0"
                             leaveTo="opacity-0 -translate-y-1"
                           >
-                            <Disclosure.Panel className="pb-5 text-sm font-light leading-relaxed text-ink-soft">
+                            <Disclosure.Panel className="pb-6 text-sm font-light leading-relaxed text-ink-soft">
                               {item.body}
                             </Disclosure.Panel>
                           </Transition>
@@ -352,6 +352,33 @@ export default function ProductPage() {
                     </Disclosure>
                   ))}
                 </div>
+
+                {/* ── RESEÑAS ─────────────────────────────────────────────
+                    Bloque preparado para cuando el dueño tenga reseñas reales.
+                    Descomentar y alimentar `product.reviews` (array de
+                    { autor, estrellas, texto, fecha }) desde products.js o una
+                    fuente externa. Mantener la paleta (estrellas en clay) y no
+                    inventar reseñas.
+
+                {product.reviews?.length > 0 && (
+                  <div className="mt-12 border-t border-ink/10 pt-8">
+                    <h2 className="mb-6 font-serif text-2xl font-light text-ink">Reseñas</h2>
+                    <ul className="space-y-6">
+                      {product.reviews.map((r, i) => (
+                        <li key={i}>
+                          <div className="mb-1 flex items-center gap-2">
+                            <span className="text-clay" aria-label={`${r.estrellas} de 5`}>
+                              {'★'.repeat(r.estrellas)}{'☆'.repeat(5 - r.estrellas)}
+                            </span>
+                            <span className="text-xs text-ink-muted">{r.autor}</span>
+                          </div>
+                          <p className="text-sm font-light leading-relaxed text-ink-soft">{r.texto}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                ───────────────────────────────────────────────────────── */}
               </div>
             </div>
           </div>
