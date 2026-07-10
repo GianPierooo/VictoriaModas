@@ -12,6 +12,7 @@ import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 // ── Assets del hero. El dueño puede subir el video real a /videos/hero.mp4;
 //    si no existe, el hero usa la imagen editorial de respaldo sin romperse. ──
+const HERO_VIDEO_WEBM = '/videos/hero.webm'
 const HERO_VIDEO = '/videos/hero.mp4'
 const HERO_IMAGE = '/imagenes/vestidos/vestido_suplex01/azul_adelante.png'
 
@@ -78,6 +79,7 @@ function Hero() {
           onError={() => setVideoFailed(true)}
           aria-hidden="true"
         >
+          <source src={HERO_VIDEO_WEBM} type="video/webm" />
           <source src={HERO_VIDEO} type="video/mp4" />
         </video>
       )}
