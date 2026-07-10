@@ -57,8 +57,11 @@ function devApi() {
     apply: 'serve',
     configureServer(server) {
       if (!process.env.STOCK_SOURCE) process.env.STOCK_SOURCE = 'mock'
+      // Código de mayoreo por defecto SOLO en local, para probar /mayoristas.
+      if (!process.env.MAYOREO_ACCESS_CODE) process.env.MAYOREO_ACCESS_CODE = 'mayoreo-dev'
       mount(server, '/api/stock', 'api/stock.js')
       mount(server, '/api/pedido', 'api/pedido.js')
+      mount(server, '/api/mayoreo', 'api/mayoreo.js')
     },
   }
 }
