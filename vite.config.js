@@ -62,6 +62,7 @@ function devApi() {
       mount(server, '/api/stock', 'api/stock.js')
       mount(server, '/api/pedido', 'api/pedido.js')
       mount(server, '/api/mayoreo', 'api/mayoreo.js')
+      mount(server, '/api/chat', 'api/chat.js')
     },
   }
 }
