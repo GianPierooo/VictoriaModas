@@ -15,13 +15,26 @@ import ProductCard from '../components/ProductCard.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { COLOR_HEX } from '../utils/colorMap.js'
-import { getProductById, getProductsByCategory } from '../data/products.js'
+import { PRODUCTS, getProductById, getProductsByCategory } from '../data/products.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { useStock, estadoStyle } from '../hooks/useStock.js'
 
 const SITE_URL = 'https://victoriamodas.store'
 
 const WHATSAPP_NUMBER = '51993357672'
+
+// ¿El usuario pidió menos movimiento? (respeta el scroll del carrusel)
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduced(mq.matches)
+    update()
+    mq.addEventListener?.('change', update)
+    return () => mq.removeEventListener?.('change', update)
+  }, [])
+  return reduced
+}
 
 
 export default function ProductPage() {
@@ -90,10 +103,21 @@ export default function ProductPage() {
     `Hola, me interesa la prenda "${product.name}" (color ${selectedColor}, talla ${selectedSize}). ¿Está disponible?`
   )}`
 
-  // Relacionados: misma categoría, excluyendo el actual
-  const relatedProducts = getProductsByCategory(product.category)
-    .filter(p => p.id !== productId)
-    .slice(0, 4)
+  // Relacionados: misma categoría primero, luego el resto del catálogo
+  // (para llenar el carrusel), excluyendo el actual.
+  const relatedProducts = useMemo(() => {
+    const sameCat = getProductsByCategory(product.category).filter(p => p.id !== productId)
+    const others = PRODUCTS.filter(p => p.id !== productId && p.category !== product.category)
+    return [...sameCat, ...others].slice(0, 8)
+  }, [product.category, productId])
+
+  const reduced = usePrefersReducedMotion()
+  const relatedRef = useRef(null)
+  const scrollRelated = (dir) => {
+    const el = relatedRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: reduced ? 'auto' : 'smooth' })
+  }
 
   const categoryPath = `/${product.category}`
   const categoryLabel = product.category.charAt(0).toUpperCase() + product.category.slice(1)
@@ -384,21 +408,48 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* También te puede gustar */}
+        {/* También te puede gustar — carrusel horizontal (coherente con el Home) */}
         {relatedProducts.length > 0 && (
-          <section className="bg-cream py-20 md:py-28">
-            <div className="mx-auto max-w-7xl px-6 lg:px-8">
-              <div className="mb-12 text-center">
+          <section className="overflow-hidden bg-cream py-20 md:py-28">
+            <div className="mx-auto mb-10 flex max-w-7xl items-end justify-between gap-6 px-6 lg:px-8">
+              <div>
                 <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Quizá te guste</p>
-                <h2 className="font-serif text-3xl font-light text-ink md:text-4xl">
+                <h2 className="font-serif text-3xl font-light leading-[1.05] text-ink md:text-4xl">
                   También te puede gustar
                 </h2>
               </div>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-12 lg:grid-cols-4">
-                {relatedProducts.map((p, i) => (
-                  <ProductCard key={p.id} product={p} index={i} />
-                ))}
+              <div className="hidden shrink-0 gap-3 md:flex">
+                <button
+                  type="button"
+                  onClick={() => scrollRelated(-1)}
+                  aria-label="Ver anteriores"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/20 text-ink transition-colors hover:border-ink hover:bg-ink/[0.03]"
+                >
+                  <ChevronLeftIcon className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollRelated(1)}
+                  aria-label="Ver siguientes"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/20 text-ink transition-colors hover:border-ink hover:bg-ink/[0.03]"
+                >
+                  <ChevronRightIcon className="h-5 w-5" />
+                </button>
               </div>
+            </div>
+
+            <div
+              ref={relatedRef}
+              role="region"
+              aria-label="También te puede gustar"
+              tabIndex={0}
+              className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-6 pb-4 lg:px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {relatedProducts.map((p, i) => (
+                <div key={p.id} className="w-[62%] shrink-0 snap-start sm:w-[40%] lg:w-[23%]">
+                  <ProductCard product={p} index={i} />
+                </div>
+              ))}
             </div>
           </section>
         )}
