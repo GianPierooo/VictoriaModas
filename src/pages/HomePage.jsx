@@ -379,77 +379,86 @@ function CategoryShowcase() {
   )
 }
 
-// ============= PRODUCTO SPOTLIGHT =============
+// ============= PRODUCTO SPOTLIGHT — banner full-bleed =============
 function ProductSpotlight() {
   const [ref, isVisible] = useScrollAnimation()
-  
+
+  // Hook opcional: foto de la tela en detalle (si el dueño la sube).
+  const SPOTLIGHT_IMAGE = '/imagenes/vestidos/vestido_suplex01/azul_adelante.png'
+  const FABRIC_IMAGE = null
+
+  const details = [
+    { label: 'Tela', value: 'Suplex de alta calidad' },
+    { label: 'Corte', value: 'Ajuste perfecto y moderno' },
+    { label: 'Tallas', value: 'S a L disponibles' },
+  ]
+
   return (
-    <section ref={ref} className="bg-cream py-20 md:py-28">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Imagen */}
-          <div className={`transition-all duration-700 ease-out ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
-            <div className="group relative aspect-[3/4] max-w-md mx-auto lg:max-w-none overflow-hidden rounded-lg bg-cream-dark">
-              <ResponsiveImage
-                src="/imagenes/vestidos/vestido_suplex01/azul_adelante.png"
-                alt="Vestido Suplex Moderno"
-                className="w-full h-full object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-105"
-                loading="lazy"
-              />
-              {/* Badge discreto */}
-              <span className="absolute top-3 left-3 px-3 py-1 bg-cream/90 backdrop-blur-sm text-clay-dark text-[10px] uppercase tracking-luxe font-medium rounded-full">
-                -24%
-              </span>
-            </div>
-          </div>
+    <section ref={ref} className="relative h-[90vh] min-h-[600px] w-full overflow-hidden bg-ink">
+      <ResponsiveImage
+        src={SPOTLIGHT_IMAGE}
+        alt="Vestido Suplex Moderno"
+        className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-[1400ms] ease-out ${
+          isVisible ? 'scale-100 opacity-100' : 'scale-105 opacity-0'
+        }`}
+        loading="lazy"
+      />
 
-          {/* Contenido */}
-          <div className={`transition-all duration-700 ease-out delay-200 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
-            <p className="text-[11px] uppercase tracking-luxe text-clay mb-6">
-              Producto destacado
-            </p>
+      {/* Overlay elegante hacia el texto (izquierda) */}
+      <div className="absolute inset-0 bg-gradient-to-r from-ink/85 via-ink/45 to-transparent" />
 
-            <h2 className="font-serif font-light text-ink leading-[1.1] text-4xl md:text-5xl mb-8">
-              Vestido Suplex
-              <span className="block italic text-clay">Moderno</span>
-            </h2>
+      {/* Detalle de la tela en grande (inset, lado derecho) */}
+      <figure className="absolute bottom-10 right-10 hidden lg:block">
+        <div className="h-56 w-44 overflow-hidden rounded-lg border border-cream/30 shadow-soft">
+          <ResponsiveImage
+            src={FABRIC_IMAGE || SPOTLIGHT_IMAGE}
+            alt=""
+            aria-hidden="true"
+            className={`h-full w-full object-cover ${FABRIC_IMAGE ? 'object-center' : 'scale-[2.4] object-[50%_45%]'}`}
+            loading="lazy"
+          />
+        </div>
+        <figcaption className="mt-2 text-center text-[10px] uppercase tracking-luxe text-cream/80">
+          Tela suplex
+        </figcaption>
+      </figure>
 
-            <p className="text-ink-soft mb-10 leading-relaxed font-light">
-              Vestido moderno confeccionado en suplex de alta calidad. Ajuste perfecto al cuerpo
-              con diseño versátil y elegante. Ideal para cualquier ocasión, desde eventos casuales
-              hasta reuniones formales.
-            </p>
+      {/* Contenido */}
+      <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-6 lg:px-8">
+        <div
+          className={`max-w-lg transition-all duration-700 ease-out ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}
+        >
+          <p className="mb-6 text-[11px] uppercase tracking-luxe text-clay-light">Producto destacado</p>
+          <h2 className="mb-8 font-serif text-5xl font-light leading-[1.05] text-cream md:text-6xl lg:text-7xl">
+            Vestido suplex
+            <span className="block italic text-clay-light">moderno</span>
+          </h2>
+          <p className="mb-9 max-w-md font-light leading-relaxed text-cream/80">
+            Confeccionado en suplex de alta calidad, con un ajuste perfecto y un diseño versátil.
+            Para eventos casuales o reuniones formales.
+          </p>
 
-            {/* Detalles */}
-            <ul className="space-y-4 mb-10">
-              {[
-                { label: 'Tela', value: 'Suplex de alta calidad' },
-                { label: 'Corte', value: 'Ajuste perfecto y moderno' },
-                { label: 'Tallas', value: 'S a L disponibles' }
-              ].map((item) => (
-                <li key={item.label} className="flex items-start gap-4">
-                  <div className="w-1 h-1 rounded-full bg-clay mt-2.5"></div>
-                  <div className="flex-1">
-                    <span className="text-ink-muted text-[10px] uppercase tracking-luxe">{item.label}</span>
-                    <p className="text-ink font-light">{item.value}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+          <ul className="mb-10 space-y-4">
+            {details.map((item) => (
+              <li key={item.label} className="flex items-start gap-4">
+                <div className="mt-2.5 h-1 w-1 rounded-full bg-clay-light" />
+                <div className="flex-1">
+                  <span className="text-[10px] uppercase tracking-luxe text-cream/60">{item.label}</span>
+                  <p className="font-light text-cream">{item.value}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
 
-            {/* CTA */}
-            <Link
-              to="/producto/vestido-suplex-moderno"
-              className="group inline-flex items-center justify-center bg-ink text-cream px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:bg-clay"
-            >
-              Ver detalles completos
-              <ChevronRightIcon className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
+          <Link
+            to="/producto/vestido-suplex-moderno"
+            className="group inline-flex items-center justify-center rounded-full bg-cream px-9 py-4 text-xs uppercase tracking-[0.2em] text-ink transition-colors duration-500 hover:bg-clay hover:text-cream"
+          >
+            Ver detalles completos
+            <ChevronRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
       </div>
     </section>
