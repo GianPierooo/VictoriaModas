@@ -198,36 +198,35 @@ export default function ProductPage() {
             {/* Info (40%) */}
             <div className="lg:col-span-2">
               <div className="lg:sticky lg:top-28">
-                <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">
+                <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">
                   {product.category}
                 </p>
-                <h1 className="mb-5 font-serif text-3xl font-light leading-tight text-ink">
+                <h1 className="mb-6 font-serif text-4xl font-light leading-[1.1] text-ink md:text-5xl">
                   {product.name}
                 </h1>
-                <p className="mb-8 font-light leading-relaxed text-ink-soft">
+                <p className="mb-9 max-w-md font-light leading-relaxed text-ink-soft">
                   {product.description}
                 </p>
 
                 {/* Color */}
-                <div className="mb-7">
-                  <div className="mb-3 flex items-center gap-2 text-[10px] uppercase tracking-luxe text-ink-muted">
-                    Color
-                    <span className="text-ink-soft">· {selectedColor}</span>
+                <div className="mb-8">
+                  <div className="mb-3 text-[10px] uppercase tracking-luxe text-ink-muted">
+                    Color <span className="text-ink-soft">· {selectedColor}</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {product.colors.map((color) => (
                       <button
                         key={color}
                         type="button"
                         onClick={() => handleColorChange(color)}
-                        className="flex h-11 w-11 items-center justify-center rounded-full"
+                        className="flex h-11 w-11 items-center justify-center rounded-full transition-transform active:scale-90"
                         title={color}
                         aria-label={`Color ${color}`}
                         aria-pressed={selectedColor === color}
                       >
                         <span
-                          className={`block h-8 w-8 rounded-full border border-ink/15 transition-all duration-300 ${
-                            selectedColor === color ? 'ring-1 ring-clay ring-offset-2 ring-offset-white' : ''
+                          className={`block h-9 w-9 rounded-full border border-ink/15 transition-all duration-300 ${
+                            selectedColor === color ? 'scale-105 ring-1 ring-clay ring-offset-2 ring-offset-white' : 'hover:scale-105'
                           }`}
                           style={{ backgroundColor: COLOR_HEX[color] || '#CCCCCC' }}
                         />
@@ -237,9 +236,9 @@ export default function ProductPage() {
                 </div>
 
                 {/* Talla */}
-                <div className="mb-7">
+                <div className="mb-8">
                   <div className="mb-3 text-[10px] uppercase tracking-luxe text-ink-muted">Talla</div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {product.sizes.map((size) => {
                       const disabled = unavailableSizes.includes(size)
                       return (
@@ -248,7 +247,8 @@ export default function ProductPage() {
                           type="button"
                           disabled={disabled}
                           onClick={() => setSelectedSize(size)}
-                          className={`h-11 min-w-[48px] rounded-md border px-4 text-sm uppercase tracking-[0.1em] transition-colors duration-300 ${
+                          aria-pressed={selectedSize === size}
+                          className={`h-11 min-w-[52px] rounded-full border px-5 text-sm uppercase tracking-[0.1em] transition-all duration-300 active:scale-95 ${
                             disabled
                               ? 'cursor-not-allowed border-ink/10 text-ink-muted/40 line-through'
                               : selectedSize === size
