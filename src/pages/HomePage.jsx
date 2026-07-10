@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, ChevronLeftIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import Header from '../components/Header.jsx'
 import Footer from '../components/Footer.jsx'
 import AnnouncementBanner from '../components/AnnouncementBanner.jsx'
@@ -9,67 +10,118 @@ import PageTransition from '../motion/PageTransition.jsx'
 import { useInViewReveal } from '../motion/useInViewReveal.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
-// ============= HERO EDITORIAL =============
+// ── Assets del hero. El dueño puede subir el video real a /videos/hero.mp4;
+//    si no existe, el hero usa la imagen editorial de respaldo sin romperse. ──
+const HERO_VIDEO = '/videos/hero.mp4'
+const HERO_IMAGE = '/imagenes/vestidos/vestido_suplex01/azul_adelante.png'
+
+// ¿El usuario pidió menos movimiento? (se respeta en video y animaciones)
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduced(mq.matches)
+    update()
+    mq.addEventListener?.('change', update)
+    return () => mq.removeEventListener?.('change', update)
+  }, [])
+  return reduced
+}
+
+// ============= HERO — tejido en movimiento =============
 function Hero() {
+  const reduced = usePrefersReducedMotion()
+  const [showVideo, setShowVideo] = useState(false)
+  const [videoFailed, setVideoFailed] = useState(false)
+
+  // El LCP es la imagen (eager/high). El video se monta DESPUÉS del primer
+  // paint (idle) para no competir con el LCP, y solo si no hay reduced-motion.
+  useEffect(() => {
+    if (reduced) return
+    let idleId
+    const start = () => setShowVideo(true)
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(start, { timeout: 1600 })
+      return () => window.cancelIdleCallback?.(idleId)
+    }
+    const t = setTimeout(start, 800)
+    return () => clearTimeout(t)
+  }, [reduced])
+
+  const videoLayer = showVideo && !videoFailed && !reduced
+
   return (
-    <section className="relative bg-cream overflow-hidden">
-      {/* Acento radial cálido, muy sutil */}
-      <div className="absolute -top-32 -right-32 w-[36rem] h-[36rem] bg-gradient-radial-rose rounded-full pointer-events-none" />
-      <div className="absolute -bottom-40 -left-40 w-[32rem] h-[32rem] bg-gradient-radial-rose rounded-full pointer-events-none" />
+    <section className="relative w-full min-h-[92vh] overflow-hidden bg-ink">
+      {/* Media base: imagen editorial (LCP). Siempre presente → si falta el
+          video, no se rompe nada. */}
+      <ResponsiveImage
+        src={HERO_IMAGE}
+        alt="Vestido de la nueva colección Victoria Modas"
+        className="absolute inset-0 h-full w-full object-cover object-top"
+        loading="eager"
+        fetchPriority="high"
+        width={1600}
+        height={2000}
+      />
 
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-10 items-center min-h-[88vh] py-20">
-        {/* Columna texto — entrada escalonada línea por línea */}
-        <div className="order-2 lg:order-1 text-center lg:text-left">
-          <p className="hero-line text-[11px] uppercase tracking-luxe text-clay mb-6" style={{ animationDelay: '0.05s' }}>
-            Nueva colección · 2026
-          </p>
-          <h1 className="hero-line font-serif font-light text-ink leading-[1.05] text-5xl md:text-6xl lg:text-7xl mb-8" style={{ animationDelay: '0.16s' }}>
-            Elegancia
-            <span className="block italic text-clay">hecha para ti</span>
-          </h1>
-          <p className="hero-line text-ink-soft text-base md:text-lg max-w-md mx-auto lg:mx-0 mb-10 leading-relaxed font-light" style={{ animationDelay: '0.3s' }}>
-            Vestidos, blusas y abrigos en telas premium. Piezas pensadas para
-            la mujer que viste con intención.
-          </p>
-          <div className="hero-line flex flex-col sm:flex-row gap-4 justify-center lg:justify-start" style={{ animationDelay: '0.42s' }}>
-            <Link
-              to="/vestidos"
-              className="group inline-flex items-center justify-center bg-ink text-cream px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:bg-clay active:scale-[0.98]"
-            >
-              Explorar colección
-              <ChevronRightIcon className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-            </Link>
-            <Link
-              to="/nosotros"
-              className="inline-flex items-center justify-center border border-ink/20 text-ink px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:border-ink hover:bg-ink/[0.03] active:scale-[0.98]"
-            >
-              Nuestra historia
-            </Link>
-          </div>
-        </div>
+      {/* Video de fondo, opcional y diferido. Si /videos/hero.mp4 no existe,
+          onError lo retira y queda la imagen. */}
+      {videoLayer && (
+        <video
+          className="absolute inset-0 h-full w-full object-cover object-top"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={HERO_IMAGE}
+          onError={() => setVideoFailed(true)}
+          aria-hidden="true"
+        >
+          <source src={HERO_VIDEO} type="video/mp4" />
+        </video>
+      )}
 
-        {/* Columna imagen — fade + leve escala */}
-        <div className="order-1 lg:order-2 hero-image" style={{ animationDelay: '0.12s' }}>
-          <div className="relative aspect-[4/5] max-w-md mx-auto rounded-[1.5rem] overflow-hidden bg-cream-dark shadow-rose-lg">
-            <ResponsiveImage
-              src="/imagenes/vestidos/vestido_suplex01/azul_adelante.png"
-              alt="Vestido de la nueva colección Victoria Modas"
-              className="w-full h-full object-cover object-top"
-              loading="eager"
-              fetchPriority="high"
-              width={800}
-              height={1000}
-            />
-            {/* Marco interior elegante */}
-            <div className="absolute inset-4 border border-cream/40 rounded-[1rem] pointer-events-none" />
-          </div>
+      {/* Velo ink para legibilidad del texto (más denso abajo). */}
+      <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/30 to-ink/25" />
+      {/* Velo cream muy sutil arriba: mantiene legible el header transparente
+          (texto oscuro) cuando aún no hay scroll. */}
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-cream/70 to-transparent" />
+
+      {/* Contenido — entrada secuenciada (titular → subtítulo → CTA). */}
+      <div className="relative z-10 mx-auto flex min-h-[92vh] max-w-4xl flex-col items-center justify-center px-6 py-28 text-center">
+        <p className="hero-line mb-6 text-[11px] uppercase tracking-luxe text-cream/85" style={{ animationDelay: '0.05s' }}>
+          Nueva colección · 2026
+        </p>
+        <h1
+          className="hero-line mb-8 font-serif text-6xl font-light leading-[1.02] tracking-[-0.01em] text-cream md:text-7xl lg:text-8xl"
+          style={{ animationDelay: '0.18s' }}
+        >
+          Elegancia
+          <span className="block italic text-clay-light">hecha para ti</span>
+        </h1>
+        <p
+          className="hero-line mb-11 max-w-md text-base font-light leading-relaxed text-cream/80 md:text-lg"
+          style={{ animationDelay: '0.32s' }}
+        >
+          Vestidos, blusas y pantalones en telas premium, pensados para la mujer
+          que viste con intención.
+        </p>
+        <div className="hero-line" style={{ animationDelay: '0.46s' }}>
+          <Link
+            to="/vestidos"
+            className="group inline-flex items-center justify-center rounded-full bg-ink px-10 py-4 text-xs uppercase tracking-[0.2em] text-cream shadow-soft ring-1 ring-cream/15 transition-colors duration-500 hover:bg-clay"
+          >
+            Explorar la colección
+            <ChevronRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
       </div>
 
-      {/* Indicador scroll con bounce suave continuo */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 text-ink-muted">
+      {/* Indicador de scroll (bounce suave; se detiene con reduced-motion). */}
+      <div className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 text-cream/70 lg:flex">
         <span className="text-[10px] uppercase tracking-luxe">Descubre</span>
-        <ChevronDownIcon className="descubre-bounce w-4 h-4" />
+        <ChevronDownIcon className="descubre-bounce h-4 w-4" />
       </div>
     </section>
   )
