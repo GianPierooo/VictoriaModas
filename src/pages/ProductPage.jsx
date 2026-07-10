@@ -3,8 +3,11 @@ import { useParams, Link } from 'react-router-dom'
 import { Disclosure, Transition } from '@headlessui/react'
 import {
   ChevronRightIcon,
+  ChevronLeftIcon,
   ChevronUpIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  TruckIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import QuantitySelector from '../components/QuantitySelector'
@@ -294,7 +297,7 @@ export default function ProductPage() {
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className="block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
+                    className="block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-all duration-500 hover:bg-clay active:scale-[0.99]"
                   >
                     Agregar al carrito
                   </button>
@@ -302,11 +305,24 @@ export default function ProductPage() {
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 py-4 text-xs uppercase tracking-[0.2em] text-ink transition-colors duration-500 hover:border-ink hover:bg-ink/[0.03]"
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 py-4 text-xs uppercase tracking-[0.2em] text-ink transition-all duration-500 hover:border-ink hover:bg-ink/[0.03] active:scale-[0.99]"
                   >
                     <ChatBubbleLeftRightIcon className="h-4 w-4" />
                     Consultar por WhatsApp
                   </a>
+                </div>
+
+                {/* Línea de confianza (envío y cambios; sin precios) */}
+                <div className="mt-5 flex flex-col gap-2 text-[11px] font-light text-ink-muted sm:flex-row sm:items-center sm:gap-5">
+                  <span className="inline-flex items-center gap-1.5">
+                    <TruckIcon className="h-4 w-4 text-clay" />
+                    Envío gratis desde S/ 200
+                  </span>
+                  <span className="hidden text-ink/20 sm:inline">·</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <ArrowPathIcon className="h-4 w-4 text-clay" />
+                    Cambios dentro de 7 días
+                  </span>
                 </div>
 
                 {/* Acordeón */}
