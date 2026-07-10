@@ -76,9 +76,10 @@ WhatsApp de la tienda: ${WA_LINK} (+51 993 357 672).`
 // Utilidades
 // ------------------------------------------------------------
 function clientIp(req) {
-  const xf = req.headers['x-forwarded-for']
+  const h = req.headers || {}
+  const xf = h['x-forwarded-for']
   if (xf) return String(xf).split(',')[0].trim()
-  return req.headers['x-real-ip'] || 'anon'
+  return h['x-real-ip'] || 'anon'
 }
 
 function rateLimited(ip) {

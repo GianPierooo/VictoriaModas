@@ -2,15 +2,17 @@
 // ChatWidget — Asistente on-site de Victoria Modas
 // ------------------------------------------------------------
 // Botón flotante ABAJO-IZQUIERDA (el de WhatsApp del Footer va abajo-
-// derecha; no chocan). Guía (no chat abierto con IA): responde el FAQ del
-// sitio y deja explorar el catálogo por categoría. Cada camino termina en
-// un botón de WhatsApp con un mensaje ya redactado.
+// derecha; no chocan). Combina dos modos:
+//  · Guía por botones: responde el FAQ del sitio y deja explorar el catálogo
+//    por categoría; cada camino termina en un botón de WhatsApp redactado.
+//  · Chat con IA: campo de texto libre que llama a /api/chat (OpenAI, con
+//    guardrails). Si /api/chat no está disponible, cae al fallback + WhatsApp.
 //
 // Estilos EN LÍNEA con la paleta exacta del CLAUDE.md, autocontenido.
 // NUNCA muestra precios (ni menor ni mayor) — el precio se cierra por
-// WhatsApp. El indicador de stock se conecta en el paso 4.
+// WhatsApp. El indicador de disponibilidad usa /api/stock.
 // ============================================================
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PRODUCTS, getProductById, getProductsByCategory } from '../data/products.js'
 import { COLOR_HEX } from '../utils/colorMap.js'
@@ -201,6 +203,62 @@ function WhatsAppCTA({ message, label = 'Continuar por WhatsApp' }) {
   )
 }
 
+// Texto de respaldo si /api/chat no está disponible.
+const CHAT_FALLBACK =
+  'Ahora mismo no puedo responderte por aquí, pero te atendemos al instante por WhatsApp.'
+
+// Burbuja de la conversación con IA (usuaria a la derecha, asistente a la
+// izquierda). Si la respuesta es un fallback, ofrece el botón de WhatsApp.
+function ChatBubble({ msg }) {
+  if (msg.role === 'user') {
+    return (
+      <div
+        style={{
+          alignSelf: 'flex-end',
+          maxWidth: '85%',
+          marginLeft: 'auto',
+          marginBottom: 10,
+          padding: '10px 12px',
+          borderRadius: 14,
+          borderTopRightRadius: 4,
+          background: C.clay,
+          color: C.white,
+          fontSize: 13.5,
+          lineHeight: 1.5,
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+        {msg.content}
+      </div>
+    )
+  }
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div
+        style={{
+          maxWidth: '90%',
+          padding: '10px 12px',
+          borderRadius: 14,
+          borderTopLeftRadius: 4,
+          background: C.white,
+          border: `1px solid ${C.creamDark}`,
+          color: C.soft,
+          fontSize: 13.5,
+          lineHeight: 1.55,
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+        {msg.content}
+      </div>
+      {msg.fallback && (
+        <div style={{ marginTop: 8 }}>
+          <WhatsAppCTA message="Hola, tengo una consulta para Victoria Modas." label="Escríbenos por WhatsApp" />
+        </div>
+      )}
+    </div>
+  )
+}
+
 function SectionTitle({ children }) {
   return (
     <p
@@ -220,11 +278,17 @@ function SectionTitle({ children }) {
 // ---------- Widget ----------
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
-  // view: 'home' | 'faq:<key>' | 'cats' | 'cat:<slug>' | 'prod:<id>'
+  // view: 'home' | 'faq:<key>' | 'cats' | 'cat:<slug>' | 'prod:<id>' | 'chat'
   const [view, setView] = useState('home')
   const [color, setColor] = useState(null)
   const [size, setSize] = useState(null)
   const { getEstado } = useStock()
+
+  // Estado del chat con IA
+  const [messages, setMessages] = useState([]) // { role, content, fallback? }
+  const [input, setInput] = useState('')
+  const [sending, setSending] = useState(false)
+  const threadEndRef = useRef(null)
 
   const [vType, vArg] = view.split(':')
 
@@ -237,6 +301,41 @@ export default function ChatWidget() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
+
+  // Auto-scroll al final del hilo del chat.
+  useEffect(() => {
+    if (view === 'chat') threadEndRef.current?.scrollIntoView({ block: 'end' })
+  }, [messages, sending, view])
+
+  // Envía la pregunta libre a /api/chat. Nunca lanza: ante cualquier fallo,
+  // muestra el fallback + WhatsApp (cae a los botones de siempre).
+  const sendMessage = async () => {
+    const text = input.trim()
+    if (!text || sending) return
+    const next = [...messages, { role: 'user', content: text }]
+    setMessages(next)
+    setInput('')
+    setSending(true)
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: next.map((m) => ({ role: m.role, content: m.content })) }),
+      })
+      const data = await res.json().catch(() => null)
+      const good = data && data.ok && data.reply && !data.fallback
+      setMessages((m) => [
+        ...m,
+        good
+          ? { role: 'assistant', content: data.reply }
+          : { role: 'assistant', content: (data && data.reply) || CHAT_FALLBACK, fallback: true },
+      ])
+    } catch {
+      setMessages((m) => [...m, { role: 'assistant', content: CHAT_FALLBACK, fallback: true }])
+    } finally {
+      setSending(false)
+    }
+  }
 
   const openProduct = (p) => {
     setColor(p.colors[0])
@@ -262,6 +361,41 @@ export default function ChatWidget() {
 
   // ---------- Vistas ----------
   const renderBody = () => {
+    // Chat con IA (texto libre)
+    if (vType === 'chat') {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {messages.length === 0 && (
+            <Bubble>
+              ¡Hola! Pregúntame por una prenda, tallas, telas, envíos o cambios. Para precios y
+              para cerrar tu pedido te derivo a WhatsApp.
+            </Bubble>
+          )}
+          {messages.map((m, i) => (
+            <ChatBubble key={i} msg={m} />
+          ))}
+          {sending && (
+            <div
+              style={{
+                alignSelf: 'flex-start',
+                marginBottom: 10,
+                padding: '10px 12px',
+                borderRadius: 14,
+                borderTopLeftRadius: 4,
+                background: C.white,
+                border: `1px solid ${C.creamDark}`,
+                color: C.muted,
+                fontSize: 13.5,
+              }}
+            >
+              Escribiendo…
+            </div>
+          )}
+          <div ref={threadEndRef} />
+        </div>
+      )
+    }
+
     // FAQ
     if (vType === 'faq') {
       const item = FAQ[vArg]
@@ -500,6 +634,10 @@ export default function ChatWidget() {
           ¡Hola! 👋 Soy el asistente de <strong style={{ color: C.ink, fontWeight: 600 }}>Victoria Modas</strong>.
           Te ayudo con tu compra, envíos, cambios o a explorar la colección. ¿Qué necesitas?
         </Bubble>
+        <OptionButton primary onClick={() => setView('chat')}>
+          Pregúntame lo que quieras
+        </OptionButton>
+        <div style={{ height: 6 }} />
         <SectionTitle>Preguntas frecuentes</SectionTitle>
         {MENU.map((m) => (
           <OptionButton key={m.key} onClick={() => setView(`faq:${m.key}`)}>
@@ -508,7 +646,7 @@ export default function ChatWidget() {
         ))}
         <div style={{ height: 6 }} />
         <SectionTitle>Explorar</SectionTitle>
-        <OptionButton primary onClick={() => setView('cats')}>
+        <OptionButton onClick={() => setView('cats')}>
           Ver los productos ({PRODUCTS.length})
         </OptionButton>
       </>
@@ -598,19 +736,75 @@ export default function ChatWidget() {
           {/* Cuerpo desplazable */}
           <div style={{ flex: 1, overflowY: 'auto', padding: 14 }}>{renderBody()}</div>
 
-          {/* Pie */}
-          <div
-            style={{
-              padding: '8px 14px',
-              borderTop: `1px solid ${C.creamDark}`,
-              fontSize: 10.5,
-              color: C.muted,
-              textAlign: 'center',
-              background: C.cream,
-            }}
-          >
-            Cerramos cada pedido por WhatsApp · +51 993 357 672
-          </div>
+          {/* Pie: barra de entrada en la vista chat; nota en el resto */}
+          {view === 'chat' ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                sendMessage()
+              }}
+              style={{
+                display: 'flex',
+                gap: 8,
+                padding: '10px 12px',
+                borderTop: `1px solid ${C.creamDark}`,
+                background: C.cream,
+              }}
+            >
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Escribe tu pregunta…"
+                maxLength={500}
+                aria-label="Escribe tu pregunta"
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  border: `1px solid ${C.clayLight}`,
+                  borderRadius: 999,
+                  padding: '10px 14px',
+                  fontSize: 13.5,
+                  color: C.ink,
+                  background: C.white,
+                  outline: 'none',
+                  fontFamily: "'Roboto Flex', sans-serif",
+                }}
+              />
+              <button
+                type="submit"
+                disabled={sending || !input.trim()}
+                aria-label="Enviar pregunta"
+                style={{
+                  flexShrink: 0,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 999,
+                  border: 'none',
+                  cursor: sending || !input.trim() ? 'default' : 'pointer',
+                  background: sending || !input.trim() ? C.clayLight : C.clay,
+                  color: C.white,
+                  fontSize: 18,
+                  lineHeight: 1,
+                }}
+              >
+                ↑
+              </button>
+            </form>
+          ) : (
+            <div
+              style={{
+                padding: '8px 14px',
+                borderTop: `1px solid ${C.creamDark}`,
+                fontSize: 10.5,
+                color: C.muted,
+                textAlign: 'center',
+                background: C.cream,
+              }}
+            >
+              Cerramos cada pedido por WhatsApp · +51 993 357 672
+            </div>
+          )}
         </div>
       )}
 
