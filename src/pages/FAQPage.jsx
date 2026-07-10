@@ -51,14 +51,19 @@ export default function FAQPage() {
   return (
     <Layout>
       <div className="bg-white">
-        {/* Encabezado */}
-        <section className="bg-cream py-14 md:py-20">
+        {/* Encabezado — entrada secuenciada */}
+        <section className="bg-cream py-16 md:py-24">
           <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
-            <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Ayuda</p>
-            <h1 className="mb-4 font-serif text-4xl font-light text-ink md:text-5xl">
+            <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
+              Ayuda
+            </p>
+            <h1
+              className="hero-line mb-5 font-serif text-5xl font-light leading-[1.05] tracking-[-0.01em] text-ink md:text-6xl"
+              style={{ animationDelay: '0.16s' }}
+            >
               Preguntas frecuentes
             </h1>
-            <p className="mx-auto max-w-md font-light leading-relaxed text-ink-soft">
+            <p className="hero-line mx-auto max-w-md font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.28s' }}>
               Lo esencial sobre cómo comprar, pagar y recibir tu pedido.
             </p>
           </div>

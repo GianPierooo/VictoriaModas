@@ -106,14 +106,19 @@ export default function ContactPage() {
   return (
     <Layout>
       <div className="bg-white">
-        {/* Encabezado */}
-        <section className="bg-cream py-14 md:py-20">
+        {/* Encabezado — entrada secuenciada */}
+        <section className="bg-cream py-16 md:py-24">
           <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
-            <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Contacto</p>
-            <h1 className="mb-4 font-serif text-4xl font-light text-ink md:text-5xl">
+            <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
+              Contacto
+            </p>
+            <h1
+              className="hero-line mb-5 font-serif text-5xl font-light leading-[1.05] tracking-[-0.01em] text-ink md:text-6xl"
+              style={{ animationDelay: '0.16s' }}
+            >
               Conversemos
             </h1>
-            <p className="mx-auto max-w-md font-light leading-relaxed text-ink-soft">
+            <p className="hero-line mx-auto max-w-md font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.28s' }}>
               ¿Dudas sobre una prenda, una talla o tu pedido? Escríbenos: respondemos rápido.
             </p>
           </div>
@@ -190,8 +195,8 @@ export default function ContactPage() {
 
             {/* Datos de contacto */}
             <div className="lg:col-span-2">
-              <div className="rounded-lg bg-cream p-7 lg:p-8">
-                <h2 className="mb-7 font-serif text-xl font-light text-ink">
+              <div className="rounded-xl bg-cream p-7 lg:sticky lg:top-28 lg:p-8">
+                <h2 className="mb-7 font-serif text-2xl font-light text-ink">
                   También nos encuentras aquí
                 </h2>
                 <ul className="space-y-6">

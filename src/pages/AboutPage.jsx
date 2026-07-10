@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
+import { useInViewReveal } from '../motion/useInViewReveal.js'
+import { ASSETS } from '../config/assets.js'
 
 const TELAS = [
   { nombre: 'Scuba', detalle: 'Estructura y caída impecable, perfecta para siluetas modernas.' },
@@ -25,24 +28,62 @@ const COMPROMISOS = [
   },
 ]
 
+// Foto del taller con fallback elegante: intenta la ruta de ASSETS y, si el
+// archivo aún no existe, muestra el placeholder tipográfico (nada se rompe).
+function TallerImage() {
+  const [failed, setFailed] = useState(false)
+
+  if (failed) {
+    return (
+      <div className="flex aspect-[4/3] items-center justify-center rounded-xl bg-cream">
+        <p className="text-center font-serif text-2xl font-light tracking-wide text-ink/30">
+          Victoria<span className="italic text-clay/40">Modas</span>
+          <span className="mt-2 block text-[10px] uppercase tracking-luxe">Gamarra · Lima</span>
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="aspect-[4/3] overflow-hidden rounded-xl bg-cream">
+      <img
+        src={ASSETS.tallerImage}
+        alt="Nuestro taller en Gamarra"
+        className="h-full w-full object-cover"
+        loading="lazy"
+        onError={() => setFailed(true)}
+      />
+    </div>
+  )
+}
+
 export default function AboutPage() {
   useDocumentMeta({
     title: 'Nuestra historia | Victoria Modas',
     description: 'Victoria Modas nace en Gamarra, Lima. Años vistiendo a la mujer peruana con telas premium, ahora directo a la clienta final.',
   })
 
+  const [historiaRef, historiaIn] = useInViewReveal({ amount: 0.15 })
+  const [telasRef, telasIn] = useInViewReveal({ amount: 0.15 })
+  const [compromisoRef, compromisoIn] = useInViewReveal({ amount: 0.15 })
+
   return (
     <Layout>
       <div className="bg-white">
-        {/* Encabezado */}
-        <section className="bg-cream py-16 md:py-24">
+        {/* Encabezado — entrada secuenciada */}
+        <section className="bg-cream py-20 md:py-28">
           <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
-            <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Nosotros</p>
-            <h1 className="mb-6 font-serif text-4xl font-light leading-tight text-ink md:text-5xl">
+            <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.05s' }}>
+              Nosotros
+            </p>
+            <h1
+              className="hero-line mb-7 font-serif text-5xl font-light leading-[1.05] tracking-[-0.01em] text-ink md:text-6xl"
+              style={{ animationDelay: '0.16s' }}
+            >
               De Gamarra,
               <span className="block italic text-clay">directo a ti</span>
             </h1>
-            <p className="mx-auto max-w-xl font-light leading-relaxed text-ink-soft">
+            <p className="hero-line mx-auto max-w-xl font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.3s' }}>
               Somos Victoria Modas: años vistiendo a la mujer peruana desde el corazón
               textil de Lima, ahora llevando nuestros diseños directo a tu puerta.
             </p>
@@ -50,23 +91,15 @@ export default function AboutPage() {
         </section>
 
         {/* Nuestra historia */}
-        <section className="py-16 md:py-24">
+        <section ref={historiaRef} className="py-20 md:py-28">
           <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
-            {/*
-              Placeholder de imagen — REEMPLAZAR por foto real del taller o
-              de la tienda en Gamarra cuando esté disponible:
-              <img src="/imagenes/nosotros/taller.jpg" alt="Nuestro taller en Gamarra" className="h-full w-full rounded-lg object-cover" />
-            */}
-            <div className="flex aspect-[4/3] items-center justify-center rounded-lg bg-cream">
-              <p className="text-center font-serif text-2xl font-light tracking-wide text-ink/30">
-                Victoria<span className="italic text-clay/40">Modas</span>
-                <span className="mt-2 block text-[10px] uppercase tracking-luxe">Gamarra · Lima</span>
-              </p>
+            <div className={`reveal ${historiaIn ? 'reveal-in' : ''}`}>
+              <TallerImage />
             </div>
 
-            <div>
-              <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">Nuestra historia</p>
-              <h2 className="mb-6 font-serif text-3xl font-light text-ink md:text-4xl">
+            <div className={`reveal ${historiaIn ? 'reveal-in' : ''}`} style={{ transitionDelay: '0.12s' }}>
+              <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Nuestra historia</p>
+              <h2 className="mb-6 font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl">
                 Nacimos entre telas
               </h2>
               <div className="space-y-4 font-light leading-relaxed text-ink-soft">
@@ -88,23 +121,23 @@ export default function AboutPage() {
         </section>
 
         {/* Nuestras telas */}
-        <section className="bg-cream py-16 md:py-24">
+        <section ref={telasRef} className="bg-cream py-20 md:py-28">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">Nuestras telas</p>
-              <h2 className="font-serif text-3xl font-light text-ink md:text-4xl">
+            <div className={`reveal ${telasIn ? 'reveal-in' : ''} mb-14 text-center`}>
+              <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Nuestras telas</p>
+              <h2 className="font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl">
                 La calidad se siente
               </h2>
-              <p className="mx-auto mt-4 max-w-xl font-light leading-relaxed text-ink-soft">
+              <p className="mx-auto mt-5 max-w-xl font-light leading-relaxed text-ink-soft">
                 Cada colección parte de la tela. Trabajamos solo con materiales que
                 conocemos de memoria y que sabemos que durarán contigo.
               </p>
             </div>
-            <div className="mx-auto max-w-2xl">
+            <div className={`reveal ${telasIn ? 'reveal-in' : ''} mx-auto max-w-2xl`} style={{ transitionDelay: '0.12s' }}>
               <ul className="border-t border-ink/10">
                 {TELAS.map((tela) => (
-                  <li key={tela.nombre} className="flex flex-col gap-1 border-b border-ink/10 py-5 sm:flex-row sm:items-baseline sm:gap-6">
-                    <span className="w-36 flex-shrink-0 font-serif text-lg font-light text-ink">
+                  <li key={tela.nombre} className="flex flex-col gap-1 border-b border-ink/10 py-6 sm:flex-row sm:items-baseline sm:gap-6">
+                    <span className="w-36 flex-shrink-0 font-serif text-xl font-light text-ink">
                       {tela.nombre}
                     </span>
                     <span className="text-sm font-light leading-relaxed text-ink-soft">
@@ -118,17 +151,21 @@ export default function AboutPage() {
         </section>
 
         {/* Nuestro compromiso */}
-        <section className="py-16 md:py-24">
+        <section ref={compromisoRef} className="py-20 md:py-28">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <p className="mb-3 text-[11px] uppercase tracking-luxe text-clay">Nuestro compromiso</p>
-              <h2 className="font-serif text-3xl font-light text-ink md:text-4xl">
+            <div className={`reveal ${compromisoIn ? 'reveal-in' : ''} mb-14 text-center`}>
+              <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Nuestro compromiso</p>
+              <h2 className="font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl">
                 Lo que nos importa
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-10 sm:grid-cols-3 sm:gap-8">
-              {COMPROMISOS.map((c) => (
-                <div key={c.titulo} className="text-center">
+              {COMPROMISOS.map((c, idx) => (
+                <div
+                  key={c.titulo}
+                  className={`reveal ${compromisoIn ? 'reveal-in' : ''} text-center`}
+                  style={{ transitionDelay: `${idx * 0.1 + 0.1}s` }}
+                >
                   <div className="mx-auto mb-5 h-px w-10 bg-clay" />
                   <h3 className="mb-3 font-serif text-xl font-light text-ink">{c.titulo}</h3>
                   <p className="text-sm font-light leading-relaxed text-ink-soft">{c.texto}</p>
