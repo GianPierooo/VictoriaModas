@@ -319,53 +319,57 @@ function CategoryShowcase() {
   return (
     <section
       ref={ref}
-      className="bg-white py-20 md:py-28"
+      className="bg-white py-24 md:py-36"
       aria-labelledby="category-title"
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Encabezado */}
-        <div className="text-center mb-14">
-          <p className={`text-[11px] uppercase tracking-luxe text-clay mb-4 transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        <div className="mb-16 text-center">
+          <p className={`mb-4 text-[11px] uppercase tracking-luxe text-clay transition-all duration-700 ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
           }`}>
             Colecciones
           </p>
           <h2
             id="category-title"
-            className={`font-serif font-light text-ink text-4xl md:text-5xl transition-all duration-700 delay-100 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            className={`font-serif text-5xl font-light text-ink transition-all delay-100 duration-700 md:text-6xl ${
+              isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
           >
-            Encuentra tu estilo
+            Compra por categoría
           </h2>
         </div>
 
-        {/* Grid de categorías */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+        {/* Grid de categorías — imágenes más grandes y editoriales */}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 md:gap-6">
           {categories.map((cat, idx) => (
             <Link
               key={cat.name}
               to={cat.link}
-              className={`group relative aspect-[3/4] overflow-hidden rounded-lg bg-cream-dark transition-all duration-700 ease-out ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              className={`group relative aspect-[3/4] overflow-hidden rounded-lg bg-cream-dark transition-all duration-700 ease-out lg:aspect-[4/5] ${
+                isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
               }`}
-              style={{ transitionDelay: `${idx * 100 + 100}ms` }}
+              style={{ transitionDelay: `${idx * 120 + 100}ms` }}
             >
               <ResponsiveImage
                 src={cat.img}
                 alt={cat.name}
-                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-105"
+                className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-105"
                 loading="lazy"
               />
 
-              {/* Overlay degradado sutil, se intensifica al hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/55 via-ink/10 to-transparent group-hover:from-ink/65 transition-colors duration-500" />
+              {/* Overlay degradado, se intensifica al hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/15 to-transparent transition-colors duration-500 group-hover:from-ink/70" />
 
-              {/* Nombre de la categoría */}
-              <div className="absolute inset-x-0 bottom-0 pb-8 text-center">
-                <h3 className="font-serif font-light text-cream text-2xl md:text-3xl tracking-wide">
+              {/* Nombre + reveal "Explorar" al hover */}
+              <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pb-9 text-center">
+                <h3 className="font-serif text-3xl font-light tracking-wide text-cream md:text-4xl">
                   {cat.name}
                 </h3>
+                <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-cream/85 opacity-0 transition-all duration-500 group-hover:mt-3 group-hover:opacity-100">
+                  Explorar
+                  <ChevronRightIcon className="h-3.5 w-3.5" />
+                </span>
               </div>
             </Link>
           ))}
