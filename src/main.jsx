@@ -20,6 +20,8 @@ const ProductPage = lazy(() => import('./pages/ProductPage.jsx'))
 const CartPage = lazy(() => import('./pages/CartPage.jsx'))
 const AccountPage = lazy(() => import('./pages/AccountPage.jsx'))
 const FavoritesPage = lazy(() => import('./pages/FavoritesPage.jsx'))
+// Ruta privada de mayoreo (no enlazada en Header/Footer/sitemap).
+const MayoristasPage = lazy(() => import('./pages/MayoristasPage.jsx'))
 
 // Envuelve un elemento de página en Suspense para mostrar el loader durante la descarga.
 const withSuspense = (element) => (
@@ -40,6 +42,7 @@ const router = createBrowserRouter([
   { path: '/checkout', element: withSuspense(<CheckoutPage />) },
   { path: '/favoritos', element: withSuspense(<FavoritesPage />) },
   { path: '/mi-cuenta', element: withSuspense(<AccountPage />) },
+  { path: '/mayoristas', element: withSuspense(<MayoristasPage />) },
 ])
 
 createRoot(document.getElementById('root')).render(
