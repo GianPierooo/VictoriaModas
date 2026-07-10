@@ -143,29 +143,33 @@ export default function ProductPage() {
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-5 lg:gap-12">
             {/* Galería (60%) */}
             <div className="lg:col-span-3">
-              <div className="flex flex-col-reverse gap-4 lg:flex-row">
-                {/* Miniaturas */}
+              <div className="flex flex-col-reverse gap-4 lg:flex-row lg:gap-5">
+                {/* Miniaturas verticales (desktop) / horizontales (móvil) */}
                 {currentImages.length > 1 && (
-                  <div className="flex gap-3 lg:flex-col">
-                    {currentImages.map((src, idx) => (
-                      <button
-                        key={src}
-                        type="button"
-                        onClick={() => setSelectedImage(idx)}
-                        className={`relative aspect-[3/4] w-16 flex-shrink-0 overflow-hidden rounded-md bg-cream-dark transition-all duration-300 lg:w-20 ${
-                          idx === selectedImage ? 'ring-1 ring-clay ring-offset-2 ring-offset-white' : 'opacity-70 hover:opacity-100'
-                        }`}
-                        aria-label={`Ver imagen ${idx + 1}`}
-                      >
-                        <ResponsiveImage src={src} alt="" aria-hidden="true" className="h-full w-full object-cover object-top" loading="lazy" width={160} height={213} />
-                      </button>
-                    ))}
+                  <div className="flex gap-3 lg:flex-col" aria-label="Miniaturas del producto">
+                    {currentImages.map((src, idx) => {
+                      const active = idx === selectedImage
+                      return (
+                        <button
+                          key={src}
+                          type="button"
+                          onClick={() => setSelectedImage(idx)}
+                          className={`relative aspect-[3/4] w-16 flex-shrink-0 overflow-hidden rounded-lg bg-cream-dark transition-all duration-300 active:scale-95 lg:w-24 ${
+                            active ? 'ring-1 ring-clay ring-offset-2 ring-offset-white' : 'opacity-60 hover:opacity-100'
+                          }`}
+                          aria-label={`Ver imagen ${idx + 1}`}
+                          aria-current={active ? 'true' : undefined}
+                        >
+                          <ResponsiveImage src={src} alt="" aria-hidden="true" className="h-full w-full object-cover object-top" loading="lazy" width={200} height={266} />
+                        </button>
+                      )
+                    })}
                   </div>
                 )}
 
-                {/* Imagen principal — zoom suave al hover en desktop */}
+                {/* Imagen principal — zoom sutil al hover (desktop), swipe (móvil) */}
                 <div
-                  className="group/zoom relative aspect-[3/4] flex-1 overflow-hidden rounded-lg bg-cream-dark"
+                  className="group/zoom relative aspect-[3/4] flex-1 overflow-hidden rounded-xl bg-cream-dark lg:cursor-zoom-in"
                   onTouchStart={onTouchStart}
                   onTouchEnd={onTouchEnd}
                 >
@@ -173,13 +177,20 @@ export default function ProductPage() {
                     key={mainImage}
                     src={mainImage}
                     alt={product.name}
-                    className="h-full w-full object-cover object-top transition-transform duration-[900ms] ease-out lg:group-hover/zoom:scale-110"
-                    style={{ animation: 'fadeIn 0.4s ease-out both' }}
+                    className="h-full w-full object-cover object-top transition-transform duration-[1200ms] ease-out lg:group-hover/zoom:scale-105"
+                    style={{ animation: 'fadeIn 0.45s ease-out both' }}
                     loading="eager"
                     fetchPriority="high"
                     width={900}
                     height={1200}
                   />
+
+                  {/* Contador de imagen (móvil, discreto) */}
+                  {currentImages.length > 1 && (
+                    <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-ink/50 px-3 py-1 text-[10px] tracking-[0.2em] text-cream backdrop-blur-sm lg:hidden">
+                      {selectedImage + 1} / {currentImages.length}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
