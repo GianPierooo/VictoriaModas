@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRightIcon, ChevronLeftIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import Header from '../components/Header.jsx'
@@ -465,91 +465,115 @@ function ProductSpotlight() {
   )
 }
 
-// ============= SOCIAL FAVORITES =============
+// ============= SOCIAL FAVORITES — carrusel horizontal =============
 function SocialFavorites() {
   const [ref, isVisible] = useScrollAnimation()
-  
+  const reduced = usePrefersReducedMotion()
+  const scrollerRef = useRef(null)
+
   const favorites = [
-    { id: 'vestido-suplex-moderno', name: 'Vestido Suplex Moderno', image: '/imagenes/vestidos/vestido_suplex01/negro_adelante.png', collection: 'Colección Suplex' },
-    { id: 'vestido-lame-elegante', name: 'Vestido Lame Elegante', image: '/imagenes/vestidos/vestido_lame01/azul_adelante.png', collection: 'Elegancia Premium' },
-    { id: 'pantalon-scuba-vena', name: 'Pantalón Scuba Vena', image: '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_adelante.png', collection: 'Scuba Collection' },
+    { id: 'vestido-suplex-moderno', name: 'Vestido suplex moderno', image: '/imagenes/vestidos/vestido_suplex01/negro_adelante.png', collection: 'Colección suplex' },
+    { id: 'vestido-lame-elegante', name: 'Vestido lamé elegante', image: '/imagenes/vestidos/vestido_lame01/azul_adelante.png', collection: 'Elegancia premium' },
+    { id: 'pantalon-scuba-vena', name: 'Pantalón scuba vena', image: '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_adelante.png', collection: 'Colección scuba' },
+    { id: 'blusa-seda-francesa', name: 'Blusa seda francesa', image: '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_delante.png', collection: 'Seda francesa' },
   ]
 
+  const scrollByCards = (dir) => {
+    const el = scrollerRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: reduced ? 'auto' : 'smooth' })
+  }
+
   return (
-    <section ref={ref} className="bg-white py-20 md:py-28" aria-labelledby="social-title">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Encabezado */}
-        <div className="text-center mb-14">
-          <p className={`text-[11px] uppercase tracking-luxe text-clay mb-4 transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}>
-            Comunidad
-          </p>
-          <h2
-            id="social-title"
-            className={`font-serif font-light text-ink text-4xl md:text-5xl mb-4 transition-all duration-700 delay-100 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            Favoritos de Instagram
-          </h2>
-          <p className={`text-ink-soft font-light transition-all duration-700 delay-200 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}>
-            Las prendas que más aman nuestras clientas en redes sociales
-          </p>
-        </div>
-
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {favorites.map((item, idx) => (
-            <Link
-              key={item.id}
-              to={`/producto/${item.id}`}
-              className={`group relative aspect-[3/4] overflow-hidden rounded-lg bg-cream-dark transition-all duration-700 ease-out ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
-              style={{ transitionDelay: `${idx * 100 + 100}ms` }}
+    <section ref={ref} className="overflow-hidden bg-white py-24 md:py-36" aria-labelledby="social-title">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        {/* Encabezado con flechas (desktop) */}
+        <div
+          className={`mb-12 flex items-end justify-between gap-6 transition-all duration-700 ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`}
+        >
+          <div>
+            <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Comunidad</p>
+            <h2 id="social-title" className="font-serif text-5xl font-light leading-[1.05] text-ink md:text-6xl">
+              Favoritos de la comunidad
+            </h2>
+          </div>
+          <div className="hidden shrink-0 gap-3 md:flex">
+            <button
+              type="button"
+              onClick={() => scrollByCards(-1)}
+              aria-label="Ver anteriores"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/20 text-ink transition-colors hover:border-ink hover:bg-ink/[0.03]"
             >
-              <ResponsiveImage
-                src={item.image}
-                alt={item.name}
-                className="w-full h-full object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-105"
-                loading="lazy"
-              />
-
-              {/* Overlay al hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-              {/* Contenido al hover */}
-              <div className="absolute inset-x-0 bottom-0 p-8 text-cream translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                <h3 className="font-serif font-light text-xl mb-1">{item.collection}</h3>
-                <p className="text-sm text-cream/80 mb-4 font-light">{item.name}</p>
-                <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] border-b border-cream/40 pb-1">
-                  Ver más
-                  <ChevronRightIcon className="w-4 h-4" />
-                </span>
-              </div>
-            </Link>
-          ))}
+              <ChevronLeftIcon className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByCards(1)}
+              aria-label="Ver siguientes"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/20 text-ink transition-colors hover:border-ink hover:bg-ink/[0.03]"
+            >
+              <ChevronRightIcon className="h-5 w-5" />
+            </button>
+          </div>
         </div>
+      </div>
 
-        {/* CTA */}
-        <div className={`mt-14 text-center transition-all duration-700 delay-200 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}>
-          <a
-            href="https://www.facebook.com/profile.php?id=61555283742078"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center justify-center gap-3 border border-ink/20 text-ink px-9 py-4 rounded-full text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:border-ink hover:bg-ink/[0.03]"
+      {/* Carrusel deslizable (táctil en móvil, snap) */}
+      <div
+        ref={scrollerRef}
+        role="region"
+        aria-label="Favoritos de la comunidad"
+        tabIndex={0}
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-6 pb-4 lg:px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {favorites.map((item, idx) => (
+          <Link
+            key={item.id}
+            to={`/producto/${item.id}`}
+            className={`group relative aspect-[3/4] w-[78%] shrink-0 snap-start overflow-hidden rounded-lg bg-cream-dark transition-all duration-700 ease-out first:ml-0 sm:w-[46%] lg:w-[31%] ${
+              isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+            }`}
+            style={{ transitionDelay: `${idx * 90 + 100}ms` }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M22 12.07C22 6.48 17.52 2 11.93 2S1.86 6.48 1.86 12.07C1.86 17.12 5.57 21.25 10.38 22v-7.01H7.9v-2.92h2.48V9.41c0-2.45 1.46-3.8 3.7-3.8 1.07 0 2.18.19 2.18.19v2.4h-1.23c-1.21 0-1.59.75-1.59 1.52v1.82h2.71l-.43 2.92h-2.28V22c4.81-.75 8.52-4.88 8.52-9.93z"/>
-            </svg>
-            Síguenos en Facebook
-          </a>
-        </div>
+            <ResponsiveImage
+              src={item.image}
+              alt={item.name}
+              className="h-full w-full object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-105"
+              loading="lazy"
+            />
+            {/* Overlay permanente suave (legible también sin hover en móvil) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/65 via-ink/10 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-7 text-cream">
+              <p className="mb-1 text-[10px] uppercase tracking-luxe text-cream/70">{item.collection}</p>
+              <h3 className="mb-3 font-serif text-xl font-light">{item.name}</h3>
+              <span className="inline-flex items-center gap-2 border-b border-cream/40 pb-1 text-[11px] uppercase tracking-[0.2em] transition-all duration-500 group-hover:gap-3 group-hover:border-cream">
+                Ver más
+                <ChevronRightIcon className="h-4 w-4" />
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div
+        className={`mx-auto mt-14 max-w-7xl px-6 text-center transition-all delay-200 duration-700 lg:px-8 ${
+          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+        }`}
+      >
+        <a
+          href="https://www.facebook.com/profile.php?id=61555283742078"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group inline-flex items-center justify-center gap-3 rounded-full border border-ink/20 px-9 py-4 text-xs uppercase tracking-[0.2em] text-ink transition-colors duration-500 hover:border-ink hover:bg-ink/[0.03]"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M22 12.07C22 6.48 17.52 2 11.93 2S1.86 6.48 1.86 12.07C1.86 17.12 5.57 21.25 10.38 22v-7.01H7.9v-2.92h2.48V9.41c0-2.45 1.46-3.8 3.7-3.8 1.07 0 2.18.19 2.18.19v2.4h-1.23c-1.21 0-1.59.75-1.59 1.52v1.82h2.71l-.43 2.92h-2.28V22c4.81-.75 8.52-4.88 8.52-9.93z" />
+          </svg>
+          Síguenos en Facebook
+        </a>
       </div>
     </section>
   )
