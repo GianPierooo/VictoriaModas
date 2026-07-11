@@ -8,8 +8,8 @@
 // /api), falla o aún no hay hoja conectada (source "none"), NO rompe la web:
 // todo queda como 'consultar' y el indicador simplemente no se muestra.
 //
-// Nunca recibe precios: /api/stock solo devuelve { id, color, talla, stock,
-// estado }.
+// /api/stock devuelve { id, color, talla, stock, estado, precioMenorPEN }.
+// El precio es RETAIL (menor); el de mayoreo NUNCA llega por aquí.
 // ============================================================
 import { useEffect, useState } from 'react'
 
@@ -80,7 +80,35 @@ export function useStock() {
     return any ? best : 'consultar'
   }
 
-  return { ready: !!state, source: state?.source || 'none', getEstado, getEstadoProducto }
+  // Precio RETAIL (soles) de una variante concreta, o null si no hay dato.
+  const getPrecio = (id, color, talla) => {
+    if (!state) return null
+    const it = state.byKey.get(keyOf(id, color, talla))
+    return it && it.precioMenorPEN != null ? it.precioMenorPEN : null
+  }
+
+  // Precio RETAIL representativo de un producto (mínimo de sus variantes con
+  // precio), para cards/listas sin variante elegida. null si no hay precio.
+  const getPrecioProducto = (id) => {
+    if (!state) return null
+    const pid = String(id).toLowerCase()
+    let min = null
+    for (const it of state.byKey.values()) {
+      if (String(it.id).toLowerCase() !== pid) continue
+      const p = it.precioMenorPEN
+      if (p != null && (min === null || p < min)) min = p
+    }
+    return min
+  }
+
+  return {
+    ready: !!state,
+    source: state?.source || 'none',
+    getEstado,
+    getEstadoProducto,
+    getPrecio,
+    getPrecioProducto,
+  }
 }
 
 // Estilo del indicador por estado (paleta clay/ink). Devuelve null para

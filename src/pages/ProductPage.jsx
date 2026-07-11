@@ -18,6 +18,7 @@ import { COLOR_HEX } from '../utils/colorMap.js'
 import { PRODUCTS, getProductById, getProductsByCategory } from '../data/products.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { useStock, estadoStyle } from '../hooks/useStock.js'
+import { formatPEN } from '../utils/price.js'
 
 const SITE_URL = 'https://victoriamodas.store'
 
@@ -50,8 +51,10 @@ export default function ProductPage() {
 
   // Stock en vivo (si la hoja no está conectada, estado = 'consultar' y el
   // indicador no se muestra; no altera el diseño).
-  const { getEstado } = useStock()
+  const { getEstado, getPrecio, getPrecioProducto } = useStock()
   const stockStyle = estadoStyle(getEstado(productId, selectedColor, selectedSize))
+  // Precio retail: el de la variante elegida, o el representativo del producto.
+  const precio = getPrecio(productId, selectedColor, selectedSize) ?? getPrecioProducto(productId)
 
   // Al cambiar de producto (navegación entre detalles), reiniciar selección
   useEffect(() => {
@@ -228,9 +231,12 @@ export default function ProductPage() {
                 <p className="hero-line mb-4 text-[11px] uppercase tracking-luxe text-clay" style={{ animationDelay: '0.04s' }}>
                   {product.category}
                 </p>
-                <h1 className="hero-line mb-6 font-serif text-4xl font-light leading-[1.1] text-ink md:text-5xl" style={{ animationDelay: '0.12s' }}>
+                <h1 className="hero-line mb-4 font-serif text-4xl font-light leading-[1.1] text-ink md:text-5xl" style={{ animationDelay: '0.12s' }}>
                   {product.name}
                 </h1>
+                <p className="hero-line mb-6 text-xl font-light text-ink" style={{ animationDelay: '0.16s' }}>
+                  {formatPEN(precio) || <span className="text-ink-soft">Precio a consultar</span>}
+                </p>
                 <p className="hero-line mb-9 max-w-md font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.2s' }}>
                   {product.description}
                 </p>
