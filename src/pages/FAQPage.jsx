@@ -4,27 +4,27 @@ import { ChevronUpIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
-// Textos base — afinar redacción según evolucione el negocio
 const FAQS = [
   {
     pregunta: '¿Cómo compro?',
     respuesta:
-      'Muy fácil: navega la colección, elige color y talla, y arma tu carrito. ' +
-      'Al finalizar, el pedido se envía por WhatsApp y ahí mismo confirmamos ' +
-      'disponibilidad, pago y entrega contigo. Sin registros ni complicaciones.',
+      'Navega la colección con sus precios, elige color y talla y añade a tu ' +
+      'carrito. Al finalizar, coordinamos el pedido por WhatsApp: confirmamos la ' +
+      'disponibilidad, la entrega y el pago. Sin registros ni complicaciones.',
   },
   {
-    pregunta: '¿Qué métodos de pago aceptan?',
+    pregunta: '¿Cómo pago mi pedido?',
     respuesta:
-      'Aceptamos Yape, Plin y transferencia bancaria. Si estás en Lima, también ' +
-      'puedes pagar en efectivo contra entrega.',
+      'Aceptamos Yape, Plin y transferencia bancaria; en Lima, también efectivo ' +
+      'contra entrega. Por ahora el pago se coordina por WhatsApp: aún no tenemos ' +
+      'pasarela en la web.',
   },
   {
     pregunta: '¿Hacen envíos?',
     respuesta:
-      'Sí. En Lima coordinamos entregas en 2 a 4 días hábiles. A provincias ' +
-      'enviamos vía Shalom u Olva Courier (4 a 7 días hábiles); el recojo es en ' +
-      'la agencia de tu ciudad. Envío gratis en compras mayores a S/ 200.',
+      'Sí, a todo el país. En Lima entregamos en 2 a 4 días hábiles; a provincias ' +
+      'enviamos por Shalom u Olva Courier (4 a 7 días hábiles), con recojo en la ' +
+      'agencia de tu ciudad. Envío gratis en compras mayores a S/ 200.',
   },
   {
     pregunta: '¿Puedo cambiar o devolver una prenda?',
@@ -34,18 +34,18 @@ const FAQS = [
       'WhatsApp y lo coordinamos sin vueltas.',
   },
   {
-    pregunta: '¿Venden al por mayor?',
+    pregunta: '¿Cómo sé mi talla?',
     respuesta:
-      'Sí. Nacimos en Gamarra y seguimos atendiendo a clientas mayoristas. ' +
-      'Escríbenos por WhatsApp contándonos qué modelos y cantidades te ' +
-      'interesan, y te preparamos una cotización.',
+      'Cada prenda indica sus tallas disponibles. Si tienes dudas, escríbenos por ' +
+      'WhatsApp con tus medidas (busto, cintura y cadera) y te ayudamos a elegir ' +
+      'la talla ideal.',
   },
 ]
 
 export default function FAQPage() {
   useDocumentMeta({
     title: 'Preguntas frecuentes | Victoria Modas',
-    description: 'Cómo comprar, métodos de pago (Yape, Plin, transferencia), envíos a Lima y provincias, cambios y ventas por mayor. Todo lo que necesitas saber.',
+    description: 'Cómo comprar, métodos de pago (Yape, Plin, transferencia), envíos a todo el Perú, cambios y guía de tallas. Todo lo que necesitas saber.',
   })
 
   return (

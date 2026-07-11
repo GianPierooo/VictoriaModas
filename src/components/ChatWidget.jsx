@@ -42,12 +42,12 @@ const waLink = (text) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t
 const FAQ = {
   comprar: {
     q: '¿Cómo comprar?',
-    a: 'Muy fácil: navega la colección, elige color y talla y arma tu carrito. Al finalizar, el pedido se envía por WhatsApp y ahí mismo confirmamos disponibilidad, pago y entrega. Sin registros ni complicaciones.',
-    wa: 'Hola 👋 Quiero hacer un pedido en Victoria Modas.',
+    a: 'Navega la colección con sus precios, elige color y talla y arma tu carrito. Al finalizar coordinamos el pedido por WhatsApp: disponibilidad, entrega y pago. Sin registros ni complicaciones.',
+    wa: 'Hola, quiero hacer un pedido en Victoria Modas.',
   },
   pago: {
     q: 'Métodos de pago',
-    a: 'Aceptamos Yape, Plin y transferencia bancaria. Si estás en Lima, también puedes pagar en efectivo contra entrega.',
+    a: 'Aceptamos Yape, Plin y transferencia bancaria; en Lima, también efectivo contra entrega. Por ahora el pago se coordina por WhatsApp (aún sin pasarela en la web).',
     wa: 'Hola, tengo una consulta sobre los métodos de pago.',
   },
   envios: {
@@ -62,13 +62,8 @@ const FAQ = {
   },
   tallas: {
     q: 'Guía de tallas',
-    a: 'Según el modelo manejamos tallas XS a L. Si nos compartes tus medidas (busto, cintura y cadera) te ayudamos a elegir la talla ideal para ti.',
+    a: 'Cada prenda indica sus tallas disponibles. Si nos compartes tus medidas (busto, cintura y cadera) te ayudamos a elegir la talla ideal para ti.',
     wa: 'Hola, ¿me ayudan con la guía de tallas? Les paso mis medidas.',
-  },
-  mayoreo: {
-    q: 'Venta por mayor',
-    a: 'Sí. Nacimos en Gamarra y seguimos atendiendo a clientas mayoristas. Cuéntanos por WhatsApp qué modelos y cantidades te interesan y te preparamos una cotización.',
-    wa: 'Hola, me interesa la venta por mayor. ¿Me pasan información?',
   },
 }
 
@@ -79,7 +74,6 @@ const MENU = [
   { key: 'envios', label: 'Envíos' },
   { key: 'cambios', label: 'Cambios y devoluciones' },
   { key: 'tallas', label: 'Guía de tallas' },
-  { key: 'mayoreo', label: 'Venta por mayor' },
 ]
 
 // Categorías visibles (Abrigos queda oculto hasta tener stock, igual que la nav).
