@@ -148,19 +148,22 @@ export default function Header() {
 
           {/* Navegación desktop */}
           <div className="hidden lg:flex lg:gap-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all duration-300 ${
-                  location.pathname === item.href
-                    ? 'text-ink border-b border-clay'
-                    : 'text-ink-soft hover:text-clay'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const active = location.pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`border-b pb-1 text-xs font-medium uppercase tracking-[0.15em] transition-colors duration-300 ${
+                    active
+                      ? 'border-clay text-ink'
+                      : 'border-transparent text-ink-soft hover:border-clay/40 hover:text-clay'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              )
+            })}
             
             {/* Dropdown AYUDA (desktop) — panel del sistema, centrado bajo el trigger */}
             <Menu as="div" className="relative">
@@ -357,7 +360,7 @@ export default function Header() {
                   <div className="grid grid-cols-2 gap-3">
                     <Link
                       to="/favoritos"
-                      className="relative flex flex-col items-center justify-center gap-2 rounded-lg bg-cream-dark px-4 py-4 text-sm font-medium text-ink hover:bg-rose-100 transition-colors"
+                      className="relative flex flex-col items-center justify-center gap-2 rounded-lg bg-cream-dark px-4 py-4 text-sm font-medium text-ink transition-colors hover:text-clay"
                     >
                       <HeartIcon className="h-6 w-6" />
                       Favoritos
