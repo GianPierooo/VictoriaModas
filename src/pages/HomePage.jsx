@@ -587,8 +587,8 @@ function SocialFavorites() {
 // ============= HOMEPAGE PRINCIPAL =============
 export default function HomePage() {
   useDocumentMeta({
-    title: 'Victoria Modas — Moda femenina elegante | Lima, Perú',
-    description: 'Moda femenina elegante desde Gamarra, Lima. Vestidos, blusas y pantalones en telas premium: scuba, suplex, lamé y seda francesa. Pedidos por WhatsApp.',
+    title: 'Victoria Modas — Moda femenina, hecha en Perú',
+    description: 'Moda femenina premium en telas de calidad: scuba, suplex, lamé y seda francesa. Vestidos, blusas y pantalones diseñados y confeccionados en Perú.',
   })
 
   return (

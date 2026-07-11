@@ -34,7 +34,7 @@ export const ASSETS = {
   fabricSuplex: null, // sugerido: '/imagenes/telas/suplex-detalle.jpg'
 
   // ── Nosotros ───────────────────────────────────────────────
-  // Foto real del taller/tienda en Gamarra. Horizontal 4:3 (~1200×900).
+  // Foto real del taller/tienda (Perú). Horizontal 4:3 (~1200×900).
   // Mientras no exista, la página muestra un placeholder tipográfico.
   tallerImage: '/imagenes/nosotros/taller.jpg',
 }
