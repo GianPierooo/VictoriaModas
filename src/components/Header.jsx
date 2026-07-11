@@ -188,7 +188,7 @@ export default function Header() {
                     leaveFrom="opacity-100 translate-y-0"
                     leaveTo="opacity-0 -translate-y-1"
                   >
-                    <Menu.Items className="absolute left-1/2 mt-4 w-60 -translate-x-1/2 rounded-xl bg-cream p-1.5 shadow-soft ring-1 ring-ink/10 focus:outline-none">
+                    <Menu.Items className="absolute left-1/2 top-full z-50 mt-3 w-60 -translate-x-1/2 rounded-xl bg-cream p-1.5 shadow-soft ring-1 ring-ink/10 focus:outline-none">
                       <p className="px-3.5 pb-2 pt-2.5 text-[10px] uppercase tracking-luxe text-ink-muted">
                         ¿Necesitas ayuda?
                       </p>
