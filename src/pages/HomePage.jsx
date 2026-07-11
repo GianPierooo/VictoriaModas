@@ -108,8 +108,8 @@ function Hero() {
           className="hero-line mb-11 max-w-md text-base font-light leading-relaxed text-cream/80 md:text-lg"
           style={{ animationDelay: '0.32s' }}
         >
-          Vestidos, blusas y pantalones en telas premium, pensados para la mujer
-          que viste con intención.
+          Vestidos, blusas y pantalones en telas premium, diseñados y hechos en
+          Perú para la mujer de hoy.
         </p>
         <div className="hero-line" style={{ animationDelay: '0.46s' }}>
           <Link

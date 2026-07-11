@@ -49,7 +49,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="mt-5 max-w-xs text-sm font-light leading-relaxed text-cream/60">
-              Moda femenina con intención · Lima, Perú
+              Moda femenina, hecha en Perú
             </p>
 
             {/* Redes sociales */}

@@ -391,8 +391,8 @@ export default function Header() {
                 <p className="text-center font-serif text-sm text-ink-soft">
                   Victoria<span className="italic text-clay">Modas</span> © 2026
                 </p>
-                <p className="text-center text-xs text-ink-muted mt-1">
-                  Moda elegante y minimalista
+                <p className="mt-1 text-center text-xs text-ink-muted">
+                  Moda femenina, hecha en Perú
                 </p>
               </div>
             </Dialog.Panel>
