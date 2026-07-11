@@ -147,7 +147,7 @@ export default function Header() {
           </div>
 
           {/* Navegación desktop */}
-          <div className="hidden lg:flex lg:gap-x-8">
+          <div className="hidden lg:flex lg:items-center lg:gap-x-8">
             {navigation.map((item) => {
               const active = location.pathname === item.href
               return (
@@ -166,11 +166,11 @@ export default function Header() {
             })}
             
             {/* Dropdown AYUDA (desktop) — panel del sistema, centrado bajo el trigger */}
-            <Menu as="div" className="relative">
+            <Menu as="div" className="relative flex items-center">
               {({ open }) => (
                 <>
                   <Menu.Button
-                    className="inline-flex items-center gap-1 pb-1 text-xs uppercase tracking-[0.15em] font-medium text-ink-soft transition-colors duration-300 hover:text-clay"
+                    className="inline-flex items-center gap-1 border-b border-transparent pb-1 text-xs font-medium uppercase tracking-[0.15em] text-ink-soft transition-colors duration-300 hover:border-clay/40 hover:text-clay"
                   >
                     Ayuda
                     <ChevronDownIcon
