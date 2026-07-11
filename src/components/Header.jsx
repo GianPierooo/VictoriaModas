@@ -164,44 +164,54 @@ export default function Header() {
               </Link>
             ))}
             
-            {/* Dropdown APOYO (Desktop) */}
+            {/* Dropdown AYUDA (desktop) — panel del sistema, centrado bajo el trigger */}
             <Menu as="div" className="relative">
-              <Menu.Button 
-                className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.15em] font-medium text-ink-soft hover:text-clay transition-all duration-300"
-              >
-                Ayuda
-                <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
-              </Menu.Button>
-              
-              <Transition
-                as={Fragment}
-                enter="transition ease-out duration-100"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-cream shadow-soft ring-1 ring-ink/10 focus:outline-none">
-                  <div className="py-1">
-                    {supportLinks.map((item) => (
-                      <Menu.Item key={item.name}>
-                        {({ active }) => (
-                          <Link
-                            to={item.href}
-                            className={`${
-                              active ? 'bg-cream-dark' : ''
-                            } group flex items-center gap-2 px-4 py-2 text-sm text-ink-soft`}
-                          >
-                            <item.icon className="h-5 w-5 text-ink-muted group-hover:text-clay" />
-                            {item.name}
-                          </Link>
-                        )}
-                      </Menu.Item>
-                    ))}
-                  </div>
-                </Menu.Items>
-              </Transition>
+              {({ open }) => (
+                <>
+                  <Menu.Button
+                    className="inline-flex items-center gap-1 pb-1 text-xs uppercase tracking-[0.15em] font-medium text-ink-soft transition-colors duration-300 hover:text-clay"
+                  >
+                    Ayuda
+                    <ChevronDownIcon
+                      className={`h-3.5 w-3.5 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+                      aria-hidden="true"
+                    />
+                  </Menu.Button>
+
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-150"
+                    enterFrom="opacity-0 -translate-y-1"
+                    enterTo="opacity-100 translate-y-0"
+                    leave="transition ease-in duration-100"
+                    leaveFrom="opacity-100 translate-y-0"
+                    leaveTo="opacity-0 -translate-y-1"
+                  >
+                    <Menu.Items className="absolute left-1/2 mt-4 w-60 -translate-x-1/2 rounded-xl bg-cream p-1.5 shadow-soft ring-1 ring-ink/10 focus:outline-none">
+                      <p className="px-3.5 pb-2 pt-2.5 text-[10px] uppercase tracking-luxe text-ink-muted">
+                        ¿Necesitas ayuda?
+                      </p>
+                      <div className="border-t border-ink/5">
+                        {supportLinks.map((item) => (
+                          <Menu.Item key={item.name}>
+                            {({ active }) => (
+                              <Link
+                                to={item.href}
+                                className={`group flex items-center gap-3 rounded-lg px-3.5 py-3 text-sm font-light transition-colors ${
+                                  active ? 'bg-cream-dark text-ink' : 'text-ink-soft'
+                                }`}
+                              >
+                                <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${active ? 'text-clay' : 'text-ink-muted'}`} />
+                                {item.name}
+                              </Link>
+                            )}
+                          </Menu.Item>
+                        ))}
+                      </div>
+                    </Menu.Items>
+                  </Transition>
+                </>
+              )}
             </Menu>
           </div>
 
@@ -323,10 +333,10 @@ export default function Header() {
                   {/* Separador */}
                   <div className="border-t border-ink/10 my-4"></div>
 
-                  {/* Apoyo */}
+                  {/* Ayuda */}
                   <div className="space-y-1">
-                    <p className="px-3 text-[10px] font-medium uppercase tracking-luxe text-ink-muted mb-2">
-                      Apoyo
+                    <p className="mb-2 px-3 text-[10px] uppercase tracking-luxe text-ink-muted">
+                      Ayuda
                     </p>
                     {supportLinks.map((item) => {
                       const Icon = item.icon
@@ -334,9 +344,9 @@ export default function Header() {
                         <Link
                           key={item.name}
                           to={item.href}
-                          className="group flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-ink-soft hover:bg-cream-dark hover:text-ink transition-colors"
+                          className="group flex items-center gap-3 rounded-lg px-3 py-3 text-base font-light text-ink-soft transition-colors hover:bg-cream-dark hover:text-ink"
                         >
-                          <Icon className="h-5 w-5 text-ink-muted group-hover:text-clay" />
+                          <Icon className="h-5 w-5 flex-shrink-0 text-ink-muted transition-colors group-hover:text-clay" />
                           {item.name}
                         </Link>
                       )
