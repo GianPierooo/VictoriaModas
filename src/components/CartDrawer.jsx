@@ -171,7 +171,7 @@ export default function CartDrawer() {
                         Ver carrito completo
                       </Link>
                       <p className="mt-4 text-center text-[11px] font-light text-ink-muted">
-                        Coordinamos pago y envío por WhatsApp.
+                        Coordinamos el pago y el envío por WhatsApp.
                       </p>
                     </div>
                   </>

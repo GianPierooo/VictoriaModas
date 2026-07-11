@@ -149,7 +149,7 @@ export default function Footer() {
                   {CONTACT_EMAIL}
                 </a>
               </li>
-              <li className="py-1.5 text-cream/50">Gamarra, Lima — Perú</li>
+              <li className="py-1.5 text-cream/50">Lima, Perú</li>
             </ul>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function Footer() {
             © 2026 Victoria Modas — Lima, Perú
           </p>
           <p className="text-xs font-light italic text-cream/40">
-            Hecho con cariño en Gamarra
+            Hecho en Perú
           </p>
         </div>
       </div>

@@ -81,8 +81,8 @@ export default function CheckoutPage() {
               Pedido enviado
             </h1>
             <p className="hero-line mx-auto mb-12 max-w-md font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.32s' }}>
-              Te responderemos pronto por WhatsApp para confirmar disponibilidad y
-              coordinar el pago y la entrega.
+              Te escribiremos por WhatsApp para confirmar la disponibilidad y coordinar
+              el pago y la entrega.
             </p>
 
             {/* Resumen del pedido */}
@@ -172,7 +172,8 @@ export default function CheckoutPage() {
             {/* Formulario */}
             <div className="lg:col-span-2">
               <p className="mb-8 max-w-md font-light leading-relaxed text-ink-soft">
-                Completa tus datos y enviaremos el pedido por WhatsApp para coordinar pago y entrega.
+                Completa tus datos y coordinamos el pedido por WhatsApp: confirmamos tu total,
+                el pago y la entrega.
               </p>
 
               <form onSubmit={handleSubmit} noValidate className="space-y-7">

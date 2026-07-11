@@ -172,7 +172,7 @@ export default function CartPage() {
                   </Link>
 
                   <p className="mt-5 text-center text-xs font-light leading-relaxed text-ink-muted">
-                    Coordinaremos pago y envío contigo por WhatsApp.
+                    Coordinamos el pago y el envío por WhatsApp.
                   </p>
 
                   {/* Línea de confianza */}
