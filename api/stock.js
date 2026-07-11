@@ -4,11 +4,12 @@
 // Función serverless (runtime Node.js de Vercel, ESM).
 //
 // Devuelve, por prenda/color/talla:
-//   { id, color, talla, stock, estado }
+//   { id, color, talla, stock, estado, precioMenorPEN }
 // donde  estado = "disponible" (stock > 3)
 //                 "ultimas"     (stock 1–3)
 //                 "agotado"     (stock 0)
 //                 "consultar"   (aún no hay fuente conectada / desconocido)
+//   y precioMenorPEN = precio RETAIL en soles (null si la hoja no lo tiene).
 //
 // REGLAS (ver CLAUDE.md):
 //  · TODA la lectura de datos vive detrás de UNA sola función readStock(),
@@ -19,8 +20,9 @@
 //    devuelve null y el endpoint responde estado "consultar" para todo, para
 //    que la web nunca se rompa mientras se conecta la hoja.
 //  · SEGMENTOS: superficie pública = SOLO canal menor/ambos y variantes
-//    activas. NUNCA se expone ningún precio (ni menor ni mayor) en esta
-//    respuesta; el endpoint solo informa disponibilidad.
+//    activas. Se expone el precio RETAIL (precioMenorPEN); el precio de
+//    mayoreo (precioMayorPEN) NUNCA sale por aquí — solo por /api/mayoreo
+//    tras el código de acceso.
 //
 // Query opcional para filtrar:  ?id=..  &color=..  &talla=..
 // ============================================================
@@ -163,7 +165,8 @@ function normalizeMatrix(values) {
       talla: String(get('talla') ?? '').trim(),
       stock: toNumber(get('stock')),
       canal: get('canal'),
-      // Los precios se leen pero NUNCA se exponen (ver toPublic).
+      // Retail se expone; el de mayoreo NO se lee aquí (ver toPublic).
+      precioMenorPEN: toNumber(get('preciomenorpen')),
       activo: get('activo'),
     })
   }
@@ -188,7 +191,8 @@ function normalizeRows(list) {
       talla: String(o.talla ?? '').trim(),
       stock: toNumber(o.stock),
       canal: o.canal,
-      // Los precios se leen pero NUNCA se exponen (ver toPublic).
+      // Retail se expone; el de mayoreo NO se lee aquí (ver toPublic).
+      precioMenorPEN: toNumber(o.preciomenorpen),
       activo: o.activo,
     })
   }
@@ -221,15 +225,17 @@ function isPublicRetail(row) {
   return activo && (canal === '' || canal === 'menor' || canal === 'ambos')
 }
 
-// Proyección pública: SOLO lo que puede ver el navegador.
-// Nunca ningún precio (ni menor ni mayor).
+// Proyección pública: SOLO lo que puede ver el navegador. Incluye el precio
+// RETAIL (precioMenorPEN, null si no está en la hoja). NUNCA precioMayorPEN.
 function toPublic(row) {
+  const precio = toNumber(row.precioMenorPEN)
   return {
     id: row.id,
     color: row.color,
     talla: row.talla,
     stock: row.stock,
     estado: estadoFor(row.stock),
+    precioMenorPEN: precio,
   }
 }
 
