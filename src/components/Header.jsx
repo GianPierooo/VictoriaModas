@@ -22,7 +22,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [hidden, setHidden] = useState(false)
   const location = useLocation()
-  const { items } = useCart()
+  const { items, openDrawer } = useCart()
   const { count: favCount } = useWishlist()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -240,21 +240,20 @@ export default function Header() {
               )}
             </Link>
 
-            {/* Carrito */}
-            <Link 
-              to="/carrito" 
-              className={`relative p-2 rounded-md transition-all duration-300 ${
-                'text-ink-soft hover:text-clay hover:bg-ink/5'
-              }`}
-              aria-label={`Carrito de compras${cartCount > 0 ? ` (${cartCount} producto${cartCount !== 1 ? 's' : ''})` : ' (vacío)'}`}
+            {/* Carrito — abre el mini-carrito lateral (drawer) */}
+            <button
+              type="button"
+              onClick={openDrawer}
+              className="relative rounded-md p-2 text-ink-soft transition-all duration-300 hover:bg-ink/5 hover:text-clay"
+              aria-label={`Abrir carrito${cartCount > 0 ? ` (${cartCount} producto${cartCount !== 1 ? 's' : ''})` : ' (vacío)'}`}
             >
               <ShoppingCartIcon className="h-6 w-6" />
               {cartCount > 0 && (
-                <span key={cartCount} className="count-pop absolute -top-1 -right-1 bg-clay-dark text-cream text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-soft">
+                <span key={cartCount} className="count-pop absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-clay-dark text-xs font-bold text-cream shadow-soft">
                   {cartCount}
                 </span>
               )}
-            </Link>
+            </button>
           </div>
         </nav>
       </header>

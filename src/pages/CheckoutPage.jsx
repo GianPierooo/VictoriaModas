@@ -43,6 +43,12 @@ export default function CheckoutPage() {
       toast.error('Completa los campos marcados para enviar tu pedido.')
       return
     }
+    // ── COSTURA DE PAGO (FUTURO) ──────────────────────────────────────
+    // Si algún día se habilita un pago en línea (Yape / pasarela), el paso
+    // iría AQUÍ: cobrar/confirmar el pago antes de registrar y derivar a
+    // WhatsApp. Hoy el modelo es 100% por WhatsApp; no hay lógica de pago.
+    // NO implementar aquí (es un paso separado y fuera de alcance).
+
     toast.success('Pedido enviado. Te escribimos por WhatsApp.')
     // Registra el pedido en la hoja en SEGUNDO PLANO (sin await): si falla, el
     // flujo de WhatsApp continúa igual. Va antes de openWhatsApp para no perder

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import ChatWidget from './ChatWidget.jsx'
+import CartDrawer from './CartDrawer.jsx'
 
 const WHATSAPP_NUMBER = '51993357672'
 const CONTACT_EMAIL = 'victoriamodas1053@gmail.com'
@@ -186,6 +187,9 @@ export default function Footer() {
           Vive aquí, junto al botón de WhatsApp, para aparecer en todas las
           páginas (el Footer es el único elemento presente en todas ellas). */}
       <ChatWidget />
+
+      {/* Mini-carrito lateral (global; se controla desde CartContext). */}
+      <CartDrawer />
     </footer>
   )
 }

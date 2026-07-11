@@ -22,11 +22,22 @@ function loadStoredCart() {
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(loadStoredCart)
+  // Mini-carrito lateral (drawer): ver/editar sin salir de la página.
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const toast = useToast()
 
+  // Persistencia endurecida: no rompe si el almacenamiento no está disponible
+  // (navegación privada, cuota llena, etc.); el carrito sigue en memoria.
   useEffect(() => {
-    localStorage.setItem('vm_cart_items', JSON.stringify(items))
+    try {
+      localStorage.setItem('vm_cart_items', JSON.stringify(items))
+    } catch {
+      /* almacenamiento no disponible */
+    }
   }, [items])
+
+  const openDrawer = useCallback(() => setDrawerOpen(true), [])
+  const closeDrawer = useCallback(() => setDrawerOpen(false), [])
 
   const addItem = useCallback((product, quantity = 1) => {
     setItems(prev => {
@@ -44,8 +55,10 @@ export function CartProvider({ children }) {
       return [...prev, { ...product, quantity }]
     })
 
-    // Feedback unificado (el mini-carrito se conecta en el área de carrito).
-    toast.success('Añadido al carrito')
+    // Feedback unificado: toast con acción para abrir el mini-carrito.
+    toast.success('Añadido al carrito', {
+      action: { label: 'Ver carrito', onClick: () => setDrawerOpen(true) },
+    })
   }, [toast])
 
   const removeItem = useCallback((key) => {
@@ -66,8 +79,11 @@ export function CartProvider({ children }) {
   }, [items])
 
   const value = useMemo(
-    () => ({ items, addItem, removeItem, updateQuantity, clearCart, totals }),
-    [items, addItem, removeItem, updateQuantity, clearCart, totals]
+    () => ({
+      items, addItem, removeItem, updateQuantity, clearCart, totals,
+      drawerOpen, openDrawer, closeDrawer,
+    }),
+    [items, addItem, removeItem, updateQuantity, clearCart, totals, drawerOpen, openDrawer, closeDrawer]
   )
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
