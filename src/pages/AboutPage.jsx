@@ -20,11 +20,11 @@ const COMPROMISOS = [
   },
   {
     titulo: 'Atención cercana',
-    texto: 'Te asesoramos por WhatsApp como en la tienda: con paciencia, honestidad y ojo de estilista.',
+    texto: 'Te acompañamos por WhatsApp con la cercanía de una boutique: honestas, atentas y con ojo de estilista.',
   },
   {
     titulo: 'Hecho en Perú',
-    texto: 'Diseñado y confeccionado en Gamarra, con el orgullo de la moda peruana que viste bien.',
+    texto: 'Diseñado y confeccionado en Perú, con el orgullo de una moda que se siente y perdura.',
   },
 ]
 
@@ -38,7 +38,7 @@ function TallerImage() {
       <div className="flex aspect-[4/3] items-center justify-center rounded-xl bg-cream">
         <p className="text-center font-serif text-2xl font-light tracking-wide text-ink/30">
           Victoria<span className="italic text-clay/40">Modas</span>
-          <span className="mt-2 block text-[10px] uppercase tracking-luxe">Gamarra · Lima</span>
+          <span className="mt-2 block text-[10px] uppercase tracking-luxe">Hecho en Perú</span>
         </p>
       </div>
     )
@@ -48,7 +48,7 @@ function TallerImage() {
     <div className="aspect-[4/3] overflow-hidden rounded-xl bg-cream">
       <img
         src={ASSETS.tallerImage}
-        alt="Nuestro taller en Gamarra"
+        alt="Nuestro taller de confección"
         className="h-full w-full object-cover"
         loading="lazy"
         onError={() => setFailed(true)}
@@ -60,7 +60,7 @@ function TallerImage() {
 export default function AboutPage() {
   useDocumentMeta({
     title: 'Nuestra historia | Victoria Modas',
-    description: 'Victoria Modas nace en Gamarra, Lima. Años vistiendo a la mujer peruana con telas premium, ahora directo a la clienta final.',
+    description: 'Moda femenina premium, diseñada y confeccionada en Perú. Telas de calidad y estética atemporal para la mujer de hoy.',
   })
 
   const [historiaRef, historiaIn] = useInViewReveal({ amount: 0.15 })
@@ -80,12 +80,12 @@ export default function AboutPage() {
               className="hero-line mb-7 font-serif text-5xl font-light leading-[1.05] tracking-[-0.01em] text-ink md:text-6xl"
               style={{ animationDelay: '0.16s' }}
             >
-              De Gamarra,
-              <span className="block italic text-clay">directo a ti</span>
+              Diseñado en Perú,
+              <span className="block italic text-clay">pensado para ti</span>
             </h1>
             <p className="hero-line mx-auto max-w-xl font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.3s' }}>
-              Somos Victoria Modas: años vistiendo a la mujer peruana desde el corazón
-              textil de Lima, ahora llevando nuestros diseños directo a tu puerta.
+              Victoria Modas es moda femenina premium: telas de calidad, cortes que
+              favorecen y una estética atemporal, pensada para acompañarte cada día.
             </p>
           </div>
         </section>
@@ -104,16 +104,15 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-4 font-light leading-relaxed text-ink-soft">
                 <p>
-                  Victoria Modas nace en Gamarra, el corazón de la moda peruana. Ahí
-                  aprendimos lo que años de mostrador enseñan: a distinguir una buena
-                  tela al tacto, a entender qué corte favorece y a tratar a cada
-                  clienta como se merece.
+                  Victoria Modas nace del amor por las telas y por el oficio de vestir
+                  bien. Aprendimos a distinguir una buena tela al tacto, a entender qué
+                  corte favorece y a cuidar cada acabado como si fuera para nosotras.
                 </p>
                 <p>
-                  Hoy damos el siguiente paso: llevamos nuestros diseños directo a la
-                  clienta final, sin intermediarios. Creemos que vestir bien no
-                  debería ser complicado ni costoso — por eso cada prenda que ves
-                  aquí pasó primero por nuestras manos.
+                  Hoy llevamos ese cuidado directo a ti: piezas premium, diseñadas para
+                  durar y para acompañarte en cada ocasión. Creemos que vestir bien no
+                  debería ser complicado — cada prenda que ves aquí pasó primero por
+                  nuestras manos.
                 </p>
               </div>
             </div>
