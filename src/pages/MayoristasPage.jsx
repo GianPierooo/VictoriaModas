@@ -19,6 +19,7 @@ import { PRODUCTS, getProductById } from '../data/products.js'
 import { COLOR_HEX } from '../utils/colorMap.js'
 import { estadoStyle } from '../hooks/useStock.js'
 import { registerOrder } from '../utils/orderUtils.js'
+import { useToast } from '../context/ToastContext.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 const WHATSAPP_NUMBER = '51993357672'
@@ -27,6 +28,7 @@ const fmtPEN = (n) => `S/ ${n}`
 const waLink = (text) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`
 
 export default function MayoristasPage() {
+  const toast = useToast()
   useDocumentMeta({ title: 'Mayoristas | Victoria Modas' })
 
   // noindex solo para esta vista; se retira al desmontar.
@@ -62,15 +64,18 @@ export default function MayoristasPage() {
       if (res.status === 401) {
         setStatus('error')
         setErrorMsg('Código incorrecto. Verifica con Victoria Modas.')
+        toast.error('Código incorrecto.')
         return
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       setItems(Array.isArray(data.items) ? data.items : [])
       setStatus('unlocked')
+      toast.success('Acceso concedido.')
     } catch {
       setStatus('error')
       setErrorMsg('No se pudo verificar ahora. Intenta de nuevo.')
+      toast.error('No se pudo verificar ahora. Intenta de nuevo.')
     }
   }
 

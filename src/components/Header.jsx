@@ -15,7 +15,6 @@ import {
 import { useCart } from '../context/CartContext.jsx'
 import { useWishlist } from '../context/WishlistContext.jsx'
 import SearchModal from './SearchModal.jsx'
-import CartNotification from './CartNotification.jsx'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -23,10 +22,9 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [hidden, setHidden] = useState(false)
   const location = useLocation()
-  const { items, showNotification, closeNotification } = useCart()
+  const { items } = useCart()
   const { count: favCount } = useWishlist()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
-  const isCartPage = location.pathname === '/carrito'
 
   // Links de navegación principal
   // ABRIGOS: oculto hasta tener stock con fotos (la página sigue activa en
@@ -401,19 +399,10 @@ export default function Header() {
       </Transition>
 
       {/* Modal de búsqueda */}
-      <SearchModal 
-        isOpen={searchOpen} 
-        onClose={() => setSearchOpen(false)} 
+      <SearchModal
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
       />
-      
-      {/* Notificación de carrito */}
-      {!isCartPage && (
-        <CartNotification 
-          isOpen={showNotification}
-          onClose={closeNotification}
-          cartItems={items}
-        />
-      )}
     </>
   )
 }

@@ -6,6 +6,7 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 const WHATSAPP_NUMBER = '51993357672'
@@ -38,6 +39,7 @@ function openWhatsAppWithMessage(form) {
 }
 
 export default function ContactPage() {
+  const toast = useToast()
   const [form, setForm] = useState({ nombre: '', contacto: '', mensaje: '' })
   const [errors, setErrors] = useState({})
   const [sending, setSending] = useState(false)
@@ -65,12 +67,16 @@ export default function ContactPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validate()) return
+    if (!validate()) {
+      toast.error('Revisa los campos: nombre, contacto y un mensaje breve.')
+      return
+    }
 
     // Sin credenciales de EmailJS → directo a WhatsApp
     if (!emailConfigured) {
       openWhatsAppWithMessage(form)
       setStatus('whatsapp')
+      toast.info('Abrimos WhatsApp con tu mensaje listo.')
       return
     }
 
@@ -87,11 +93,13 @@ export default function ContactPage() {
       await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateIdAdmin, params, EMAILJS_CONFIG.publicKey)
       setStatus('success')
       setForm({ nombre: '', contacto: '', mensaje: '' })
+      toast.success('Mensaje enviado. Te responderemos pronto.')
     } catch {
       // Si el envío de correo falla, no dejamos a la clienta sin canal:
       // abrimos WhatsApp con su mensaje listo.
       openWhatsAppWithMessage(form)
       setStatus('whatsapp')
+      toast.info('Abrimos WhatsApp con tu mensaje listo.')
     } finally {
       setSending(false)
     }

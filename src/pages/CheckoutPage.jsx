@@ -4,6 +4,7 @@ import { ChevronLeftIcon, CheckCircleIcon, TruckIcon, ArrowPathIcon } from '@her
 import Layout from '../components/Layout.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import { generateOrderMessage, openWhatsApp } from '../utils/whatsappUtils.js'
 import { buildOrderPayload, registerOrder } from '../utils/orderUtils.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
@@ -12,6 +13,7 @@ const REQUIRED_FIELDS = ['nombre', 'telefono', 'ciudad']
 
 export default function CheckoutPage() {
   const { items } = useCart()
+  const toast = useToast()
   const [formData, setFormData] = useState({
     nombre: '',
     telefono: '',
@@ -38,8 +40,10 @@ export default function CheckoutPage() {
     })
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
+      toast.error('Completa los campos marcados para enviar tu pedido.')
       return
     }
+    toast.success('Pedido enviado. Te escribimos por WhatsApp.')
     // Registra el pedido en la hoja en SEGUNDO PLANO (sin await): si falla, el
     // flujo de WhatsApp continúa igual. Va antes de openWhatsApp para no perder
     // el gesto de clic (evita bloqueo de popup).

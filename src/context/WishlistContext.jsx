@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useToast } from './ToastContext.jsx'
 
 const WishlistContext = createContext(null)
 
@@ -20,18 +21,27 @@ function loadStored() {
 
 export function WishlistProvider({ children }) {
   const [favorites, setFavorites] = useState(loadStored)
+  const toast = useToast()
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites))
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites))
+    } catch {
+      /* almacenamiento no disponible: los favoritos siguen en memoria */
+    }
   }, [favorites])
 
   const toggleFavorite = useCallback((productId) => {
+    // El toast va FUERA del updater (los updaters deben ser puros; StrictMode
+    // los invoca dos veces y duplicaría la notificación).
+    const has = favorites.includes(productId)
+    toast.success(has ? 'Quitado de favoritos' : 'Guardado en favoritos')
     setFavorites(prev =>
       prev.includes(productId)
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     )
-  }, [])
+  }, [favorites, toast])
 
   const isFavorite = useCallback(
     (productId) => favorites.includes(productId),
