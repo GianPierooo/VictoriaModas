@@ -1,5 +1,6 @@
 // Utilidades para WhatsApp
 // Los títulos van entre *asteriscos* para que WhatsApp los muestre en negrita.
+import { formatPEN } from './price.js'
 
 const PHONE_NUMBER = '51993357672'
 
@@ -32,8 +33,9 @@ export const generateWhatsAppMessage = (cartItems) => {
   return message
 }
 
-// Mensaje completo del checkout: datos del cliente + detalle del pedido
-export const generateOrderMessage = (formData, items) => {
+// Mensaje completo del checkout: datos del cliente + detalle del pedido.
+// `totalPEN` (opcional) = total retail en soles; si viene, se incluye.
+export const generateOrderMessage = (formData, items, totalPEN = null) => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
   let message = 'Hola, me gustaría hacer un pedido en Victoria Modas.\n\n'
@@ -49,8 +51,11 @@ export const generateOrderMessage = (formData, items) => {
 
   message += '*Detalle del pedido*\n'
   message += buildItemsBlock(items)
-  message += `*Total de artículos: ${totalItems}*\n\n`
-  message += 'Quedo atenta para coordinar pago y envío.'
+  message += `*Total de artículos: ${totalItems}*\n`
+  if (totalPEN != null) {
+    message += `*Total: ${formatPEN(totalPEN)}*\n`
+  }
+  message += '\nQuedo atenta para coordinar pago y envío.'
 
   return message
 }

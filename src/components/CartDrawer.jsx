@@ -6,8 +6,8 @@
 // foco, Escape y overlay; las transiciones respetan prefers-reduced-motion
 // (la capa de animación global neutraliza la duración).
 //
-// SEGMENTACIÓN: no se muestran precios (la web pública nunca los muestra); el
-// "en vivo" es el conteo de artículos. El pago se cierra por WhatsApp.
+// SEGMENTACIÓN: solo precio RETAIL (de /api/stock); nunca el de mayoreo.
+// El pago se cierra por WhatsApp.
 // ============================================================
 import { Link } from 'react-router-dom'
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
@@ -15,11 +15,16 @@ import { XMarkIcon, ShoppingBagIcon, TrashIcon } from '@heroicons/react/24/outli
 import ResponsiveImage from './ResponsiveImage.jsx'
 import QuantitySelector from './QuantitySelector'
 import { useCart } from '../context/CartContext.jsx'
+import { useStock } from '../hooks/useStock.js'
+import { formatPEN, cartTotal } from '../utils/price.js'
 import { cartItemKey } from '../utils/cart.js'
 
 export default function CartDrawer() {
   const { items, drawerOpen, closeDrawer, updateQuantity, removeItem } = useCart()
+  const { getPrecio } = useStock()
+  const priceOf = (it) => getPrecio(it.id, it.selectedColor, it.selectedSize)
   const totalItems = items.reduce((sum, it) => sum + it.quantity, 0)
+  const { total, allPriced } = cartTotal(items, priceOf)
 
   return (
     <Dialog open={drawerOpen} onClose={closeDrawer} className="relative z-[70]">
@@ -69,6 +74,7 @@ export default function CartDrawer() {
                     <ul className="flex-1 divide-y divide-ink/10 overflow-y-auto px-6">
                       {items.map((item) => {
                         const key = cartItemKey(item)
+                        const unit = priceOf(item)
                         return (
                           <li key={key} className="flex gap-4 py-5">
                             <Link
@@ -110,7 +116,7 @@ export default function CartDrawer() {
                                   <TrashIcon className="h-4 w-4" />
                                 </button>
                               </div>
-                              <div className="mt-auto pt-3">
+                              <div className="mt-auto flex items-end justify-between gap-3 pt-3">
                                 <QuantitySelector
                                   quantity={item.quantity}
                                   onQuantityChange={(q) => updateQuantity(key, q)}
@@ -118,6 +124,11 @@ export default function CartDrawer() {
                                   max={10}
                                   showLabel={false}
                                 />
+                                <span className="text-sm font-light text-ink">
+                                  {formatPEN(unit != null ? unit * item.quantity : null) || (
+                                    <span className="text-ink-muted">A consultar</span>
+                                  )}
+                                </span>
                               </div>
                             </div>
                           </li>
@@ -127,9 +138,15 @@ export default function CartDrawer() {
 
                     {/* Pie */}
                     <div className="border-t border-ink/10 px-6 py-5">
-                      <div className="mb-4 flex items-center justify-between text-sm">
-                        <span className="font-light text-ink-soft">Artículos</span>
-                        <span className="text-ink">{totalItems}</span>
+                      <div className="mb-1 flex items-center justify-between text-xs text-ink-muted">
+                        <span>Artículos</span>
+                        <span>{totalItems}</span>
+                      </div>
+                      <div className="mb-4 flex items-baseline justify-between">
+                        <span className="text-sm font-light text-ink-soft">Subtotal</span>
+                        <span className="font-serif text-xl font-light text-ink">
+                          {allPriced ? formatPEN(total) : <span className="text-base text-ink-muted">A consultar</span>}
+                        </span>
                       </div>
 
                       {/* ── COSTURA DE PAGO (FUTURO) ──────────────────────────

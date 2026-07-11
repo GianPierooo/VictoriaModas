@@ -7,7 +7,9 @@
 // Web pública = SOLO canal "menor". Nunca se envían precios de mayoreo.
 
 // Arma el payload que espera /api/pedido a partir del formulario y el carrito.
-export function buildOrderPayload(formData, items) {
+// `totalPEN` (opcional) = total retail en soles; si viene, es el total del
+// pedido; si no, se usa el conteo de artículos.
+export function buildOrderPayload(formData, items, totalPEN = null) {
   const totalItems = items.reduce((sum, it) => sum + it.quantity, 0)
 
   const detalle = items
@@ -31,7 +33,7 @@ export function buildOrderPayload(formData, items) {
     cliente: formData.nombre?.trim() || '',
     telefono: formData.telefono?.trim() || '',
     items: extras ? `${detalle} — ${extras}` : detalle,
-    total: totalItems,
+    total: totalPEN != null ? `S/ ${totalPEN}` : `${totalItems} u.`,
   }
 }
 

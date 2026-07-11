@@ -4,12 +4,17 @@ import Layout from '../components/Layout.jsx'
 import QuantitySelector from '../components/QuantitySelector'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
+import { useStock } from '../hooks/useStock.js'
+import { formatPEN, cartTotal } from '../utils/price.js'
 import { cartItemKey } from '../utils/cart.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart } = useCart()
+  const { getPrecio } = useStock()
+  const priceOf = (it) => getPrecio(it.id, it.selectedColor, it.selectedSize)
   const totalItems = items.reduce((sum, it) => sum + it.quantity, 0)
+  const { total, allPriced } = cartTotal(items, priceOf)
   useDocumentMeta({ title: 'Tu carrito | Victoria Modas' })
 
   return (
@@ -57,6 +62,7 @@ export default function CartPage() {
                 <ul className="border-t border-ink/10">
                   {items.map((item) => {
                     const key = cartItemKey(item)
+                    const unit = priceOf(item)
                     return (
                       <li key={key} className="flex gap-5 border-b border-ink/10 py-7 md:gap-7 md:py-8">
                         {/* Foto editorial (3:4) */}
@@ -100,8 +106,8 @@ export default function CartPage() {
                             </button>
                           </div>
 
-                          {/* Cantidad */}
-                          <div className="mt-auto pt-4">
+                          {/* Cantidad + precio de línea */}
+                          <div className="mt-auto flex items-end justify-between gap-3 pt-4">
                             <QuantitySelector
                               quantity={item.quantity}
                               onQuantityChange={(q) => updateQuantity(key, q)}
@@ -109,6 +115,18 @@ export default function CartPage() {
                               max={10}
                               showLabel={false}
                             />
+                            <div className="text-right">
+                              {unit != null ? (
+                                <>
+                                  <span className="text-base font-light text-ink">{formatPEN(unit * item.quantity)}</span>
+                                  {item.quantity > 1 && (
+                                    <span className="mt-0.5 block text-[11px] text-ink-muted">{formatPEN(unit)} c/u</span>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="text-sm text-ink-muted">Precio a consultar</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </li>
@@ -133,14 +151,22 @@ export default function CartPage() {
                 <div className="rounded-xl bg-cream p-7 lg:sticky lg:top-28 lg:p-8">
                   <h2 className="mb-6 font-serif text-2xl font-light text-ink">Resumen</h2>
 
-                  <div className="mb-7 flex items-center justify-between border-b border-ink/10 pb-6 text-sm">
-                    <span className="font-light text-ink-soft">Artículos</span>
-                    <span className="text-ink">{totalItems}</span>
+                  <div className="space-y-3 border-b border-ink/10 pb-6 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="font-light text-ink-soft">Artículos</span>
+                      <span className="text-ink">{totalItems}</span>
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-light text-ink-soft">Total</span>
+                      <span className="font-serif text-2xl font-light text-ink">
+                        {allPriced ? formatPEN(total) : <span className="text-lg text-ink-muted">A consultar</span>}
+                      </span>
+                    </div>
                   </div>
 
                   <Link
                     to="/checkout"
-                    className="block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-all duration-500 hover:bg-clay active:scale-[0.99]"
+                    className="mt-7 block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-all duration-500 hover:bg-clay active:scale-[0.99]"
                   >
                     Finalizar pedido
                   </Link>

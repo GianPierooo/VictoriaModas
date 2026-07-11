@@ -5,6 +5,8 @@ import Layout from '../components/Layout.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
+import { useStock } from '../hooks/useStock.js'
+import { formatPEN, cartTotal } from '../utils/price.js'
 import { generateOrderMessage, openWhatsApp } from '../utils/whatsappUtils.js'
 import { buildOrderPayload, registerOrder } from '../utils/orderUtils.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
@@ -14,6 +16,8 @@ const REQUIRED_FIELDS = ['nombre', 'telefono', 'ciudad']
 export default function CheckoutPage() {
   const { items } = useCart()
   const toast = useToast()
+  const { getPrecio } = useStock()
+  const priceOf = (it) => getPrecio(it.id, it.selectedColor, it.selectedSize)
   const [formData, setFormData] = useState({
     nombre: '',
     telefono: '',
@@ -25,6 +29,10 @@ export default function CheckoutPage() {
   useDocumentMeta({ title: 'Finalizar pedido | Victoria Modas' })
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
+  const { total, allPriced } = cartTotal(items, priceOf)
+  // Total en soles solo si TODAS las líneas tienen precio (si no, se coordina
+  // por WhatsApp).
+  const totalPEN = allPriced ? total : null
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -53,8 +61,8 @@ export default function CheckoutPage() {
     // Registra el pedido en la hoja en SEGUNDO PLANO (sin await): si falla, el
     // flujo de WhatsApp continúa igual. Va antes de openWhatsApp para no perder
     // el gesto de clic (evita bloqueo de popup).
-    registerOrder(buildOrderPayload(formData, items))
-    openWhatsApp(generateOrderMessage(formData, items))
+    registerOrder(buildOrderPayload(formData, items, totalPEN))
+    openWhatsApp(generateOrderMessage(formData, items, totalPEN))
     setConfirmed(true)
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
@@ -265,15 +273,28 @@ export default function CheckoutPage() {
                             {[item.selectedColor, item.selectedSize].filter(Boolean).join(' · ')}
                           </p>
                         )}
-                        <p className="mt-0.5 text-xs text-ink-muted">× {item.quantity}</p>
+                        <div className="mt-0.5 flex items-center justify-between text-xs text-ink-muted">
+                          <span>× {item.quantity}</span>
+                          <span className="text-ink">
+                            {formatPEN(priceOf(item) != null ? priceOf(item) * item.quantity : null) || 'A consultar'}
+                          </span>
+                        </div>
                       </div>
                     </li>
                   ))}
                 </ul>
 
-                <div className="flex items-center justify-between border-t border-ink/10 pt-4 text-sm">
-                  <span className="text-ink-soft">Artículos</span>
-                  <span className="text-ink">{totalItems}</span>
+                <div className="space-y-2 border-t border-ink/10 pt-4 text-sm">
+                  <div className="flex items-center justify-between text-ink-soft">
+                    <span>Artículos</span>
+                    <span className="text-ink">{totalItems}</span>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-ink-soft">Total</span>
+                    <span className="font-serif text-2xl font-light text-ink">
+                      {allPriced ? formatPEN(total) : <span className="text-lg text-ink-muted">A consultar</span>}
+                    </span>
+                  </div>
                 </div>
 
                 <p className="mt-5 text-xs font-light leading-relaxed text-ink-muted">
