@@ -6,9 +6,11 @@ import Footer from '../components/Footer.jsx'
 import AnnouncementBanner from '../components/AnnouncementBanner.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
+import BackgroundVideo from '../components/BackgroundVideo.jsx'
 import PageTransition from '../motion/PageTransition.jsx'
 import { useInViewReveal } from '../motion/useInViewReveal.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 
 // ── Assets del hero: rutas centralizadas en src/config/assets.js (el dueño
 //    sube el archivo y encaja solo; si no existe, hay fallback y nada se rompe).
@@ -17,19 +19,6 @@ import { ASSETS } from '../config/assets.js'
 const HERO_VIDEO_WEBM = ASSETS.heroVideoWebm
 const HERO_VIDEO = ASSETS.heroVideoMp4
 const HERO_IMAGE = ASSETS.heroImage
-
-// ¿El usuario pidió menos movimiento? (se respeta en video y animaciones)
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => setReduced(mq.matches)
-    update()
-    mq.addEventListener?.('change', update)
-    return () => mq.removeEventListener?.('change', update)
-  }, [])
-  return reduced
-}
 
 // ============= HERO — tejido en movimiento =============
 function Hero() {
@@ -225,6 +214,7 @@ function Collections() {
       fabric: 'Tela lamé',
       image: '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png',
       fabricImage: ASSETS.fabricLame,
+      video: ASSETS.carruselVideo1,
       link: '/vestidos',
       align: 'left',
     },
@@ -235,6 +225,7 @@ function Collections() {
       fabric: 'Tela scuba',
       image: '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_negro_adelante.png',
       fabricImage: ASSETS.fabricScuba,
+      video: ASSETS.carruselVideo2,
       link: '/pantalones',
       align: 'right',
     },
@@ -260,6 +251,10 @@ function Collections() {
                 className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-105"
                 loading="lazy"
               />
+
+              {/* Video de fondo (diferido, lazy por visibilidad). La imagen de
+                  arriba queda de poster/fallback; con reduced-motion no se monta. */}
+              <BackgroundVideo mp4={c.video} poster={c.image} active={isVisible} />
 
               {/* Overlay elegante hacia el lado del texto */}
               <div
@@ -408,6 +403,10 @@ function ProductSpotlight() {
         }`}
         loading="lazy"
       />
+
+      {/* Video de fondo (diferido, lazy por visibilidad). La imagen de arriba
+          queda de poster/fallback; con reduced-motion no se monta. */}
+      <BackgroundVideo mp4={ASSETS.carruselVideo3} poster={SPOTLIGHT_IMAGE} active={isVisible} />
 
       {/* Overlay elegante hacia el texto (izquierda) */}
       <div className="absolute inset-0 bg-gradient-to-r from-ink/85 via-ink/45 to-transparent" />
