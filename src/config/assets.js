@@ -26,6 +26,16 @@ export const ASSETS = {
   // similar, mínimo ~1600px de ancho. Hoy usa una foto de producto.
   heroImage: '/imagenes/vestidos/vestido_suplex01/azul_adelante.png',
 
+  // ── Videos editoriales del Home (secciones grandes) ────────
+  // Loops cortos, mudos, comprimidos (~2-3 MB c/u). Se montan diferidos
+  // (solo al entrar la sección en pantalla y tras el primer paint), con la
+  // imagen de la sección como poster/fallback. Si el archivo no existe o
+  // falla la carga, queda la imagen y nada se rompe. Se DESACTIVAN con
+  // prefers-reduced-motion.
+  carruselVideo1: '/videos/carrusel-1.mp4', // fondo de "Vestidos elegantes" (Colecciones)
+  carruselVideo2: '/videos/carrusel-2.mp4', // fondo de "Pantalones modernos" (Colecciones)
+  carruselVideo3: '/videos/carrusel-3.mp4', // fondo del "Producto destacado" (Spotlight)
+
   // ── Detalles de tela (insets de banners Home) ──────────────
   // Foto macro de la tela (~800×1000, 4:5). null = se usa un acercamiento
   // de la propia prenda (no se rompe nada).
