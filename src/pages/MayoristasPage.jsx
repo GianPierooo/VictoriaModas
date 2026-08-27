@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Layout from '../components/Layout.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
-import { PRODUCTS, getProductById } from '../data/products.js'
+import { useProducts } from '../hooks/useProducts.js'
 import { COLOR_HEX } from '../utils/colorMap.js'
 import { estadoStyle } from '../hooks/useStock.js'
 import { registerOrder } from '../utils/orderUtils.js'
@@ -29,6 +29,7 @@ const waLink = (text) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURICompo
 
 export default function MayoristasPage() {
   const toast = useToast()
+  const { products, getProductById } = useProducts()
   useDocumentMeta({ title: 'Mayoristas | Victoria Modas' })
 
   // noindex solo para esta vista; se retira al desmontar.
@@ -87,11 +88,11 @@ export default function MayoristasPage() {
       if (!byId.has(it.id)) byId.set(it.id, [])
       byId.get(it.id).push(it)
     }
-    return PRODUCTS.filter((p) => byId.has(p.id)).map((p) => ({
+    return products.filter((p) => byId.has(p.id)).map((p) => ({
       product: p,
       variants: byId.get(p.id),
     }))
-  }, [items, status])
+  }, [items, status, products])
 
   const setQuantity = (id, color, talla, value) => {
     const n = Math.max(0, Math.floor(Number(value) || 0))
@@ -116,7 +117,7 @@ export default function MayoristasPage() {
       }
     }
     return lines
-  }, [items, qty])
+  }, [items, qty, getProductById])
 
   const totalUnidades = orderLines.reduce((s, l) => s + l.qty, 0)
   const totalPEN = orderLines.reduce((s, l) => s + (l.price ? l.price * l.qty : 0), 0)

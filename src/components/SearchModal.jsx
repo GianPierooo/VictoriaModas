@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { Dialog, Transition } from '@headlessui/react'
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { searchProducts } from '../data/products.js'
+import { useProducts } from '../hooks/useProducts.js'
 import ResponsiveImage from './ResponsiveImage.jsx'
 
 export default function SearchModal({ isOpen, onClose }) {
+  const { searchProducts } = useProducts()
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [isLoading, setIsLoading] = useState(false)

@@ -14,7 +14,7 @@
 // ============================================================
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { PRODUCTS, getProductById, getProductsByCategory } from '../data/products.js'
+import { useProducts } from '../hooks/useProducts.js'
 import { COLOR_HEX } from '../utils/colorMap.js'
 import { useStock, estadoStyle } from '../hooks/useStock.js'
 
@@ -277,6 +277,7 @@ export default function ChatWidget() {
   const [color, setColor] = useState(null)
   const [size, setSize] = useState(null)
   const { getEstado } = useStock()
+  const { products, getProductById, getProductsByCategory } = useProducts()
 
   // Estado del chat con IA
   const [messages, setMessages] = useState([]) // { role, content, fallback? }
@@ -641,7 +642,7 @@ export default function ChatWidget() {
         <div style={{ height: 6 }} />
         <SectionTitle>Explorar</SectionTitle>
         <OptionButton onClick={() => setView('cats')}>
-          Ver los productos ({PRODUCTS.length})
+          Ver los productos ({products.length})
         </OptionButton>
       </>
     )

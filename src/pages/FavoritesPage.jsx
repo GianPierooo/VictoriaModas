@@ -2,11 +2,12 @@ import { Link } from 'react-router-dom'
 import Layout from '../components/Layout.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import { useWishlist } from '../context/WishlistContext.jsx'
-import { getProductById } from '../data/products.js'
+import { useProducts } from '../hooks/useProducts.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 export default function FavoritesPage() {
   const { favorites } = useWishlist()
+  const { getProductById } = useProducts()
   useDocumentMeta({
     title: 'Tus favoritos | Victoria Modas',
     description: 'Las prendas que guardaste para volver a ellas cuando quieras.',

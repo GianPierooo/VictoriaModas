@@ -15,7 +15,7 @@ import ProductCard from '../components/ProductCard.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { COLOR_HEX } from '../utils/colorMap.js'
-import { PRODUCTS, getProductById, getProductsByCategory } from '../data/products.js'
+import { useProducts } from '../hooks/useProducts.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { useStock, estadoStyle } from '../hooks/useStock.js'
 import { formatPEN } from '../utils/price.js'
@@ -41,6 +41,7 @@ function usePrefersReducedMotion() {
 export default function ProductPage() {
   const { id } = useParams()
   const { addItem } = useCart()
+  const { products, getProductById, getProductsByCategory } = useProducts()
   const product = getProductById(id) || getProductById('vestido-suplex-moderno')
   const productId = product.id
 
@@ -110,9 +111,9 @@ export default function ProductPage() {
   // (para llenar el carrusel), excluyendo el actual.
   const relatedProducts = useMemo(() => {
     const sameCat = getProductsByCategory(product.category).filter(p => p.id !== productId)
-    const others = PRODUCTS.filter(p => p.id !== productId && p.category !== product.category)
+    const others = products.filter(p => p.id !== productId && p.category !== product.category)
     return [...sameCat, ...others].slice(0, 8)
-  }, [product.category, productId])
+  }, [product.category, productId, products]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const reduced = usePrefersReducedMotion()
   const relatedRef = useRef(null)

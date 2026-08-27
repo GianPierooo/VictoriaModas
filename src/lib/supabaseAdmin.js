@@ -172,15 +172,139 @@ export async function deleteProductoImagen(imagen) {
 }
 
 // ---------------------------------------------------------
+// Clientes (ficha de mostrador — no requiere que tengan cuenta en la web;
+// si más adelante inician sesión con el mismo correo, `user_id` los liga).
+// ---------------------------------------------------------
+export async function listClientes() {
+  if (guard(true)) return []
+  const { data, error } = await supabase.from('clientes').select('*').order('nombre')
+  if (error) throw error
+  return data
+}
+
+export async function createCliente(cliente) {
+  const { data: userData } = await supabase.auth.getUser()
+  const { data, error } = await supabase
+    .from('clientes')
+    .insert({ ...cliente, creado_por: userData?.user?.id || null })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateCliente(id, cliente) {
+  const { error } = await supabase.from('clientes').update(cliente).eq('id', id)
+  if (error) throw error
+}
+
+// ---------------------------------------------------------
 // Ventas (para "Mis pedidos" del cliente; el panel vendedor las escribe)
 // ---------------------------------------------------------
+
+// Ventas del cliente que tiene sesión — busca primero su ficha de cliente
+// (por user_id) y luego sus ventas. Si nunca compró (sin ficha), vacío.
 export async function listVentasCliente(userId) {
   if (guard(true) || !userId) return []
+  const { data: cliente } = await supabase.from('clientes').select('id').eq('user_id', userId).maybeSingle()
+  if (!cliente) return []
   const { data, error } = await supabase
     .from('ventas')
     .select('*, venta_items(*)')
-    .eq('cliente_user_id', userId)
+    .eq('cliente_id', cliente.id)
     .order('created_at', { ascending: false })
   if (error) throw error
   return data
+}
+
+// Todas las ventas — para el panel vendedor.
+export async function listVentasStaff() {
+  if (guard(true)) return []
+  const { data, error } = await supabase
+    .from('ventas')
+    .select('*, clientes(nombre, telefono), venta_items(*, producto_variantes(*, productos(nombre), tallas(nombre), colores(nombre)))')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function updateVentaEstado(id, estado) {
+  const { error } = await supabase.from('ventas').update({ estado, updated_at: new Date().toISOString() }).eq('id', id)
+  if (error) throw error
+}
+
+// Catálogo para armar una venta: productos activos con sus variantes (stock,
+// precio) y nombre de talla/color — lo que necesita el selector de la nueva
+// venta.
+export async function listProductosParaVenta() {
+  if (guard(true)) return []
+  const { data, error } = await supabase
+    .from('productos')
+    .select('id, nombre, producto_variantes(*, tallas(nombre), colores(nombre))')
+    .eq('activo', true)
+    .order('nombre')
+  if (error) throw error
+  return data
+}
+
+// Crea la venta + sus items, y descuenta el stock vendido de cada variante
+// (PB-002: "integrar las ventas con la actualización de stock"). No es
+// atómico (son varias llamadas), pero valida stock disponible ANTES de
+// escribir nada — si algo no alcanza, no se crea la venta a medias.
+export async function createVenta({ clienteId, items, canal = 'menor', direccionEnvio = '', telefonoContacto = '', notas = '' }) {
+  if (!items.length) throw new Error('La venta necesita al menos un producto.')
+
+  // Verifica stock disponible antes de comprometer nada.
+  const ids = items.map((it) => it.variante_id)
+  const { data: variantesActuales, error: errStock } = await supabase
+    .from('producto_variantes')
+    .select('id, stock')
+    .in('id', ids)
+  if (errStock) throw errStock
+  for (const it of items) {
+    const actual = variantesActuales.find((v) => v.id === it.variante_id)
+    if (!actual || actual.stock < it.cantidad) {
+      throw new Error(`No hay stock suficiente para uno de los productos elegidos.`)
+    }
+  }
+
+  const subtotal = items.reduce((sum, it) => sum + it.precio_unitario * it.cantidad, 0)
+  const { data: userData } = await supabase.auth.getUser()
+
+  const { data: venta, error: errVenta } = await supabase
+    .from('ventas')
+    .insert({
+      cliente_id: clienteId,
+      vendedor_user_id: userData?.user?.id || null,
+      canal,
+      estado: 'confirmado',
+      subtotal,
+      total: subtotal,
+      direccion_envio: direccionEnvio,
+      telefono_contacto: telefonoContacto,
+      notas,
+    })
+    .select()
+    .single()
+  if (errVenta) throw errVenta
+
+  const filasItems = items.map((it) => ({
+    venta_id: venta.id,
+    producto_variante_id: it.variante_id,
+    cantidad: it.cantidad,
+    precio_unitario: it.precio_unitario,
+  }))
+  const { error: errItems } = await supabase.from('venta_items').insert(filasItems)
+  if (errItems) throw errItems
+
+  // Descuenta stock (una actualización por variante — suficiente a esta escala).
+  for (const it of items) {
+    const actual = variantesActuales.find((v) => v.id === it.variante_id)
+    await supabase
+      .from('producto_variantes')
+      .update({ stock: actual.stock - it.cantidad })
+      .eq('id', it.variante_id)
+  }
+
+  return venta
 }

@@ -33,6 +33,12 @@ const AdminProductsListPage = lazy(() => import('./pages/admin/AdminProductsList
 const AdminProductFormPage = lazy(() => import('./pages/admin/AdminProductFormPage.jsx'))
 const AdminCatalogBasePage = lazy(() => import('./pages/admin/AdminCatalogBasePage.jsx'))
 
+// Panel de ventas (admin o vendedor — separado del admin: sin acceso al catálogo).
+const PanelVentasLayout = lazy(() => import('./components/ventas/PanelVentasLayout.jsx'))
+const ClientesPage = lazy(() => import('./pages/ventas/ClientesPage.jsx'))
+const VentasListPage = lazy(() => import('./pages/ventas/VentasListPage.jsx'))
+const VentaFormPage = lazy(() => import('./pages/ventas/VentaFormPage.jsx'))
+
 // Envuelve un elemento de página en Suspense para mostrar el loader durante la descarga.
 const withSuspense = (element) => (
   <Suspense fallback={<PageLoader />}>{element}</Suspense>
@@ -66,6 +72,20 @@ const router = createBrowserRouter([
       { path: 'productos/nuevo', element: withSuspense(<AdminProductFormPage />) },
       { path: 'productos/:id', element: withSuspense(<AdminProductFormPage />) },
       { path: 'catalogo-base', element: withSuspense(<AdminCatalogBasePage />) },
+    ],
+  },
+  {
+    path: '/panel-ventas',
+    element: withSuspense(
+      <RequireRole allow={['admin', 'vendedor']}>
+        <PanelVentasLayout />
+      </RequireRole>
+    ),
+    children: [
+      { index: true, element: <Navigate to="ventas" replace /> },
+      { path: 'ventas', element: withSuspense(<VentasListPage />) },
+      { path: 'ventas/nueva', element: withSuspense(<VentaFormPage />) },
+      { path: 'clientes', element: withSuspense(<ClientesPage />) },
     ],
   },
   // 404 coherente con el sistema (cualquier ruta no registrada)
