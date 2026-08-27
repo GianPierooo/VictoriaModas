@@ -4,7 +4,7 @@ export default function AnnouncementBanner() {
   const [current, setCurrent] = useState(0)
 
   const announcements = [
-    "Envío gratis en compras mayores a S/ 200",
+    "Envío gratis en compras mayores a S/ 60",
     "Nueva colección disponible",
     "Atención personalizada por WhatsApp",
   ]

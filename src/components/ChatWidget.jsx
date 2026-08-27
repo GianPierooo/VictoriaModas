@@ -52,7 +52,7 @@ const FAQ = {
   },
   envios: {
     q: 'Envíos',
-    a: 'En Lima coordinamos entregas en 2 a 4 días hábiles. A provincias enviamos por Shalom u Olva Courier (4 a 7 días hábiles), con recojo en la agencia de tu ciudad. Envío gratis en compras mayores a S/ 200.',
+    a: 'En Lima coordinamos entregas en 2 a 4 días hábiles. A provincias enviamos por Shalom u Olva Courier (4 a 7 días hábiles), con recojo en la agencia de tu ciudad. Envío gratis en compras mayores a S/ 60.',
     wa: 'Hola, quisiera consultar sobre los envíos.',
   },
   cambios: {

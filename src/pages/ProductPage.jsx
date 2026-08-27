@@ -150,7 +150,7 @@ export default function ProductPage() {
     },
     {
       title: 'Envíos',
-      body: 'Envío gratis en compras mayores a S/ 200. Entregas en Lima en 2 a 4 días hábiles y a provincias en 4 a 7 días hábiles mediante agencia.',
+      body: 'Envío gratis en compras mayores a S/ 60. Entregas en Lima en 2 a 4 días hábiles y a provincias en 4 a 7 días hábiles mediante agencia.',
     },
     {
       title: 'Cambios y devoluciones',
@@ -347,7 +347,7 @@ export default function ProductPage() {
                 <div className="mt-5 flex flex-col gap-2 text-[11px] font-light text-ink-muted sm:flex-row sm:items-center sm:gap-5">
                   <span className="inline-flex items-center gap-1.5">
                     <TruckIcon className="h-4 w-4 text-clay" />
-                    Envío gratis desde S/ 200
+                    Envío gratis desde S/ 60
                   </span>
                   <span className="hidden text-ink/20 sm:inline">·</span>
                   <span className="inline-flex items-center gap-1.5">

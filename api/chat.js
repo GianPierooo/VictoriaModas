@@ -64,7 +64,7 @@ ${buildCatalog()}
 INFORMACIÓN OFICIAL (FAQ — úsala, no la contradigas):
 - Cómo comprar: navegar la colección, elegir color y talla, armar el carrito; el pedido se envía por WhatsApp y ahí se confirma disponibilidad, pago y entrega. Sin registros.
 - Pagos: Yape, Plin y transferencia bancaria. En Lima también efectivo contra entrega.
-- Envíos: Lima 2 a 4 días hábiles; provincias vía Shalom u Olva Courier 4 a 7 días hábiles (recojo en agencia). Envío gratis en compras mayores a S/ 200.
+- Envíos: Lima 2 a 4 días hábiles; provincias vía Shalom u Olva Courier 4 a 7 días hábiles (recojo en agencia). Envío gratis en compras mayores a S/ 60.
 - Cambios: dentro de los 7 días posteriores a la entrega, prenda sin uso y en su empaque original; se coordina por WhatsApp.
 - Tallas: según el modelo, de XS a L. Pedir medidas para recomendar mejor.
 

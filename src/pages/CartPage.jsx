@@ -179,7 +179,7 @@ export default function CartPage() {
                   <div className="mt-7 space-y-2.5 border-t border-ink/10 pt-6 text-[11px] font-light text-ink-muted">
                     <p className="flex items-center gap-2">
                       <TruckIcon className="h-4 w-4 flex-shrink-0 text-clay" />
-                      Envío gratis desde S/ 200
+                      Envío gratis desde S/ 60
                     </p>
                     <p className="flex items-center gap-2">
                       <ArrowPathIcon className="h-4 w-4 flex-shrink-0 text-clay" />
