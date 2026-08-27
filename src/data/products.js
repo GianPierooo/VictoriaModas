@@ -16,7 +16,7 @@ export const PRODUCTS = [
   // ---------------- VESTIDOS ----------------
   {
     id: 'vestido-lame-elegante',
-    name: 'Vestido Lame Elegante',
+    name: 'Vestido Lamé',
     description: 'Vestido elegante en tela lame con brillo sutil y caída impecable. Perfecto para ocasiones especiales.',
     badge: '-20%',
     category: 'vestidos',
@@ -54,7 +54,7 @@ export const PRODUCTS = [
   },
   {
     id: 'vestido-rit-elegante',
-    name: 'Vestido Rit Elegante',
+    name: 'Vestido Rit Manga',
     description: 'Vestido elegante en tela Rit de primera calidad. Diseño sofisticado y moderno con excelente caída.',
     badge: '-24%',
     category: 'vestidos',
@@ -87,7 +87,7 @@ export const PRODUCTS = [
   },
   {
     id: 'vestido-suplex-moderno',
-    name: 'Vestido Suplex Moderno',
+    name: 'Vestido Suplex Copa Doble Forro',
     description: 'Vestido moderno en suplex de alta calidad. Ajuste perfecto al cuerpo con diseño versátil y elegante.',
     badge: 'Nuevo',
     category: 'vestidos',
@@ -162,7 +162,7 @@ export const PRODUCTS = [
   // ---------------- PANTALONES ----------------
   {
     id: 'pantalon-scuba-vena',
-    name: 'Pantalón Scuba Vena',
+    name: 'Pantalón Vena',
     description: 'Pantalón cómodo en tela scuba. Corte wide-leg con caída impecable y comodidad superior.',
     badge: '-20%',
     category: 'pantalones',
@@ -205,7 +205,7 @@ export const PRODUCTS = [
   },
   {
     id: 'pantalon-scuba-correa',
-    name: 'Pantalón Scuba con Correa',
+    name: 'Pantalón Correa',
     description: 'Pantalón scuba moderno con correa decorativa, ideal para looks elegantes. Comodidad y estilo en una sola prenda.',
     badge: 'Nuevo',
     category: 'pantalones',

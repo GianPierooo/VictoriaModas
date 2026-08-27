@@ -13,7 +13,7 @@
 //
 // REGLAS:
 //  · TODA la lectura de datos vive detrás de UNA sola función readStock(),
-//    para poder cambiar la fuente (Microsoft Graph ↔ Google Sheets) sin
+//    para poder cambiar la fuente (Microsoft Graph ↔ Google Sheets ↔ Supabase) sin
 //    tocar el resto del archivo.
 //  · Credenciales SOLO desde process.env. Nunca en el cliente.
 //  · FALLBACK: si faltan las variables de entorno, readStock() NO revienta;
@@ -70,6 +70,7 @@ async function readStock() {
     if (source === 'mock') return { source: 'mock', rows: MOCK_ROWS }
     if (source === 'graph') return { source: 'graph', rows: await readFromGraph() }
     if (source === 'sheets') return { source: 'sheets', rows: await readFromSheets() }
+    if (source === 'supabase') return { source: 'supabase', rows: await readFromSupabase() }
   } catch (err) {
     // Nunca romper la web: si la fuente falla, caemos a fallback.
     console.error('[api/stock] fuente "%s" falló:', source, err && err.message)
@@ -131,6 +132,43 @@ async function readFromSheets() {
   const rows = normalizeRows(list)
 
   sheetsCache = { at: now, rows }
+  return rows
+}
+
+// ---- Fuente C: Supabase (esquema del panel admin — productos/variantes) ----
+// Consulta directa a PostgREST con la `anon key` (la escritura del panel
+// admin ya está protegida por RLS del lado de Supabase; esta lectura solo
+// pide filas activas, que es justo lo que permite la política pública).
+// Se cachea unos segundos por el mismo motivo que Sheets.
+let supabaseCache = null // { at: number(ms), rows: [] }
+const SUPABASE_TTL_MS = 15000
+
+async function readFromSupabase() {
+  const url = requireEnv('SUPABASE_URL')
+  const key = requireEnv('SUPABASE_ANON_KEY')
+
+  const now = Date.now()
+  if (supabaseCache && now - supabaseCache.at < SUPABASE_TTL_MS) return supabaseCache.rows
+
+  const endpoint =
+    `${url}/rest/v1/producto_variantes` +
+    `?select=producto_id,stock,canal,activo,precio_menor_pen,tallas(nombre),colores(nombre),productos!inner(activo)` +
+    `&activo=eq.true&canal=in.(menor,ambos)&productos.activo=eq.true`
+  const res = await fetch(endpoint, { headers: { apikey: key, Authorization: `Bearer ${key}` } })
+  if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`)
+  const json = await res.json()
+
+  const rows = (Array.isArray(json) ? json : []).map((r) => ({
+    id: r.producto_id,
+    color: r.colores?.nombre || '',
+    talla: r.tallas?.nombre || '',
+    stock: r.stock,
+    canal: r.canal,
+    precioMenorPEN: r.precio_menor_pen,
+    activo: r.activo,
+  }))
+
+  supabaseCache = { at: now, rows }
   return rows
 }
 

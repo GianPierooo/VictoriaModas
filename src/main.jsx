@@ -1,10 +1,12 @@
 import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { ToastProvider } from './context/ToastContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { WishlistProvider } from './context/WishlistContext.jsx'
+import { AuthProvider } from './context/AuthContext.jsx'
 import PageLoader from './components/PageLoader.jsx'
+import RequireRole from './components/RequireRole.jsx'
 import './index.css' // ← Solo Tailwind CSS
 
 // Code-splitting por ruta: cada página se descarga solo al visitarse.
@@ -24,6 +26,12 @@ const FavoritesPage = lazy(() => import('./pages/FavoritesPage.jsx'))
 // Ruta privada de mayoreo (no enlazada en Header/Footer/sitemap).
 const MayoristasPage = lazy(() => import('./pages/MayoristasPage.jsx'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'))
+
+// Panel admin (protegido por rol, ver RequireRole).
+const AdminLayout = lazy(() => import('./components/admin/AdminLayout.jsx'))
+const AdminProductsListPage = lazy(() => import('./pages/admin/AdminProductsListPage.jsx'))
+const AdminProductFormPage = lazy(() => import('./pages/admin/AdminProductFormPage.jsx'))
+const AdminCatalogBasePage = lazy(() => import('./pages/admin/AdminCatalogBasePage.jsx'))
 
 // Envuelve un elemento de página en Suspense para mostrar el loader durante la descarga.
 const withSuspense = (element) => (
@@ -45,6 +53,21 @@ const router = createBrowserRouter([
   { path: '/favoritos', element: withSuspense(<FavoritesPage />) },
   { path: '/mi-cuenta', element: withSuspense(<AccountPage />) },
   { path: '/mayoristas', element: withSuspense(<MayoristasPage />) },
+  {
+    path: '/admin',
+    element: withSuspense(
+      <RequireRole allow={['admin']}>
+        <AdminLayout />
+      </RequireRole>
+    ),
+    children: [
+      { index: true, element: <Navigate to="productos" replace /> },
+      { path: 'productos', element: withSuspense(<AdminProductsListPage />) },
+      { path: 'productos/nuevo', element: withSuspense(<AdminProductFormPage />) },
+      { path: 'productos/:id', element: withSuspense(<AdminProductFormPage />) },
+      { path: 'catalogo-base', element: withSuspense(<AdminCatalogBasePage />) },
+    ],
+  },
   // 404 coherente con el sistema (cualquier ruta no registrada)
   { path: '*', element: withSuspense(<NotFoundPage />) },
 ])
@@ -52,11 +75,13 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ToastProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <RouterProvider router={router} />
-        </WishlistProvider>
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <RouterProvider router={router} />
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
     </ToastProvider>
   </StrictMode>,
 )

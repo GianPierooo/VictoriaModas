@@ -132,14 +132,14 @@ function FeaturedProducts() {
   const products = [
     {
       id: 'vestido-suplex-moderno',
-      name: 'Vestido Suplex Moderno',
+      name: 'Vestido Suplex Copa Doble Forro',
       image: '/imagenes/vestidos/vestido_suplex01/azul_adelante.png',
       badge: 'Nuevo',
       category: 'Vestidos'
     },
     {
       id: 'vestido-lame-elegante',
-      name: 'Vestido Lame Elegante',
+      name: 'Vestido Lamé',
       image: '/imagenes/vestidos/vestido_lame01/vestido_lame_plomo01_adelante.png',
       badge: '-20%',
       category: 'Vestidos'
@@ -153,7 +153,7 @@ function FeaturedProducts() {
     },
     {
       id: 'vestido-rit-elegante',
-      name: 'Vestido Rit Elegante',
+      name: 'Vestido Rit Manga',
       image: '/imagenes/vestidos/vestido_rit02/vestido02_tela_rit_delante.png',
       badge: '-24%',
       category: 'Vestidos'
@@ -397,7 +397,7 @@ function ProductSpotlight() {
     <section ref={ref} className="relative h-[90vh] min-h-[600px] w-full overflow-hidden bg-ink">
       <ResponsiveImage
         src={SPOTLIGHT_IMAGE}
-        alt="Vestido Suplex Moderno"
+        alt="Vestido Suplex Copa Doble Forro"
         className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-[1400ms] ease-out ${
           isVisible ? 'scale-100 opacity-100' : 'scale-105 opacity-0'
         }`}
@@ -437,7 +437,7 @@ function ProductSpotlight() {
           <p className="mb-6 text-[11px] uppercase tracking-luxe text-clay-light">Producto destacado</p>
           <h2 className="mb-8 font-serif text-5xl font-light leading-[1.05] text-cream md:text-6xl lg:text-7xl">
             Vestido suplex
-            <span className="block italic text-clay-light">moderno</span>
+            <span className="block italic text-clay-light">copa doble forro</span>
           </h2>
           <p className="mb-9 max-w-md font-light leading-relaxed text-cream/80">
             Confeccionado en suplex de alta calidad, con un ajuste perfecto y un diseño versátil.
@@ -476,9 +476,9 @@ function SocialFavorites() {
   const scrollerRef = useRef(null)
 
   const favorites = [
-    { id: 'vestido-suplex-moderno', name: 'Vestido suplex moderno', image: '/imagenes/vestidos/vestido_suplex01/negro_adelante.png', collection: 'Colección suplex' },
-    { id: 'vestido-lame-elegante', name: 'Vestido lamé elegante', image: '/imagenes/vestidos/vestido_lame01/azul_adelante.png', collection: 'Elegancia premium' },
-    { id: 'pantalon-scuba-vena', name: 'Pantalón scuba vena', image: '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_adelante.png', collection: 'Colección scuba' },
+    { id: 'vestido-suplex-moderno', name: 'Vestido suplex copa doble forro', image: '/imagenes/vestidos/vestido_suplex01/negro_adelante.png', collection: 'Colección suplex' },
+    { id: 'vestido-lame-elegante', name: 'Vestido lamé', image: '/imagenes/vestidos/vestido_lame01/azul_adelante.png', collection: 'Elegancia premium' },
+    { id: 'pantalon-scuba-vena', name: 'Pantalón vena', image: '/imagenes/pantalones/pantalon_scuba/Pantalon_scuba_vino_adelante.png', collection: 'Colección scuba' },
     { id: 'blusa-seda-francesa', name: 'Blusa seda francesa', image: '/imagenes/blusas/blusa_seda_francesa/blusa_sedafrancesa_delante.png', collection: 'Seda francesa' },
   ]
 

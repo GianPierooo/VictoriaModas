@@ -31,3 +31,6 @@ archivos-listos/
 
 # Memoria de proyecto de Claude Code (uso local, nunca al repo público)
 CLAUDE.md
+
+# Config local de Claude Code (uso local, nunca al repo público)
+.claude/

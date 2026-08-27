@@ -5,6 +5,7 @@ import {
   MagnifyingGlassIcon,
   ShoppingCartIcon,
   HeartIcon,
+  UserIcon,
   Bars3Icon,
   XMarkIcon,
   PhoneIcon,
@@ -14,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useCart } from '../context/CartContext.jsx'
 import { useWishlist } from '../context/WishlistContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import SearchModal from './SearchModal.jsx'
 
 export default function Header() {
@@ -24,6 +26,7 @@ export default function Header() {
   const location = useLocation()
   const { items, openDrawer } = useCart()
   const { count: favCount } = useWishlist()
+  const { user } = useAuth()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
   // Links de navegación principal
@@ -228,7 +231,16 @@ export default function Header() {
             >
               <MagnifyingGlassIcon className="h-6 w-6" />
             </button>
-            
+
+            {/* Mi cuenta */}
+            <Link
+              to="/mi-cuenta"
+              className="p-2 rounded-md text-ink-soft hover:text-clay hover:bg-ink/5 transition-all duration-300"
+              aria-label={user ? 'Mi cuenta' : 'Ingresar o crear cuenta'}
+            >
+              <UserIcon className="h-6 w-6" />
+            </Link>
+
             {/* Favoritos */}
             <Link
               to="/favoritos"
@@ -357,10 +369,17 @@ export default function Header() {
                   <div className="border-t border-ink/10 my-4"></div>
 
                   {/* Acciones rápidas */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <Link
+                      to="/mi-cuenta"
+                      className="flex flex-col items-center justify-center gap-2 rounded-lg bg-cream-dark px-2 py-4 text-xs font-medium text-ink transition-colors hover:text-clay"
+                    >
+                      <UserIcon className="h-6 w-6" />
+                      {user ? 'Mi cuenta' : 'Ingresar'}
+                    </Link>
                     <Link
                       to="/favoritos"
-                      className="relative flex flex-col items-center justify-center gap-2 rounded-lg bg-cream-dark px-4 py-4 text-sm font-medium text-ink transition-colors hover:text-clay"
+                      className="relative flex flex-col items-center justify-center gap-2 rounded-lg bg-cream-dark px-2 py-4 text-xs font-medium text-ink transition-colors hover:text-clay"
                     >
                       <HeartIcon className="h-6 w-6" />
                       Favoritos
@@ -372,7 +391,7 @@ export default function Header() {
                     </Link>
                     <Link
                       to="/carrito"
-                      className="relative flex flex-col items-center justify-center gap-2 rounded-lg bg-ink text-cream px-4 py-4 text-sm font-medium hover:bg-clay transition-colors"
+                      className="relative flex flex-col items-center justify-center gap-2 rounded-lg bg-ink text-cream px-2 py-4 text-xs font-medium hover:bg-clay transition-colors"
                     >
                       <ShoppingCartIcon className="h-6 w-6" />
                       Carrito
