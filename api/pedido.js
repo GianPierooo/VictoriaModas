@@ -7,7 +7,7 @@
 // (su doPost agrega la fila a "Pedidos" con fecha/estado). La URL del web
 // app es SECRETA: solo desde process.env.SHEETS_WEBAPP_URL, NUNCA al cliente.
 //
-// Regla de oro (ver CLAUDE.md): registrar el pedido NUNCA debe romper la
+// Regla de oro: registrar el pedido NUNCA debe romper la
 // venta. Si falta la URL o el POST falla, responde { ok:false } SIN reventar
 // y deja el pedido completo en los logs para recuperarlo a mano (nunca se
 // pierde en silencio).

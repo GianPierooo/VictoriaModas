@@ -8,7 +8,7 @@
 //  · Chat con IA: campo de texto libre que llama a /api/chat (OpenAI, con
 //    guardrails). Si /api/chat no está disponible, cae al fallback + WhatsApp.
 //
-// Estilos EN LÍNEA con la paleta exacta del CLAUDE.md, autocontenido.
+// Estilos EN LÍNEA con la paleta exacta de marca, autocontenido.
 // NUNCA muestra precios (ni menor ni mayor) — el precio se cierra por
 // WhatsApp. El indicador de disponibilidad usa /api/stock.
 // ============================================================
@@ -18,7 +18,7 @@ import { PRODUCTS, getProductById, getProductsByCategory } from '../data/product
 import { COLOR_HEX } from '../utils/colorMap.js'
 import { useStock, estadoStyle } from '../hooks/useStock.js'
 
-// Paleta (CLAUDE.md)
+// Paleta de marca
 const C = {
   cream: '#FBF7F4',
   creamDark: '#F4EDE7',

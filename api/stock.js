@@ -11,7 +11,7 @@
 //                 "consultar"   (aún no hay fuente conectada / desconocido)
 //   y precioMenorPEN = precio RETAIL en soles (null si la hoja no lo tiene).
 //
-// REGLAS (ver CLAUDE.md):
+// REGLAS:
 //  · TODA la lectura de datos vive detrás de UNA sola función readStock(),
 //    para poder cambiar la fuente (Microsoft Graph ↔ Google Sheets) sin
 //    tocar el resto del archivo.

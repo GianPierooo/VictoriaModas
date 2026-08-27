@@ -28,3 +28,6 @@ archivos-listos/
 *.sw?
 
 .vercel
+
+# Memoria de proyecto de Claude Code (uso local, nunca al repo público)
+CLAUDE.md
