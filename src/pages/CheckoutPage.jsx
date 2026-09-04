@@ -1,20 +1,23 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeftIcon, CheckCircleIcon, TruckIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, CheckCircleIcon, TruckIcon, ArrowPathIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
+import CouponField from '../components/CouponField.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { useStock } from '../hooks/useStock.js'
 import { formatPEN, cartTotal } from '../utils/price.js'
-import { generateOrderMessage, openWhatsApp } from '../utils/whatsappUtils.js'
+import { calcularDescuento } from '../lib/cupones.js'
+import { generateOrderMessage, generateWhatsAppMessage, buildWhatsAppHref, openWhatsApp } from '../utils/whatsappUtils.js'
 import { buildOrderPayload, registerOrder } from '../utils/orderUtils.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
+import { trackEvent } from '../lib/metaPixel.js'
 
 const REQUIRED_FIELDS = ['nombre', 'telefono', 'ciudad']
 
 export default function CheckoutPage() {
-  const { items } = useCart()
+  const { items, coupon } = useCart()
   const toast = useToast()
   const { getPrecio } = useStock()
   const priceOf = (it) => getPrecio(it.id, it.selectedColor, it.selectedSize)
@@ -30,9 +33,24 @@ export default function CheckoutPage() {
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
   const { total, allPriced } = cartTotal(items, priceOf)
+  const descuento = allPriced ? calcularDescuento(coupon, total) : 0
   // Total en soles solo si TODAS las líneas tienen precio (si no, se coordina
-  // por WhatsApp).
-  const totalPEN = allPriced ? total : null
+  // por WhatsApp). Ya con el descuento del cupón aplicado.
+  const totalPEN = allPriced ? Math.max(0, total - descuento) : null
+
+  // Meta Ads: InicioCheckout una vez, al entrar con algo en el carrito
+  // (los early-return de "carrito vacío"/"confirmado" van más abajo, así
+  // que este efecto no se dispara en esos casos).
+  useEffect(() => {
+    if (items.length === 0) return
+    trackEvent('InitiateCheckout', {
+      content_ids: items.map((it) => it.id),
+      num_items: totalItems,
+      currency: 'PEN',
+      value: totalPEN ?? undefined,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -58,14 +76,41 @@ export default function CheckoutPage() {
     // NO implementar aquí (es un paso separado y fuera de alcance).
 
     toast.success('Pedido enviado. Te escribimos por WhatsApp.')
+    // Meta Ads: esto NO es una compra confirmada todavía (el cierre real es
+    // por WhatsApp, sin pago en línea aún) — se manda como "Lead" (intención
+    // fuerte de compra), no "Purchase". El evento "Purchase" real llega
+    // cuando haya una pasarela de pago que confirme el cobro.
+    trackEvent(
+      'Lead',
+      {
+        content_ids: items.map((it) => it.id),
+        num_items: totalItems,
+        currency: 'PEN',
+        value: totalPEN ?? undefined,
+      },
+      { telefono: formData.telefono }
+    )
     // Registra el pedido en la hoja en SEGUNDO PLANO (sin await): si falla, el
     // flujo de WhatsApp continúa igual. Va antes de openWhatsApp para no perder
     // el gesto de clic (evita bloqueo de popup).
-    registerOrder(buildOrderPayload(formData, items, totalPEN))
-    openWhatsApp(generateOrderMessage(formData, items, totalPEN))
+    registerOrder(buildOrderPayload(formData, items, totalPEN, coupon))
+    openWhatsApp(generateOrderMessage(formData, items, totalPEN, coupon))
     setConfirmed(true)
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
+
+  // Salida directa a WhatsApp para quien prefiere coordinar hablando en vez
+  // de llenar el formulario — no pierde lo que ya eligió (va con el carrito
+  // armado), solo cambia el canal.
+  const handleHablarPorWhatsApp = () => {
+    trackEvent('Contact', {
+      content_ids: items.map((it) => it.id),
+      num_items: totalItems,
+      currency: 'PEN',
+      value: totalPEN ?? undefined,
+    })
+  }
+  const whatsappDirectoHref = buildWhatsAppHref(generateWhatsAppMessage(items))
 
   // Pantalla de confirmación
   if (confirmed) {
@@ -176,6 +221,18 @@ export default function CheckoutPage() {
                 el pago y la entrega.
               </p>
 
+              <a
+                href={whatsappDirectoHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleHablarPorWhatsApp}
+                className="mb-8 inline-flex items-center gap-2 text-sm font-light text-ink-soft transition-colors hover:text-clay"
+              >
+                <ChatBubbleLeftRightIcon className="h-4 w-4 flex-shrink-0 text-clay" />
+                ¿Quieres más confianza antes de comprar?{' '}
+                <span className="text-clay underline">Hablemos por WhatsApp</span>
+              </a>
+
               <form onSubmit={handleSubmit} noValidate className="space-y-7">
                 <div>
                   <label htmlFor="nombre" className={labelClass}>Nombre completo *</label>
@@ -285,15 +342,25 @@ export default function CheckoutPage() {
                   ))}
                 </ul>
 
+                <div className="mb-4">
+                  <CouponField subtotal={total} />
+                </div>
+
                 <div className="space-y-2 border-t border-ink/10 pt-4 text-sm">
                   <div className="flex items-center justify-between text-ink-soft">
                     <span>Artículos</span>
                     <span className="text-ink">{totalItems}</span>
                   </div>
+                  {descuento > 0 && (
+                    <div className="flex items-center justify-between text-clay">
+                      <span>Descuento ({coupon.codigo})</span>
+                      <span>-{formatPEN(descuento)}</span>
+                    </div>
+                  )}
                   <div className="flex items-baseline justify-between">
                     <span className="text-ink-soft">Total</span>
                     <span className="font-serif text-2xl font-light text-ink">
-                      {allPriced ? formatPEN(total) : <span className="text-lg text-ink-muted">A consultar</span>}
+                      {allPriced ? formatPEN(totalPEN) : <span className="text-lg text-ink-muted">A consultar</span>}
                     </span>
                   </div>
                 </div>

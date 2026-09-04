@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { Disclosure, Transition } from '@headlessui/react'
 import {
   ChevronRightIcon,
@@ -19,10 +19,11 @@ import { useProducts } from '../hooks/useProducts.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { useStock, estadoStyle } from '../hooks/useStock.js'
 import { formatPEN } from '../utils/price.js'
+import { trackEvent } from '../lib/metaPixel.js'
 
 const SITE_URL = 'https://victoriamodas.store'
 
-const WHATSAPP_NUMBER = '51993357672'
+const WHATSAPP_NUMBER = '51994347405'
 
 // ¿El usuario pidió menos movimiento? (respeta el scroll del carrusel)
 function usePrefersReducedMotion() {
@@ -40,6 +41,8 @@ function usePrefersReducedMotion() {
 
 export default function ProductPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { addItem } = useCart()
   const { products, getProductById, getProductsByCategory } = useProducts()
   const product = getProductById(id) || getProductById('vestido-suplex-moderno')
@@ -57,14 +60,32 @@ export default function ProductPage() {
   // Precio retail: el de la variante elegida, o el representativo del producto.
   const precio = getPrecio(productId, selectedColor, selectedSize) ?? getPrecioProducto(productId)
 
-  // Al cambiar de producto (navegación entre detalles), reiniciar selección
+  // Al cambiar de producto (navegación entre detalles), reiniciar selección.
+  // Si la URL trae ?color=..&talla=.. (pensado para deep-link de anuncios —
+  // que el color/talla del video/foto ya venga elegido), se usa si es una
+  // opción real de la prenda; si no, cae al comportamiento de siempre.
   useEffect(() => {
     setSelectedImage(0)
-    setSelectedColor(product.colors[0])
-    setSelectedSize(product.sizes[0])
+    const colorURL = searchParams.get('color')
+    const tallaURL = searchParams.get('talla')
+    setSelectedColor(colorURL && product.colors.includes(colorURL) ? colorURL : product.colors[0])
+    setSelectedSize(tallaURL && product.sizes.includes(tallaURL) ? tallaURL : product.sizes[0])
     setQuantity(1)
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [productId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Meta Ads: ViewContent una vez por producto visto (no en cada cambio de
+  // color/talla — solo cuando cambia de prenda).
+  useEffect(() => {
+    trackEvent('ViewContent', {
+      content_ids: [productId],
+      content_name: product.name,
+      content_type: 'product',
+      currency: 'PEN',
+      value: precio ?? undefined,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId])
 
   const currentImages = useMemo(() => {
     if (product.colorImages?.[selectedColor]?.length) return product.colorImages[selectedColor]
@@ -93,7 +114,9 @@ export default function ProductPage() {
     setSelectedImage(0)
   }
 
-  const handleAddToCart = () => {
+  // Compartido por "Agregar al carrito" y "Comprar ahora" — agrega la
+  // prenda elegida y avisa a Meta Ads (AddToCart) en los dos casos.
+  const agregarAlCarrito = () => {
     addItem({
       id: productId,
       name: product.name,
@@ -101,11 +124,39 @@ export default function ProductPage() {
       selectedColor,
       selectedSize,
     }, quantity)
+    trackEvent('AddToCart', {
+      content_ids: [productId],
+      content_name: product.name,
+      content_type: 'product',
+      currency: 'PEN',
+      value: precio != null ? precio * quantity : undefined,
+    })
+  }
+
+  const handleAddToCart = () => agregarAlCarrito()
+
+  // "Comprar ahora" — el camino más corto: agrega esta prenda y va directo
+  // al checkout, sin pasar por el mini-carrito. Pensado para tráfico de
+  // anuncios que ya decidió comprar y no quiere pasos de más.
+  const handleBuyNow = () => {
+    agregarAlCarrito()
+    navigate('/checkout')
   }
 
   const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     `Hola, me interesa la prenda "${product.name}" (color ${selectedColor}, talla ${selectedSize}). ¿Está disponible?`
   )}`
+
+  // "Consultar por WhatsApp" es otro camino real de compra (se salta el
+  // carrito por completo) — sin esto, Meta no se enteraba de esa intención.
+  const handleConsultarWhatsApp = () => {
+    trackEvent('Contact', {
+      content_ids: [productId],
+      content_name: product.name,
+      currency: 'PEN',
+      value: precio ?? undefined,
+    })
+  }
 
   // Relacionados: misma categoría primero, luego el resto del catálogo
   // (para llenar el carrusel), excluyendo el actual.
@@ -323,12 +374,22 @@ export default function ProductPage() {
                   />
                 </div>
 
-                {/* Acciones */}
+                {/* Acciones — "Comprar ahora" es el camino más corto (va
+                    directo al checkout), por eso es la acción principal;
+                    "Agregar al carrito" queda como secundaria para quien
+                    sigue viendo más prendas. */}
                 <div className="space-y-3">
                   <button
                     type="button"
-                    onClick={handleAddToCart}
+                    onClick={handleBuyNow}
                     className="block w-full rounded-full bg-ink py-4 text-center text-xs uppercase tracking-[0.2em] text-cream transition-all duration-500 hover:bg-clay active:scale-[0.99]"
+                  >
+                    Comprar ahora
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    className="block w-full rounded-full border border-ink/20 py-4 text-center text-xs uppercase tracking-[0.2em] text-ink transition-all duration-500 hover:border-ink hover:bg-ink/[0.03] active:scale-[0.99]"
                   >
                     Agregar al carrito
                   </button>
@@ -336,7 +397,8 @@ export default function ProductPage() {
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 py-4 text-xs uppercase tracking-[0.2em] text-ink transition-all duration-500 hover:border-ink hover:bg-ink/[0.03] active:scale-[0.99]"
+                    onClick={handleConsultarWhatsApp}
+                    className="flex w-full items-center justify-center gap-2 py-2 text-xs uppercase tracking-[0.2em] text-ink-muted transition-colors hover:text-ink"
                   >
                     <ChatBubbleLeftRightIcon className="h-4 w-4" />
                     Consultar por WhatsApp
