@@ -43,6 +43,9 @@ const AbrigosPage = lazyWithReload(() => import('./pages/AbrigosPage.jsx'))
 const AboutPage = lazyWithReload(() => import('./pages/AboutPage.jsx'))
 const ContactPage = lazyWithReload(() => import('./pages/ContactPage.jsx'))
 const FAQPage = lazyWithReload(() => import('./pages/FAQPage.jsx'))
+const TerminosCondicionesPage = lazyWithReload(() => import('./pages/TerminosCondicionesPage.jsx'))
+const PoliticaCambiosPage = lazyWithReload(() => import('./pages/PoliticaCambiosPage.jsx'))
+const LibroReclamacionesPage = lazyWithReload(() => import('./pages/LibroReclamacionesPage.jsx'))
 const CheckoutPage = lazyWithReload(() => import('./pages/CheckoutPage.jsx'))
 const ProductPage = lazyWithReload(() => import('./pages/ProductPage.jsx'))
 const CartPage = lazyWithReload(() => import('./pages/CartPage.jsx'))
@@ -64,6 +67,7 @@ const AdminStockPage = lazyWithReload(() => import('./pages/admin/AdminStockPage
 const AdminVentasListPage = lazyWithReload(() => import('./pages/admin/AdminVentasListPage.jsx'))
 const AdminVentaFormPage = lazyWithReload(() => import('./pages/admin/AdminVentaFormPage.jsx'))
 const AdminClientesPage = lazyWithReload(() => import('./pages/admin/AdminClientesPage.jsx'))
+const AdminReclamacionesPage = lazyWithReload(() => import('./pages/admin/AdminReclamacionesPage.jsx'))
 
 // Envuelve un elemento de página en Suspense para mostrar el loader durante la descarga.
 const withSuspense = (element) => (
@@ -89,6 +93,9 @@ const router = createBrowserRouter([
   { path: '/nosotros', element: withSuspense(<AboutPage />) },
   { path: '/contacto', element: withSuspense(<ContactPage />) },
   { path: '/preguntas-frecuentes', element: withSuspense(<FAQPage />) },
+  { path: '/terminos-y-condiciones', element: withSuspense(<TerminosCondicionesPage />) },
+  { path: '/politica-de-cambios', element: withSuspense(<PoliticaCambiosPage />) },
+  { path: '/libro-de-reclamaciones', element: withSuspense(<LibroReclamacionesPage />) },
   { path: '/producto/:id', element: withSuspense(<ProductPage />) },
   { path: '/carrito', element: withSuspense(<CartPage />) },
   { path: '/checkout', element: withSuspense(<CheckoutPage />) },
@@ -135,6 +142,7 @@ const router = createBrowserRouter([
       { path: 'ventas', element: withSuspense(<AdminVentasListPage />) },
       { path: 'ventas/nueva', element: withSuspense(<AdminVentaFormPage />) },
       { path: 'clientes', element: withSuspense(<AdminClientesPage />) },
+      { path: 'reclamaciones', element: withSuspense(<AdminReclamacionesPage />) },
     ],
   },
   // 404 coherente con el sistema (cualquier ruta no registrada)

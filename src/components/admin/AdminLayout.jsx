@@ -7,6 +7,7 @@ import {
   ArchiveBoxIcon,
   ClipboardDocumentListIcon,
   UserGroupIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { useToast } from '../../context/ToastContext.jsx'
@@ -21,6 +22,7 @@ const NAV = [
   { to: '/admin/cupones', label: 'Cupones', icon: GiftIcon, roles: ['admin'] },
   { to: '/admin/ventas', label: 'Ventas', icon: ClipboardDocumentListIcon, roles: ['admin', 'vendedor'] },
   { to: '/admin/clientes', label: 'Clientes', icon: UserGroupIcon, roles: ['admin', 'vendedor'] },
+  { to: '/admin/reclamaciones', label: 'Reclamaciones', icon: ExclamationTriangleIcon, roles: ['admin', 'vendedor'] },
 ]
 
 // ============================================================

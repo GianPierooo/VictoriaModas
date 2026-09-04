@@ -543,3 +543,29 @@ export async function createVenta({ clienteId, items, canal = 'menor', direccion
 
   return { ...venta, cuponRecompra, cuponRecompensaReferido }
 }
+
+// ---------------------------------------------------------
+// Libro de reclamaciones (solo lectura/respuesta — el registro público lo
+// hace src/lib/reclamaciones.js sin necesitar sesión).
+// ---------------------------------------------------------
+export async function listReclamaciones() {
+  if (guard(true)) return []
+  const { data, error } = await supabase.from('reclamaciones').select('*').order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function responderReclamacion(id, respuesta) {
+  if (!supabase) throw new Error('Supabase no está configurado.')
+  const { data: userData } = await supabase.auth.getUser()
+  const { error } = await supabase
+    .from('reclamaciones')
+    .update({
+      respuesta,
+      estado: 'respondido',
+      respondido_por: userData?.user?.id || null,
+      respondido_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+  if (error) throw error
+}

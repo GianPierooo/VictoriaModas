@@ -218,3 +218,16 @@
     @apply antialiased;
   }
 }
+
+/* Impresión: al imprimir (p. ej. la constancia del Libro de Reclamaciones,
+   ver LibroReclamacionesPage.jsx), solo se ve el contenido de la página —
+   nada del chrome del sitio (banner, header, footer, botón de WhatsApp,
+   asistente, carrito lateral). Los elementos puntuales dentro de una
+   página se ocultan con la clase utilitaria `print:hidden` de Tailwind. */
+@media print {
+  header,
+  footer,
+  [role="banner"] {
+    display: none !important;
+  }
+}

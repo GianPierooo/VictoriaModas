@@ -21,6 +21,12 @@ const ayuda = [
   { name: 'Favoritos', href: '/favoritos' },
 ]
 
+const legal = [
+  { name: 'Términos y Condiciones', href: '/terminos-y-condiciones' },
+  { name: 'Cambios y devoluciones', href: '/politica-de-cambios' },
+  { name: 'Libro de Reclamaciones', href: '/libro-de-reclamaciones' },
+]
+
 export default function Footer() {
   return (
     <footer className="bg-ink text-cream">
@@ -155,8 +161,21 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Legal — visible en todas las páginas, como exige INDECOPI */}
+        <div className="mt-14 flex flex-wrap justify-center gap-x-6 gap-y-2 border-t border-cream/10 pt-8 text-center sm:justify-start sm:text-left">
+          {legal.map((item) => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className="text-xs font-light text-cream/60 underline-offset-4 transition-colors duration-300 hover:text-cream hover:underline"
+            >
+              {item.name}
+            </Link>
+          ))}
+        </div>
+
         {/* Línea final */}
-        <div className="mt-14 flex flex-col items-center gap-2 border-t border-cream/10 pt-8 text-center sm:flex-row sm:justify-between sm:text-left">
+        <div className="mt-6 flex flex-col items-center gap-2 pt-2 text-center sm:flex-row sm:justify-between sm:text-left">
           <p className="text-xs font-light text-cream/50">
             © 2026 Victoria Modas — Lima, Perú
           </p>
