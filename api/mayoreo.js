@@ -112,9 +112,9 @@ function toBool(v) {
   return s === 'sí' || s === 'si' || s === 'true' || s === '1' || s === 'x' || s === 'activo'
 }
 
+// Nunca devuelve "agotado" — mismo criterio que /api/stock.js.
 function estadoFor(stock) {
   if (stock === null || stock === undefined || Number.isNaN(stock)) return 'consultar'
-  if (stock <= 0) return 'agotado'
   if (stock <= 3) return 'ultimas'
   return 'disponible'
 }

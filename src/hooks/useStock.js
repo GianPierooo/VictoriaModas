@@ -64,20 +64,21 @@ export function useStock() {
 
   // Estado AGREGADO por producto (todas sus variantes): útil en cards/listas
   // donde aún no hay color/talla elegidos. Prioridad: alguna disponible →
-  // 'disponible'; si no, alguna en últimas → 'ultimas'; si todas agotadas →
-  // 'agotado'; sin datos → 'consultar'.
+  // 'disponible'; si no, alguna en últimas → 'ultimas'; si no hay datos de
+  // ninguna → 'consultar'. Nunca 'agotado' — no es un estado que exista en
+  // este sistema (ver /api/stock.js).
   const getEstadoProducto = (id) => {
     if (!state) return 'consultar'
     const pid = String(id).toLowerCase()
     let any = false
-    let best = 'agotado'
+    let best = null
     for (const it of state.byKey.values()) {
       if (String(it.id).toLowerCase() !== pid) continue
       any = true
       if (it.estado === 'disponible') return 'disponible'
       if (it.estado === 'ultimas') best = 'ultimas'
     }
-    return any ? best : 'consultar'
+    return any ? (best || 'consultar') : 'consultar'
   }
 
   // Precio RETAIL (soles) de una variante concreta, o null si no hay dato.
@@ -112,11 +113,12 @@ export function useStock() {
 }
 
 // Estilo del indicador por estado (paleta clay/ink). Devuelve null para
-// 'consultar'/desconocido → en ese caso NO se muestra nada (neutro).
+// 'consultar'/desconocido → en ese caso NO se muestra nada (neutro). No
+// existe entrada 'agotado' a propósito: si algún dato viejo la trajera, cae
+// aquí y no se muestra nada — nunca "Agotado" en pantalla (ver /api/stock.js).
 const ESTADO_STYLE = {
   disponible: { label: 'Disponible', color: '#5B5150', dot: '#9C5F4E' },
   ultimas: { label: 'Últimas piezas', color: '#8A5340', dot: '#8A5340' },
-  agotado: { label: 'Agotado', color: '#756967', dot: '#756967' },
 }
 
 export function estadoStyle(estado) {

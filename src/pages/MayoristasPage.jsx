@@ -22,7 +22,7 @@ import { registerOrder } from '../utils/orderUtils.js'
 import { useToast } from '../context/ToastContext.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
-const WHATSAPP_NUMBER = '51993357672'
+const WHATSAPP_NUMBER = '51994347405'
 const keyOf = (id, color, talla) => `${id}|${color}|${talla}`
 const fmtPEN = (n) => `S/ ${n}`
 const waLink = (text) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`
@@ -319,7 +319,7 @@ export default function MayoristasPage() {
                                   value={qty[k] || ''}
                                   onChange={(e) => setQuantity(v.id, v.color, v.talla, e.target.value)}
                                   placeholder="0"
-                                  disabled={v.estado === 'agotado'}
+                                  disabled={v.stock === 0}
                                   className="w-20 rounded-md border border-ink/20 bg-transparent px-3 py-2 text-ink focus:border-clay focus:outline-none disabled:opacity-40"
                                 />
                               </td>

@@ -6,9 +6,11 @@
 // Devuelve, por prenda/color/talla:
 //   { id, color, talla, stock, estado, precioMenorPEN }
 // donde  estado = "disponible" (stock > 3)
-//                 "ultimas"     (stock 1–3)
-//                 "agotado"     (stock 0)
+//                 "ultimas"     (stock 0–3)
 //                 "consultar"   (aún no hay fuente conectada / desconocido)
+// Decisión de negocio: NUNCA se expone un estado "agotado" al público — el
+// dueño se compromete a mantener stock siempre disponible; en el peor caso
+// (stock en 0) se muestra "últimas piezas", nunca un mensaje de cierre.
 //   y precioMenorPEN = precio RETAIL en soles (null si la hoja no lo tiene).
 //
 // REGLAS:
@@ -34,7 +36,8 @@ const WORKSHEET = process.env.STOCK_WORKSHEET || 'Stock'
 //   id, nombre, color, talla, stock, canal, precioMenorPEN,
 //   precioMayorPEN, precioMenorUSD, activo
 // Sirven para probar el endpoint end-to-end antes de conectar la hoja.
-// Cubren a propósito los tres estados (disponible / ultimas / agotado) e
+// Cubren a propósito los estados (disponible / ultimas, incluyendo un caso
+// en 0 para probar que se muestra como "últimas" y no como "agotado") e
 // incluyen una fila 'mayor' e 'inactivo' para verificar que se filtran.
 // ------------------------------------------------------------
 const MOCK_ROWS = [
@@ -249,9 +252,11 @@ function toBool(v) {
   return s === 'sí' || s === 'si' || s === 'true' || s === '1' || s === 'x' || s === 'activo'
 }
 
+// Nunca devuelve "agotado" — a lo sumo "últimas" (0 incluido). Decisión de
+// negocio: el dueño mantiene stock siempre disponible; el peor caso visible
+// para la clienta es "últimas piezas", nunca un mensaje de cierre.
 function estadoFor(stock) {
   if (stock === null || stock === undefined || Number.isNaN(stock)) return 'consultar'
-  if (stock <= 0) return 'agotado'
   if (stock <= 3) return 'ultimas'
   return 'disponible'
 }

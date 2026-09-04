@@ -19,8 +19,8 @@ export default function ProductCard({ product, index = 0 }) {
   const [revealRef, inView] = useInViewReveal({ amount: 0.15 })
 
   // Stock agregado del producto (todas sus variantes). Solo se señala la
-  // urgencia ('ultimas') o el agotado; 'disponible'/'consultar' no muestran
-  // nada para no ensuciar la card.
+  // urgencia ('ultimas'); 'disponible'/'consultar' no muestran nada para no
+  // ensuciar la card. Nunca se muestra "agotado" — decisión de negocio.
   const { getEstadoProducto, getPrecioProducto } = useStock()
   const estadoProducto = getEstadoProducto(id)
   const precio = getPrecioProducto(id)
@@ -189,13 +189,9 @@ export default function ProductCard({ product, index = 0 }) {
             <p className="mt-1 text-sm font-light text-ink-soft">
               {formatPEN(precio) || 'Precio a consultar'}
             </p>
-            {(estadoProducto === 'ultimas' || estadoProducto === 'agotado') && (
-              <p
-                className={`mt-1.5 text-[10px] uppercase tracking-[0.18em] ${
-                  estadoProducto === 'ultimas' ? 'text-clay-dark' : 'text-ink-muted'
-                }`}
-              >
-                {estadoProducto === 'ultimas' ? 'Últimas piezas' : 'Agotado'}
+            {estadoProducto === 'ultimas' && (
+              <p className="mt-1.5 text-[10px] uppercase tracking-[0.18em] text-clay-dark">
+                Últimas piezas
               </p>
             )}
           </div>
