@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -56,6 +56,17 @@ function devApi() {
     name: 'dev-api',
     apply: 'serve',
     configureServer(server) {
+      // .env.local solo expone las variables VITE_* a import.meta.env; estos
+      // handlers son los MISMOS que corren en Vercel y leen process.env sin
+      // prefijo (p. ej. SUPABASE_URL, no VITE_SUPABASE_URL). loadEnv (sin
+      // prefijo '') lee TODAS las variables del .env y las copiamos a
+      // process.env solo si no vinieran ya puestas por el sistema.
+      const envAll = loadEnv(server.config.mode, server.config.root, '')
+      for (const [k, v] of Object.entries(envAll)) {
+        if (process.env[k] === undefined) process.env[k] = v
+      }
+      if (!process.env.SUPABASE_URL && process.env.VITE_SUPABASE_URL) process.env.SUPABASE_URL = process.env.VITE_SUPABASE_URL
+      if (!process.env.SUPABASE_ANON_KEY && process.env.VITE_SUPABASE_ANON_KEY) process.env.SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY
       if (!process.env.STOCK_SOURCE) process.env.STOCK_SOURCE = 'mock'
       // Código de mayoreo por defecto SOLO en local, para probar /mayoristas.
       if (!process.env.MAYOREO_ACCESS_CODE) process.env.MAYOREO_ACCESS_CODE = 'mayoreo-dev'
@@ -64,6 +75,7 @@ function devApi() {
       mount(server, '/api/mayoreo', 'api/mayoreo.js')
       mount(server, '/api/chat', 'api/chat.js')
       mount(server, '/api/meta-conversions', 'api/meta-conversions.js')
+      mount(server, '/api/culqi-cobrar', 'api/culqi-cobrar.js')
     },
   }
 }
