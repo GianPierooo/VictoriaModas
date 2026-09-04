@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { ChevronLeftIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, PlusIcon, XMarkIcon, ClipboardIcon, CheckIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { listClientes, listProductosParaVenta, createVenta } from '../../lib/supabaseAdmin.js'
+import { validarCupon, calcularDescuento } from '../../lib/cupones.js'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
 import { formatPEN } from '../../utils/price.js'
@@ -9,8 +10,8 @@ import { formatPEN } from '../../utils/price.js'
 const labelClass = 'mb-2 block text-[10px] uppercase tracking-luxe text-ink-muted'
 const inputClass = 'w-full rounded-lg border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink focus:border-clay focus:outline-none'
 
-export default function VentaFormPage() {
-  useDocumentMeta({ title: 'Nueva venta | Panel de ventas' })
+export default function AdminVentaFormPage() {
+  useDocumentMeta({ title: 'Nueva venta | Panel admin' })
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -23,6 +24,14 @@ export default function VentaFormPage() {
   const [varianteSel, setVarianteSel] = useState('')
   const [cantidadSel, setCantidadSel] = useState(1)
   const [guardando, setGuardando] = useState(false)
+
+  const [cuponCodigo, setCuponCodigo] = useState('')
+  const [cuponAplicado, setCuponAplicado] = useState(null)
+  const [cuponError, setCuponError] = useState('')
+  const [validandoCupon, setValidandoCupon] = useState(false)
+
+  const [ventaFinalizada, setVentaFinalizada] = useState(null) // { cuponRecompra } | null
+  const [copiado, setCopiado] = useState(false)
 
   useEffect(() => {
     listClientes().then(setClientes).catch((e) => toast.error(e.message))
@@ -64,6 +73,27 @@ export default function VentaFormPage() {
   const quitarItem = (key) => setItems((prev) => prev.filter((it) => it.key !== key))
 
   const total = useMemo(() => items.reduce((sum, it) => sum + it.precio_unitario * it.cantidad, 0), [items])
+  const descuento = cuponAplicado ? calcularDescuento(cuponAplicado, total) : 0
+  const totalConDescuento = Math.max(0, total - descuento)
+
+  const aplicarCupon = async () => {
+    if (!cuponCodigo.trim()) return
+    setValidandoCupon(true)
+    setCuponError('')
+    const resultado = await validarCupon(cuponCodigo, total)
+    setValidandoCupon(false)
+    if (!resultado.ok) {
+      setCuponError(resultado.motivo)
+      return
+    }
+    setCuponAplicado(resultado.cupon)
+    setCuponCodigo('')
+  }
+
+  const quitarCupon = () => {
+    setCuponAplicado(null)
+    setCuponError('')
+  }
 
   const confirmarVenta = async () => {
     if (!clienteId) {
@@ -76,12 +106,13 @@ export default function VentaFormPage() {
     }
     setGuardando(true)
     try {
-      await createVenta({
+      const venta = await createVenta({
         clienteId,
         items: items.map((it) => ({ variante_id: it.variante_id, cantidad: it.cantidad, precio_unitario: it.precio_unitario })),
+        cuponCodigo: cuponAplicado?.codigo || '',
       })
       toast.success('Venta registrada — se descontó el stock vendido.')
-      navigate('/panel-ventas/ventas')
+      setVentaFinalizada({ cuponRecompra: venta.cuponRecompra })
     } catch (err) {
       toast.error('No se pudo registrar: ' + err.message)
     } finally {
@@ -89,9 +120,65 @@ export default function VentaFormPage() {
     }
   }
 
+  const copiarCodigoRecompra = async () => {
+    if (!ventaFinalizada?.cuponRecompra) return
+    try {
+      await navigator.clipboard.writeText(ventaFinalizada.cuponRecompra.codigo)
+      setCopiado(true)
+      toast.success('Código copiado.')
+      setTimeout(() => setCopiado(false), 2000)
+    } catch {
+      toast.error('No se pudo copiar — anótalo: ' + ventaFinalizada.cuponRecompra.codigo)
+    }
+  }
+
+  if (ventaFinalizada) {
+    return (
+      <div className="max-w-lg">
+        <div className="rounded-xl bg-white p-8 text-center shadow-soft ring-1 ring-ink/10">
+          <CheckCircleIcon className="mx-auto mb-5 h-12 w-12 text-clay" strokeWidth={1} />
+          <h1 className="mb-2 font-serif text-2xl font-light text-ink">Venta registrada</h1>
+          <p className="mb-7 text-sm font-light text-ink-soft">Se descontó el stock vendido.</p>
+
+          {ventaFinalizada.cuponRecompra ? (
+            <div className="mb-7 text-left">
+              <p className="mb-3 text-xs font-light text-ink-soft">
+                Cupón de agradecimiento para la próxima compra de esta clienta (10%, válido 30 días) — pásaselo por WhatsApp:
+              </p>
+              <button
+                type="button"
+                onClick={copiarCodigoRecompra}
+                aria-label={`Copiar código ${ventaFinalizada.cuponRecompra.codigo}`}
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-dashed border-clay/40 bg-cream px-5 py-4 transition-colors hover:border-clay"
+              >
+                <span className="font-serif text-lg font-light tracking-[0.08em] text-ink">{ventaFinalizada.cuponRecompra.codigo}</span>
+                <span className="flex items-center gap-1.5 text-xs uppercase tracking-[0.1em] text-clay">
+                  {copiado ? <CheckIcon className="h-4 w-4" /> : <ClipboardIcon className="h-4 w-4" />}
+                  {copiado ? 'Copiado' : 'Copiar'}
+                </span>
+              </button>
+            </div>
+          ) : (
+            <p className="mb-7 text-xs font-light text-ink-muted">
+              (No se pudo generar el cupón de agradecimiento — la venta quedó registrada igual.)
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => navigate('/admin/ventas')}
+            className="w-full rounded-full bg-ink py-4 text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
+          >
+            Volver a ventas
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-3xl">
-      <Link to="/panel-ventas/ventas" className="mb-6 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.12em] text-ink-muted transition-colors hover:text-clay">
+      <Link to="/admin/ventas" className="mb-6 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.12em] text-ink-muted transition-colors hover:text-clay">
         <ChevronLeftIcon className="h-4 w-4" />
         Volver a ventas
       </Link>
@@ -106,7 +193,7 @@ export default function VentaFormPage() {
         {clientes.length === 0 && (
           <p className="mt-2 text-xs text-ink-muted">
             No hay clientes todavía —{' '}
-            <Link to="/panel-ventas/clientes" className="text-clay underline">regístralo primero</Link>.
+            <Link to="/admin/clientes" className="text-clay underline">regístralo primero</Link>.
           </p>
         )}
       </div>
@@ -170,9 +257,41 @@ export default function VentaFormPage() {
                 </div>
               </div>
             ))}
+            {/* Cupón */}
+            <div className="pt-2">
+              {cuponAplicado ? (
+                <div className="flex items-center justify-between rounded-lg bg-clay/10 px-4 py-2.5 text-sm">
+                  <span className="text-clay">
+                    Cupón <span className="font-normal">{cuponAplicado.codigo}</span> — -{formatPEN(descuento) || `S/ ${descuento}`}
+                  </span>
+                  <button type="button" onClick={quitarCupon} className="text-ink-muted hover:text-ink">
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    value={cuponCodigo}
+                    onChange={(e) => { setCuponCodigo(e.target.value); if (cuponError) setCuponError('') }}
+                    placeholder="Código de cupón (opcional)"
+                    className={`${inputClass} uppercase`}
+                  />
+                  <button
+                    type="button"
+                    onClick={aplicarCupon}
+                    disabled={validandoCupon || !cuponCodigo.trim()}
+                    className="flex-shrink-0 rounded-full border border-ink/20 px-5 py-2.5 text-xs uppercase tracking-[0.1em] text-ink transition-colors hover:border-ink disabled:opacity-40"
+                  >
+                    {validandoCupon ? '...' : 'Aplicar'}
+                  </button>
+                </div>
+              )}
+              {cuponError && <p className="mt-1.5 text-xs text-red-400">{cuponError}</p>}
+            </div>
+
             <div className="flex items-center justify-between pt-2">
               <p className="text-[11px] uppercase tracking-luxe text-ink-muted">Total</p>
-              <p className="font-serif text-2xl font-light text-ink">{formatPEN(total) || `S/ ${total}`}</p>
+              <p className="font-serif text-2xl font-light text-ink">{formatPEN(totalConDescuento) || `S/ ${totalConDescuento}`}</p>
             </div>
           </div>
         )}

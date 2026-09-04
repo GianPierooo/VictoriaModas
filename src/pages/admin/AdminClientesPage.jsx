@@ -9,8 +9,8 @@ const inputClass = 'w-full rounded-lg border border-ink/15 bg-white px-3.5 py-2.
 
 const emptyForm = { nombre: '', telefono: '', email: '', direccion: '' }
 
-export default function ClientesPage() {
-  useDocumentMeta({ title: 'Clientes | Panel de ventas' })
+export default function AdminClientesPage() {
+  useDocumentMeta({ title: 'Clientes | Panel admin' })
   const toast = useToast()
   const [clientes, setClientes] = useState(null)
   const [search, setSearch] = useState('')
@@ -70,7 +70,7 @@ export default function ClientesPage() {
     <div>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="mb-2 text-[11px] uppercase tracking-luxe text-clay">Panel de ventas</p>
+          <p className="mb-2 text-[11px] uppercase tracking-luxe text-clay">Panel admin</p>
           <h1 className="font-serif text-3xl font-light text-ink">Clientes</h1>
         </div>
         <button

@@ -9,8 +9,8 @@ import { formatPEN } from '../../utils/price.js'
 const ESTADOS = ['pendiente', 'confirmado', 'enviado', 'entregado', 'cancelado']
 const ESTADO_LABEL = { pendiente: 'Pendiente', confirmado: 'Confirmado', enviado: 'Enviado', entregado: 'Entregado', cancelado: 'Cancelado' }
 
-export default function VentasListPage() {
-  useDocumentMeta({ title: 'Ventas | Panel de ventas' })
+export default function AdminVentasListPage() {
+  useDocumentMeta({ title: 'Ventas | Panel admin' })
   const toast = useToast()
   const [ventas, setVentas] = useState(null)
 
@@ -33,11 +33,11 @@ export default function VentasListPage() {
     <div>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="mb-2 text-[11px] uppercase tracking-luxe text-clay">Panel de ventas</p>
+          <p className="mb-2 text-[11px] uppercase tracking-luxe text-clay">Panel admin</p>
           <h1 className="font-serif text-3xl font-light text-ink">Ventas</h1>
         </div>
         <Link
-          to="/panel-ventas/ventas/nueva"
+          to="/admin/ventas/nueva"
           className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-xs uppercase tracking-[0.15em] text-cream transition-colors hover:bg-clay"
         >
           <PlusIcon className="h-4 w-4" />

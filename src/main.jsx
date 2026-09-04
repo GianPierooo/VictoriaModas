@@ -4,10 +4,13 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { ToastProvider } from './context/ToastContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { WishlistProvider } from './context/WishlistContext.jsx'
-import { AuthProvider } from './context/AuthContext.jsx'
+import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import PageLoader from './components/PageLoader.jsx'
 import RequireRole from './components/RequireRole.jsx'
+import { initMetaPixel } from './lib/metaPixel.js'
 import './index.css' // ← Solo Tailwind CSS
+
+initMetaPixel()
 
 // Code-splitting por ruta: cada página se descarga solo al visitarse.
 const HomePage = lazy(() => import('./pages/HomePage.jsx'))
@@ -27,22 +30,33 @@ const FavoritesPage = lazy(() => import('./pages/FavoritesPage.jsx'))
 const MayoristasPage = lazy(() => import('./pages/MayoristasPage.jsx'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'))
 
-// Panel admin (protegido por rol, ver RequireRole).
+// Panel admin — un solo panel para todo (productos, stock, catálogo base,
+// cupones = admin únicamente; ventas/clientes = admin o vendedor). Ver
+// AdminLayout.jsx para el filtro de nav por rol.
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout.jsx'))
 const AdminProductsListPage = lazy(() => import('./pages/admin/AdminProductsListPage.jsx'))
 const AdminProductFormPage = lazy(() => import('./pages/admin/AdminProductFormPage.jsx'))
 const AdminCatalogBasePage = lazy(() => import('./pages/admin/AdminCatalogBasePage.jsx'))
-
-// Panel de ventas (admin o vendedor — separado del admin: sin acceso al catálogo).
-const PanelVentasLayout = lazy(() => import('./components/ventas/PanelVentasLayout.jsx'))
-const ClientesPage = lazy(() => import('./pages/ventas/ClientesPage.jsx'))
-const VentasListPage = lazy(() => import('./pages/ventas/VentasListPage.jsx'))
-const VentaFormPage = lazy(() => import('./pages/ventas/VentaFormPage.jsx'))
+const AdminCuponesPage = lazy(() => import('./pages/admin/AdminCuponesPage.jsx'))
+const AdminStockPage = lazy(() => import('./pages/admin/AdminStockPage.jsx'))
+const AdminVentasListPage = lazy(() => import('./pages/admin/AdminVentasListPage.jsx'))
+const AdminVentaFormPage = lazy(() => import('./pages/admin/AdminVentaFormPage.jsx'))
+const AdminClientesPage = lazy(() => import('./pages/admin/AdminClientesPage.jsx'))
 
 // Envuelve un elemento de página en Suspense para mostrar el loader durante la descarga.
 const withSuspense = (element) => (
   <Suspense fallback={<PageLoader />}>{element}</Suspense>
 )
+
+// Índice de /admin: a dónde aterriza cada rol al entrar sin sub-ruta.
+// Admin ve "Productos" primero; vendedor (sin acceso a productos) va
+// directo a "Ventas". Se ejecuta ya dentro de RequireRole, así que el
+// perfil ya está cargado.
+// eslint-disable-next-line react-refresh/only-export-components
+function AdminIndexRedirect() {
+  const { profile } = useAuth()
+  return <Navigate to={profile?.rol === 'vendedor' ? 'ventas' : 'productos'} replace />
+}
 
 const router = createBrowserRouter([
   { path: '/', element: withSuspense(<HomePage />) },
@@ -60,32 +74,45 @@ const router = createBrowserRouter([
   { path: '/mi-cuenta', element: withSuspense(<AccountPage />) },
   { path: '/mayoristas', element: withSuspense(<MayoristasPage />) },
   {
+    // Un solo panel para admin y vendedor (antes /panel-ventas era aparte —
+    // fusionado por feedback: "el admin debe tener todo"). Cada ruta hija
+    // que es exclusiva de admin se re-envuelve en su propio RequireRole;
+    // las compartidas (ventas/clientes) quedan cubiertas por el de aquí.
     path: '/admin',
     element: withSuspense(
-      <RequireRole allow={['admin']}>
+      <RequireRole allow={['admin', 'vendedor']}>
         <AdminLayout />
       </RequireRole>
     ),
     children: [
-      { index: true, element: <Navigate to="productos" replace /> },
-      { path: 'productos', element: withSuspense(<AdminProductsListPage />) },
-      { path: 'productos/nuevo', element: withSuspense(<AdminProductFormPage />) },
-      { path: 'productos/:id', element: withSuspense(<AdminProductFormPage />) },
-      { path: 'catalogo-base', element: withSuspense(<AdminCatalogBasePage />) },
-    ],
-  },
-  {
-    path: '/panel-ventas',
-    element: withSuspense(
-      <RequireRole allow={['admin', 'vendedor']}>
-        <PanelVentasLayout />
-      </RequireRole>
-    ),
-    children: [
-      { index: true, element: <Navigate to="ventas" replace /> },
-      { path: 'ventas', element: withSuspense(<VentasListPage />) },
-      { path: 'ventas/nueva', element: withSuspense(<VentaFormPage />) },
-      { path: 'clientes', element: withSuspense(<ClientesPage />) },
+      { index: true, element: <AdminIndexRedirect /> },
+      {
+        path: 'productos',
+        element: withSuspense(<RequireRole allow={['admin']}><AdminProductsListPage /></RequireRole>),
+      },
+      {
+        path: 'productos/nuevo',
+        element: withSuspense(<RequireRole allow={['admin']}><AdminProductFormPage /></RequireRole>),
+      },
+      {
+        path: 'productos/:id',
+        element: withSuspense(<RequireRole allow={['admin']}><AdminProductFormPage /></RequireRole>),
+      },
+      {
+        path: 'stock',
+        element: withSuspense(<RequireRole allow={['admin']}><AdminStockPage /></RequireRole>),
+      },
+      {
+        path: 'catalogo-base',
+        element: withSuspense(<RequireRole allow={['admin']}><AdminCatalogBasePage /></RequireRole>),
+      },
+      {
+        path: 'cupones',
+        element: withSuspense(<RequireRole allow={['admin']}><AdminCuponesPage /></RequireRole>),
+      },
+      { path: 'ventas', element: withSuspense(<AdminVentasListPage />) },
+      { path: 'ventas/nueva', element: withSuspense(<AdminVentaFormPage />) },
+      { path: 'clientes', element: withSuspense(<AdminClientesPage />) },
     ],
   },
   // 404 coherente con el sistema (cualquier ruta no registrada)

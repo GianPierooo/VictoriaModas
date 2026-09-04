@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ClipboardIcon, CheckIcon, ShareIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import PhoneField from '../components/PhoneField.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -7,6 +8,7 @@ import { useToast } from '../context/ToastContext.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES } from '../utils/phoneCountries.js'
 import { listVentasCliente } from '../lib/supabaseAdmin.js'
+import { obtenerOCrearCodigoReferido, listarRecompensasReferidos, VALOR_REFERIDO_SOLES } from '../lib/referidos.js'
 import { formatPEN } from '../utils/price.js'
 
 // "+51 999888777" → { prefix: '+51', numero: '999888777' } (tolerante a
@@ -98,7 +100,7 @@ function NoAuthNotice() {
 function LoggedInPanel({ user, profile, onLogout }) {
   const navigate = useNavigate()
   const toast = useToast()
-  const [tab, setTab] = useState('perfil') // 'perfil' | 'pedidos'
+  const [tab, setTab] = useState('perfil') // 'perfil' | 'pedidos' | 'referidos'
 
   const handleLogout = async () => {
     await onLogout()
@@ -120,6 +122,7 @@ function LoggedInPanel({ user, profile, onLogout }) {
         {[
           { key: 'perfil', label: 'Mi perfil' },
           { key: 'pedidos', label: 'Mis pedidos' },
+          { key: 'referidos', label: 'Referidos' },
         ].map((t) => (
           <button
             key={t.key}
@@ -134,7 +137,9 @@ function LoggedInPanel({ user, profile, onLogout }) {
         ))}
       </div>
 
-      {tab === 'perfil' ? <ProfileTab user={user} profile={profile} /> : <OrdersTab userId={user.id} />}
+      {tab === 'perfil' && <ProfileTab user={user} profile={profile} />}
+      {tab === 'pedidos' && <OrdersTab userId={user.id} />}
+      {tab === 'referidos' && <ReferidosTab userId={user.id} nombre={profile?.nombre} />}
 
       <div className="mt-10 flex flex-col items-center gap-3 border-t border-ink/10 pt-8 sm:flex-row sm:justify-center">
         <Link
@@ -262,6 +267,120 @@ function OrdersTab({ userId }) {
           <p className="font-serif text-lg font-light text-ink">{formatPEN(v.total) || `S/ ${v.total}`}</p>
         </div>
       ))}
+    </div>
+  )
+}
+
+function ReferidosTab({ userId, nombre }) {
+  const toast = useToast()
+  const [codigo, setCodigo] = useState(null) // null = cargando, '' nunca ocurre (siempre hay algo o error)
+  const [recompensas, setRecompensas] = useState(null)
+  const [copiado, setCopiado] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    obtenerOCrearCodigoReferido(userId, nombre)
+      .then((c) => alive && setCodigo(c))
+      .catch((err) => {
+        if (!alive) return
+        toast.error('No se pudo generar tu código: ' + err.message)
+        setCodigo(false) // false = error, distinto de null (cargando)
+      })
+    listarRecompensasReferidos(userId)
+      .then((r) => alive && setRecompensas(r))
+      .catch(() => alive && setRecompensas([]))
+    return () => {
+      alive = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId])
+
+  const copiarCodigo = async () => {
+    if (!codigo) return
+    try {
+      await navigator.clipboard.writeText(codigo)
+      setCopiado(true)
+      toast.success('Código copiado.')
+      setTimeout(() => setCopiado(false), 2000)
+    } catch {
+      toast.error('No se pudo copiar — anótalo: ' + codigo)
+    }
+  }
+
+  const compartirWhatsApp = () => {
+    if (!codigo) return
+    const mensaje =
+      `¡Hola! Te comparto mi código de Victoria Modas: *${codigo}* — ` +
+      `úsalo en tu primera compra y ganas S/ ${VALOR_REFERIDO_SOLES} de descuento. ` +
+      `victoriamodas.store`
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank')
+  }
+
+  return (
+    <div className="mx-auto max-w-sm space-y-6 text-left">
+      <div className="rounded-2xl bg-white p-6 shadow-soft ring-1 ring-ink/10 sm:p-8">
+        <p className="mb-1 text-[10px] uppercase tracking-luxe text-ink-muted">Invita y gana</p>
+        <p className="mb-6 font-light leading-relaxed text-ink-soft">
+          Comparte tu código con una amiga: ella gana S/ {VALOR_REFERIDO_SOLES} en su primera compra,
+          y tú ganas otros S/ {VALOR_REFERIDO_SOLES} cuando la use.
+        </p>
+
+        {codigo === null && <p className="text-sm text-ink-muted">Generando tu código…</p>}
+        {codigo === false && <p className="text-sm text-red-400">No se pudo generar tu código. Intenta más tarde.</p>}
+
+        {codigo && (
+          <>
+            <button
+              type="button"
+              onClick={copiarCodigo}
+              aria-label={`Copiar código ${codigo}`}
+              className="mb-4 flex w-full items-center justify-between gap-3 rounded-xl border border-dashed border-clay/40 bg-cream px-5 py-4 transition-colors hover:border-clay"
+            >
+              <span className="font-serif text-lg font-light tracking-[0.08em] text-ink">{codigo}</span>
+              <span className="flex items-center gap-1.5 text-xs uppercase tracking-[0.1em] text-clay">
+                {copiado ? <CheckIcon className="h-4 w-4" /> : <ClipboardIcon className="h-4 w-4" />}
+                {copiado ? 'Copiado' : 'Copiar'}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={compartirWhatsApp}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-ink py-3.5 text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay"
+            >
+              <ShareIcon className="h-4 w-4" />
+              Compartir por WhatsApp
+            </button>
+          </>
+        )}
+      </div>
+
+      <div>
+        <p className="mb-3 text-[10px] uppercase tracking-luxe text-ink-muted">Tus recompensas</p>
+        {recompensas === null && <p className="text-sm text-ink-muted">Cargando…</p>}
+        {recompensas !== null && recompensas.length === 0 && (
+          <p className="rounded-2xl bg-white p-5 text-sm font-light text-ink-soft shadow-soft ring-1 ring-ink/10">
+            Aún no tienes recompensas — aparecerán aquí cuando una amiga compre con tu código.
+          </p>
+        )}
+        {recompensas !== null && recompensas.length > 0 && (
+          <div className="space-y-3">
+            {recompensas.map((r) => {
+              const usado = r.usos_maximos != null && r.usos_actuales >= r.usos_maximos
+              return (
+                <div key={r.id} className="flex items-center justify-between rounded-xl bg-white p-4 shadow-soft ring-1 ring-ink/10">
+                  <div>
+                    <p className="font-serif text-base font-light text-ink">{r.codigo}</p>
+                    <p className="text-xs text-ink-muted">S/ {r.valor} de descuento</p>
+                  </div>
+                  <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-wide ${usado ? 'bg-ink/5 text-ink-muted' : 'bg-clay/10 text-clay'}`}>
+                    {usado ? 'Usado' : 'Disponible'}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

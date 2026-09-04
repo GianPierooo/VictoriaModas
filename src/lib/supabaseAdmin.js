@@ -10,6 +10,7 @@
 // del proyecto (ver `src/lib/supabaseClient.js`).
 // ============================================================
 import { supabase } from './supabaseClient.js'
+import { validarCupon, calcularDescuento } from './cupones.js'
 
 const BUCKET = 'productos-imagenes'
 
@@ -147,6 +148,39 @@ export async function replaceVariantes(productoId, variantes) {
 }
 
 // ---------------------------------------------------------
+// Stock (vista general — todas las variantes de todos los productos, para
+// la página /admin/stock). Separado de `listProductosAdmin` a propósito:
+// esa es sobre productos (nombre/fotos/descripción), esta es sobre
+// cantidades — pensada para revisar y ajustar stock rápido, sin entrar al
+// formulario de cada producto.
+// ---------------------------------------------------------
+export async function listStockGeneral() {
+  if (guard(true)) return []
+  const { data, error } = await supabase
+    .from('producto_variantes')
+    .select('id, stock, precio_menor_pen, activo, productos(id, nombre), tallas(nombre), colores(nombre)')
+    .order('stock', { ascending: true })
+  if (error) throw error
+  return data.map((v) => ({
+    id: v.id,
+    stock: v.stock,
+    precioMenorPEN: v.precio_menor_pen,
+    activo: v.activo,
+    productoId: v.productos?.id,
+    productoNombre: v.productos?.nombre || '—',
+    talla: v.tallas?.nombre || '—',
+    color: v.colores?.nombre || '—',
+  }))
+}
+
+// Ajuste rápido de stock de una variante (usado en /admin/stock, sin pasar
+// por el formulario completo del producto).
+export async function updateVarianteStock(varianteId, stock) {
+  const { error } = await supabase.from('producto_variantes').update({ stock: Math.max(0, Number(stock) || 0) }).eq('id', varianteId)
+  if (error) throw error
+}
+
+// ---------------------------------------------------------
 // Imágenes (Supabase Storage, bucket público `productos-imagenes`)
 // ---------------------------------------------------------
 export async function uploadProductoImagen(productoId, colorId, file, orden = 0) {
@@ -169,6 +203,107 @@ export async function deleteProductoImagen(imagen) {
   // de más si algo más lo referencia) — limpieza de Storage es manual.
   const { error } = await supabase.from('producto_imagenes').delete().eq('id', imagen.id)
   if (error) throw error
+}
+
+// ---------------------------------------------------------
+// Cupones
+// ---------------------------------------------------------
+export async function listCupones() {
+  if (guard(true)) return []
+  const { data, error } = await supabase.from('cupones').select('*').order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function createCupon(cupon) {
+  const { data: userData } = await supabase.auth.getUser()
+  const { data, error } = await supabase
+    .from('cupones')
+    .insert({ ...cupon, codigo: cupon.codigo.trim().toUpperCase(), created_by: userData?.user?.id || null })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateCupon(id, cupon) {
+  const payload = { ...cupon }
+  if (payload.codigo) payload.codigo = payload.codigo.trim().toUpperCase()
+  const { error } = await supabase.from('cupones').update(payload).eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteCupon(id) {
+  const { error } = await supabase.from('cupones').delete().eq('id', id)
+  if (error) throw error
+}
+
+function codigoRecompraAleatorio() {
+  const sufijo = Math.random().toString(36).slice(2, 6).toUpperCase()
+  return `GRACIAS${sufijo}`
+}
+
+// Genera el cupón "gracias por tu compra": 10%, 1 solo uso, vence en 30
+// días — para que la vendedora se lo pase a la clienta (WhatsApp) al cerrar
+// una venta. Reintenta si el código al azar choca con uno existente (muy
+// improbable, pero el código es corto). Si falla tras varios intentos,
+// devuelve null — NUNCA debe tumbar la venta ya registrada por esto.
+async function generarCuponRecompra(ventaId) {
+  const fechaFin = new Date()
+  fechaFin.setDate(fechaFin.getDate() + 30)
+
+  for (let intento = 0; intento < 3; intento++) {
+    const { data, error } = await supabase
+      .from('cupones')
+      .insert({
+        codigo: codigoRecompraAleatorio(),
+        descripcion: `Gracias por tu compra — venta ${ventaId.slice(0, 8)}`,
+        tipo: 'porcentaje',
+        valor: 10,
+        monto_minimo: 0,
+        usos_maximos: 1,
+        canal: 'recompra',
+        fecha_fin: fechaFin.toISOString(),
+        activo: true,
+      })
+      .select()
+      .single()
+    if (!error) return data
+    if (error.code !== '23505') return null // error real (no choque de código) — no vale la pena reintentar
+  }
+  return null
+}
+
+// Genera la recompensa de referido (S/15, 1 solo uso, vence en 30 días)
+// para `referenteUserId` cuando el cupón aplicado en una venta resulta ser
+// su propio código de referido (canal='referido'). Mismo criterio
+// best-effort que arriba: si falla, no debe tumbar la venta.
+async function generarCuponRecompensaReferido(referenteUserId, ventaId) {
+  const fechaFin = new Date()
+  fechaFin.setDate(fechaFin.getDate() + 30)
+
+  for (let intento = 0; intento < 3; intento++) {
+    const sufijo = Math.random().toString(36).slice(2, 6).toUpperCase()
+    const { data, error } = await supabase
+      .from('cupones')
+      .insert({
+        codigo: `REFE${sufijo}`,
+        descripcion: `Recompensa por referir — venta ${ventaId.slice(0, 8)}`,
+        tipo: 'monto_fijo',
+        valor: 15,
+        monto_minimo: 0,
+        usos_maximos: 1,
+        canal: 'recompensa_referido',
+        created_by: referenteUserId,
+        fecha_fin: fechaFin.toISOString(),
+        activo: true,
+      })
+      .select()
+      .single()
+    if (!error) return data
+    if (error.code !== '23505') return null
+  }
+  return null
 }
 
 // ---------------------------------------------------------
@@ -251,7 +386,13 @@ export async function listProductosParaVenta() {
 // (PB-002: "integrar las ventas con la actualización de stock"). No es
 // atómico (son varias llamadas), pero valida stock disponible ANTES de
 // escribir nada — si algo no alcanza, no se crea la venta a medias.
-export async function createVenta({ clienteId, items, canal = 'menor', direccionEnvio = '', telefonoContacto = '', notas = '' }) {
+// `cuponCodigo` (opcional) — si viene, se valida contra el subtotal real de
+// la venta (igual que en la web) y, si es válido, descuenta el total y deja
+// constancia del uso (incrementa `usos_actuales` + fila en `cupones_usados`).
+// Este es hoy el ÚNICO punto de "transacción confirmada" del sistema (la web
+// pública todavía cierra por WhatsApp) — por eso el uso del cupón se cuenta
+// aquí y no al aplicarlo en el carrito.
+export async function createVenta({ clienteId, items, canal = 'menor', direccionEnvio = '', telefonoContacto = '', notas = '', cuponCodigo = '' }) {
   if (!items.length) throw new Error('La venta necesita al menos un producto.')
 
   // Verifica stock disponible antes de comprometer nada.
@@ -269,6 +410,16 @@ export async function createVenta({ clienteId, items, canal = 'menor', direccion
   }
 
   const subtotal = items.reduce((sum, it) => sum + it.precio_unitario * it.cantidad, 0)
+
+  let cupon = null
+  let descuento = 0
+  if (cuponCodigo.trim()) {
+    const resultado = await validarCupon(cuponCodigo, subtotal)
+    if (!resultado.ok) throw new Error(resultado.motivo)
+    cupon = resultado.cupon
+    descuento = calcularDescuento(cupon, subtotal)
+  }
+
   const { data: userData } = await supabase.auth.getUser()
 
   const { data: venta, error: errVenta } = await supabase
@@ -279,7 +430,9 @@ export async function createVenta({ clienteId, items, canal = 'menor', direccion
       canal,
       estado: 'confirmado',
       subtotal,
-      total: subtotal,
+      descuento,
+      total: subtotal - descuento,
+      cupon_id: cupon?.id || null,
       direccion_envio: direccionEnvio,
       telefono_contacto: telefonoContacto,
       notas,
@@ -306,5 +459,32 @@ export async function createVenta({ clienteId, items, canal = 'menor', direccion
       .eq('id', it.variante_id)
   }
 
-  return venta
+  // Deja constancia del uso del cupón (best-effort: si falla, la venta ya
+  // quedó registrada — no vale la pena revertirla por esto).
+  if (cupon) {
+    await supabase.from('cupones_usados').insert({ cupon_id: cupon.id, cliente_id: clienteId, venta_id: venta.id })
+    await supabase.from('cupones').update({ usos_actuales: (cupon.usos_actuales || 0) + 1 }).eq('id', cupon.id)
+  }
+
+  // Cupón de agradecimiento para la próxima compra (best-effort, igual que
+  // arriba: si falla, no debe tumbar una venta que ya se registró bien).
+  let cuponRecompra = null
+  try {
+    cuponRecompra = await generarCuponRecompra(venta.id)
+  } catch (err) {
+    console.warn('[createVenta] no se pudo generar el cupón de recompra:', err)
+  }
+
+  // Si el cupón aplicado era un código de referido, recompensa a quien
+  // refirió (best-effort, mismo criterio).
+  let cuponRecompensaReferido = null
+  if (cupon?.canal === 'referido' && cupon.created_by) {
+    try {
+      cuponRecompensaReferido = await generarCuponRecompensaReferido(cupon.created_by, venta.id)
+    } catch (err) {
+      console.warn('[createVenta] no se pudo generar la recompensa de referido:', err)
+    }
+  }
+
+  return { ...venta, cuponRecompra, cuponRecompensaReferido }
 }
