@@ -6,6 +6,7 @@ import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import CouponField from '../components/CouponField.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
+import { supabase } from '../lib/supabaseClient.js'
 import { useStock } from '../hooks/useStock.js'
 import { formatPEN, cartTotal } from '../utils/price.js'
 import { calcularDescuento } from '../lib/cupones.js'
@@ -214,6 +215,14 @@ export default function CheckoutPage() {
       const token = culqi.token.id
       culqi.close()
       try {
+        // Si tiene sesión iniciada, manda su token para que el servidor la
+        // verifique y enlace la venta a su cuenta (aparece en "Mis pedidos").
+        // Sin sesión (modo invitado) simplemente no se manda nada.
+        let accessToken = ''
+        if (supabase) {
+          const { data } = await supabase.auth.getSession()
+          accessToken = data?.session?.access_token || ''
+        }
         const res = await fetch('/api/culqi-cobrar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -223,6 +232,7 @@ export default function CheckoutPage() {
             items: items.map((it) => ({ id: it.id, color: it.selectedColor, talla: it.selectedSize, cantidad: it.quantity })),
             cuponCodigo: coupon?.codigo || '',
             cliente: { nombre: formData.nombre, telefono: formData.telefono, ciudad: formData.ciudad, notas: formData.notas },
+            accessToken,
           }),
         })
         const data = await res.json().catch(() => ({ ok: false }))

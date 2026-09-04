@@ -13,11 +13,41 @@
 //
 // PII (teléfono/correo) se hashea con SHA-256 acá, del lado servidor, antes
 // de mandarla — nunca en claro (requisito de Meta + buena práctica).
+//
+// HIGIENE DE DATOS (no es una barrera de seguridad real): este endpoint no
+// expone nada sensible — solo reenvía datos hasheados a Meta — así que no
+// tiene sentido protegerlo con un "secreto" que de todas formas viajaría en
+// el bundle del navegador (cualquiera con curl podría copiarlo). Lo único
+// que sí vale la pena, y lo que se hace acá, es rechazar eventos que no
+// tengan la FORMA que este sitio realmente manda — nombre de evento fuera
+// de los que usa Victoria Modas, o campos con tipos raros — así una llamada
+// directa al endpoint no puede meter basura arbitraria a las campañas.
 // ============================================================
 import crypto from 'node:crypto'
 
+// Los únicos eventos que este sitio dispara de verdad (ver metaPixel.js).
+const EVENTOS_PERMITIDOS = new Set(['PageView', 'ViewContent', 'AddToCart', 'InitiateCheckout', 'Lead', 'Purchase', 'Contact'])
+
 function sha256(valor) {
   return crypto.createHash('sha256').update(String(valor).trim().toLowerCase()).digest('hex')
+}
+
+// Valida la FORMA de customData contra lo que este sitio realmente manda —
+// no bloquea a nadie decidido a mandar valores falsos con la forma correcta
+// (eso es una limitación inherente a cualquier API de conversión reportada
+// por el cliente, incluido el propio píxel de Meta), pero sí descarta
+// basura obviamente inválida.
+function customDataValida(customData) {
+  if (customData == null) return true
+  if (typeof customData !== 'object' || Array.isArray(customData)) return false
+  if (customData.currency != null && customData.currency !== 'PEN') return false
+  if (customData.value != null && typeof customData.value !== 'number') return false
+  if (customData.num_items != null && typeof customData.num_items !== 'number') return false
+  if (customData.content_ids != null) {
+    if (!Array.isArray(customData.content_ids)) return false
+    if (!customData.content_ids.every((id) => typeof id === 'string' && id.length <= 100)) return false
+  }
+  return true
 }
 
 function parseBody(body) {
@@ -49,6 +79,12 @@ export default async function handler(req, res) {
   const { eventName, eventId, customData, userData, url } = body
   if (!eventName || !eventId) {
     return res.status(400).json({ ok: false, error: 'Falta eventName o eventId.' })
+  }
+  if (!EVENTOS_PERMITIDOS.has(eventName)) {
+    return res.status(400).json({ ok: false, error: 'eventName no reconocido.' })
+  }
+  if (!customDataValida(customData)) {
+    return res.status(400).json({ ok: false, error: 'customData con forma inválida.' })
   }
 
   // `req.headers` no existe en el shim de desarrollo (ver vite.config.js) —

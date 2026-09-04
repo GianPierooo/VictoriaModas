@@ -40,6 +40,10 @@ export default async function handler(req, res) {
   const items = Array.isArray(body.items) ? body.items : []
   const cuponCodigo = String(body.cuponCodigo || '').trim()
   const cliente = body.cliente && typeof body.cliente === 'object' ? body.cliente : {}
+  // Token de sesión de la clienta (opcional — solo si compró con la cuenta
+  // iniciada). Se VERIFICA server-side contra Supabase Auth antes de usarlo
+  // para nada; nunca se confía en un user_id que mande el navegador.
+  const accessToken = String(body.accessToken || '').trim()
 
   if (!token) return res.status(400).json({ ok: false, error: 'Falta el token de pago.' })
   if (!email || email.length < 5) return res.status(400).json({ ok: false, error: 'Ingresa un correo válido.' })
@@ -137,33 +141,181 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: false, error: 'No se pudo procesar el pago. Intenta de nuevo.' })
   }
 
-  // ---- 5) Cobro aprobado: descuenta stock (best-effort con llave de servicio) ----
+  // ---- 5) Cobro aprobado: registra la venta REAL (best-effort con llave de
+  // servicio) — mismos efectos que si la vendedora la tecleara a mano en
+  // /admin/ventas: descuenta stock, crea venta+venta_items, deja constancia
+  // del cupón usado (cupones_usados) y genera las recompensas (cupón de
+  // recompra siempre; recompensa de referido si el cupón usado era uno de
+  // referido). Si algo de esto falla, el cobro NO se revierte (ya se hizo) —
+  // queda logueado para reconstruirlo a mano desde el panel.
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  let ventaId = null
   if (serviceKey) {
     try {
       const admin = createClient(supabaseUrl, serviceKey)
+
+      // Stock: una actualización por variante (igual que createVenta en el panel).
       for (const l of lineas) {
         const { data: actual } = await admin.from('producto_variantes').select('stock').eq('id', l.varianteId).single()
         if (actual) {
           await admin.from('producto_variantes').update({ stock: Math.max(0, actual.stock - l.cantidad) }).eq('id', l.varianteId)
         }
       }
+
+      // Si la clienta tenía sesión iniciada, verifica el token (nunca se
+      // confía en un user_id mandado por el navegador) y busca/crea su
+      // ficha de cliente para que la venta le aparezca en "Mis pedidos".
+      const clienteId = await resolverClienteId(supabase, admin, accessToken, cliente, email)
+
+      const { data: venta, error: errVenta } = await admin
+        .from('ventas')
+        .insert({
+          cliente_id: clienteId,
+          canal: 'menor',
+          estado: 'confirmado',
+          subtotal,
+          descuento,
+          total,
+          cupon_id: cupon?.id || null,
+          direccion_envio: String(cliente.ciudad || ''),
+          telefono_contacto: String(cliente.telefono || ''),
+          notas: String(cliente.notas || ''),
+          origen: 'culqi',
+          referencia_pago: charge.id,
+        })
+        .select()
+        .single()
+      if (errVenta) throw errVenta
+      ventaId = venta.id
+
+      await admin.from('venta_items').insert(
+        lineas.map((l) => ({ venta_id: venta.id, producto_variante_id: l.varianteId, cantidad: l.cantidad, precio_unitario: l.precio }))
+      )
+
       if (cupon) {
         await admin.from('cupones').update({ usos_actuales: (cupon.usos_actuales || 0) + 1 }).eq('id', cupon.id)
+        await admin.from('cupones_usados').insert({ cupon_id: cupon.id, cliente_id: clienteId, venta_id: venta.id, telefono: String(cliente.telefono || '') })
+      }
+
+      // Cupón "gracias por tu compra" — best-effort, no debe tumbar una venta
+      // que ya quedó bien registrada.
+      try {
+        await generarCuponRecompra(admin, venta.id)
+      } catch (err) {
+        console.warn('[culqi-cobrar] no se pudo generar el cupón de recompra:', err && err.message)
+      }
+
+      // Si el cupón usado era de referido, recompensa a quien refirió.
+      if (cupon?.canal === 'referido' && cupon.created_by) {
+        try {
+          await generarCuponRecompensaReferido(admin, cupon.created_by, venta.id)
+        } catch (err) {
+          console.warn('[culqi-cobrar] no se pudo generar la recompensa de referido:', err && err.message)
+        }
       }
     } catch (err) {
       // El cobro YA se hizo — no se revierte por esto. Se deja constancia
-      // para ajustar el stock a mano desde /admin/stock.
-      console.error('[api/culqi-cobrar] cobro OK pero falló el descuento de stock (ajustar a mano):', JSON.stringify(lineas), err && err.message)
+      // completa para reconstruir la venta a mano desde el panel.
+      console.error(
+        '[api/culqi-cobrar] cobro OK (chargeId=%s) pero falló registrar la venta — reconstruir a mano en /admin/ventas:',
+        charge.id,
+        JSON.stringify({ lineas, cupon: cupon?.codigo, total }),
+        err && err.message
+      )
     }
   } else {
-    console.error('[api/culqi-cobrar] cobro OK pero SUPABASE_SERVICE_ROLE_KEY no está configurada — stock NO descontado. Ajustar a mano:', JSON.stringify(lineas))
+    console.error('[api/culqi-cobrar] cobro OK pero SUPABASE_SERVICE_ROLE_KEY no está configurada — venta NO registrada. Ajustar a mano:', JSON.stringify(lineas))
   }
 
   // ---- 6) Registro del pedido en la hoja (best-effort, no bloquea la respuesta) ----
   registrarPedidoEnHoja({ cliente, items, total, cupon }).catch(() => {})
 
-  return res.status(200).json({ ok: true, chargeId: charge.id, total })
+  return res.status(200).json({ ok: true, chargeId: charge.id, ventaId, total })
+}
+
+// ------------------------------------------------------------
+// Resuelve el cliente_id de la venta: si el navegador mandó un access_token
+// de sesión, se verifica CRIPTOGRÁFICAMENTE contra Supabase Auth (nunca se
+// confía en un user_id suelto) y se busca/crea su ficha en `clientes` para
+// que la compra le aparezca en "Mis pedidos". Sin token válido → null
+// (compra de invitado, coherente con el modo invitado del sitio).
+// ------------------------------------------------------------
+async function resolverClienteId(supabaseAnon, admin, accessToken, cliente, email) {
+  if (!accessToken) return null
+  try {
+    const { data, error } = await supabaseAnon.auth.getUser(accessToken)
+    if (error || !data?.user) return null
+    const userId = data.user.id
+
+    const { data: existente } = await admin.from('clientes').select('id').eq('user_id', userId).maybeSingle()
+    if (existente) return existente.id
+
+    const { data: nuevo, error: errNuevo } = await admin
+      .from('clientes')
+      .insert({
+        user_id: userId,
+        nombre: String(cliente.nombre || '').trim(),
+        telefono: String(cliente.telefono || '').trim(),
+        email,
+      })
+      .select('id')
+      .single()
+    if (errNuevo) throw errNuevo
+    return nuevo.id
+  } catch (err) {
+    console.warn('[culqi-cobrar] no se pudo resolver la ficha de cliente (venta queda como invitado):', err && err.message)
+    return null
+  }
+}
+
+// Mismo criterio que generarCuponRecompra en src/lib/supabaseAdmin.js —
+// duplicado aquí porque ese archivo no se puede importar en /api (usa
+// import.meta.env, que no existe en el runtime serverless de Vercel).
+function codigoRecompraAleatorio() {
+  const sufijo = Math.random().toString(36).slice(2, 6).toUpperCase()
+  return `GRACIAS${sufijo}`
+}
+
+async function generarCuponRecompra(admin, ventaId) {
+  const fechaFin = new Date()
+  fechaFin.setDate(fechaFin.getDate() + 30)
+  for (let intento = 0; intento < 3; intento++) {
+    const { error } = await admin.from('cupones').insert({
+      codigo: codigoRecompraAleatorio(),
+      descripcion: `Gracias por tu compra — venta ${ventaId.slice(0, 8)}`,
+      tipo: 'porcentaje',
+      valor: 10,
+      monto_minimo: 0,
+      usos_maximos: 1,
+      canal: 'recompra',
+      fecha_fin: fechaFin.toISOString(),
+      activo: true,
+    })
+    if (!error) return
+    if (error.code !== '23505') throw error // no es choque de código → no reintentar
+  }
+}
+
+async function generarCuponRecompensaReferido(admin, referenteUserId, ventaId) {
+  const fechaFin = new Date()
+  fechaFin.setDate(fechaFin.getDate() + 30)
+  for (let intento = 0; intento < 3; intento++) {
+    const sufijo = Math.random().toString(36).slice(2, 6).toUpperCase()
+    const { error } = await admin.from('cupones').insert({
+      codigo: `REFE${sufijo}`,
+      descripcion: `Recompensa por referir — venta ${ventaId.slice(0, 8)}`,
+      tipo: 'monto_fijo',
+      valor: 15,
+      monto_minimo: 0,
+      usos_maximos: 1,
+      canal: 'recompensa_referido',
+      created_by: referenteUserId,
+      fecha_fin: fechaFin.toISOString(),
+      activo: true,
+    })
+    if (!error) return
+    if (error.code !== '23505') throw error
+  }
 }
 
 // ------------------------------------------------------------
