@@ -2,7 +2,7 @@
 // Los títulos van entre *asteriscos* para que WhatsApp los muestre en negrita.
 import { formatPEN } from './price.js'
 
-const PHONE_NUMBER = '51993357672'
+const PHONE_NUMBER = '51994347405'
 
 // Detalle de las prendas del carrito (numerado, sin emojis)
 function buildItemsBlock(items) {
@@ -34,8 +34,10 @@ export const generateWhatsAppMessage = (cartItems) => {
 }
 
 // Mensaje completo del checkout: datos del cliente + detalle del pedido.
-// `totalPEN` (opcional) = total retail en soles; si viene, se incluye.
-export const generateOrderMessage = (formData, items, totalPEN = null) => {
+// `totalPEN` (opcional) = total retail en soles YA con el descuento del
+// cupón aplicado (si hay); `coupon` (opcional) = cupón aplicado, para que la
+// vendedora vea qué código honrar al cerrar la venta.
+export const generateOrderMessage = (formData, items, totalPEN = null, coupon = null) => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
   let message = 'Hola, me gustaría hacer un pedido en Victoria Modas.\n\n'
@@ -52,6 +54,9 @@ export const generateOrderMessage = (formData, items, totalPEN = null) => {
   message += '*Detalle del pedido*\n'
   message += buildItemsBlock(items)
   message += `*Total de artículos: ${totalItems}*\n`
+  if (coupon) {
+    message += `Cupón aplicado: ${coupon.codigo}\n`
+  }
   if (totalPEN != null) {
     message += `*Total: ${formatPEN(totalPEN)}*\n`
   }
@@ -65,3 +70,9 @@ export const openWhatsApp = (message) => {
   const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodedMessage}`
   window.open(whatsappUrl, '_blank')
 }
+
+// Igual que openWhatsApp pero devuelve el link en vez de abrirlo — para
+// usar como href de un <a> (más accesible/predecible que un window.open
+// disparado por JS, y consistente con "Consultar por WhatsApp" del producto).
+export const buildWhatsAppHref = (message) =>
+  `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`

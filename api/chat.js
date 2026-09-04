@@ -22,7 +22,7 @@
 // ============================================================
 import { PRODUCTS } from '../src/data/products.js'
 
-const WA_NUMBER = '51993357672'
+const WA_NUMBER = '51994347405'
 const WA_LINK = `https://wa.me/${WA_NUMBER}`
 // Modelo rápido y económico de OpenAI (verificar string vigente en
 // platform.openai.com/docs/models). Override opcional con OPENAI_MODEL.
@@ -52,7 +52,7 @@ function systemPrompt() {
 
 REGLAS ESTRICTAS (obligatorias):
 1. Habla SOLO de Victoria Modas: prendas del catálogo, telas, tallas, colores, cómo comprar, pagos, envíos y cambios. Si te preguntan algo ajeno (otros temas, otras marcas, tareas generales), decláralo con amabilidad y reencauza ofreciendo ayuda con la ropa. La venta por mayor es un canal privado: no la ofrezcas ni des precios mayoristas por el chat.
-2. NUNCA inventes precios ni des cifras de precio. El precio y el cierre del pedido son por WhatsApp. Si preguntan precio, si quieren comprar o reservar, o piden un total, deriva a WhatsApp: ${WA_LINK} (+51 993 357 672), sugiriendo un mensaje corto que la clienta puede enviar.
+2. NUNCA inventes precios ni des cifras de precio. El precio y el cierre del pedido son por WhatsApp. Si preguntan precio, si quieren comprar o reservar, o piden un total, deriva a WhatsApp: ${WA_LINK} (+51 994 347 405), sugiriendo un mensaje corto que la clienta puede enviar.
 3. NUNCA inventes stock ni disponibilidad exacta. Si preguntan si hay stock de algo, di que lo confirmamos al instante por WhatsApp o que revise el indicador de disponibilidad en la página del producto.
 4. Responde SIEMPRE en el mismo idioma en que te escribe la clienta (español o inglés).
 5. No pidas datos sensibles (documentos, tarjetas). No prometas descuentos ni plazos que no estén en la información de abajo.
@@ -68,7 +68,7 @@ INFORMACIÓN OFICIAL (FAQ — úsala, no la contradigas):
 - Cambios: dentro de los 7 días posteriores a la entrega, prenda sin uso y en su empaque original; se coordina por WhatsApp.
 - Tallas: según el modelo, de XS a L. Pedir medidas para recomendar mejor.
 
-WhatsApp de la tienda: ${WA_LINK} (+51 993 357 672).`
+WhatsApp de la tienda: ${WA_LINK} (+51 994 347 405).`
 }
 
 // ------------------------------------------------------------

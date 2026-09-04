@@ -34,7 +34,7 @@ const C = {
   whatsappDark: '#1EBE5A',
 }
 
-const WA_NUMBER = '51993357672'
+const WA_NUMBER = '51994347405'
 const waLink = (text) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`
 
 // FAQ del sitio (misma redacción que /preguntas-frecuentes), cada uno con
@@ -797,7 +797,7 @@ export default function ChatWidget() {
                 background: C.cream,
               }}
             >
-              Cerramos cada pedido por WhatsApp · +51 993 357 672
+              Cerramos cada pedido por WhatsApp · +51 994 347 405
             </div>
           )}
         </div>

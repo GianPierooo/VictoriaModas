@@ -7,9 +7,10 @@
 // Web pública = SOLO canal "menor". Nunca se envían precios de mayoreo.
 
 // Arma el payload que espera /api/pedido a partir del formulario y el carrito.
-// `totalPEN` (opcional) = total retail en soles; si viene, es el total del
-// pedido; si no, se usa el conteo de artículos.
-export function buildOrderPayload(formData, items, totalPEN = null) {
+// `totalPEN` (opcional) = total retail en soles YA con el descuento del
+// cupón aplicado; `coupon` (opcional) = cupón aplicado, para dejar constancia
+// en el registro del pedido.
+export function buildOrderPayload(formData, items, totalPEN = null, coupon = null) {
   const totalItems = items.reduce((sum, it) => sum + it.quantity, 0)
 
   const detalle = items
@@ -19,11 +20,12 @@ export function buildOrderPayload(formData, items, totalPEN = null) {
     })
     .join('; ')
 
-  // Ciudad y notas no tienen columna propia en "Pedidos": van dentro de items
-  // para que el dueño no pierda la info de entrega.
+  // Ciudad, notas y cupón no tienen columna propia en "Pedidos": van dentro
+  // de items para que el dueño no pierda esa info.
   const extras = [
     formData.ciudad?.trim() ? `Ciudad: ${formData.ciudad.trim()}` : '',
     formData.notas?.trim() ? `Notas: ${formData.notas.trim()}` : '',
+    coupon ? `Cupón: ${coupon.codigo}` : '',
   ]
     .filter(Boolean)
     .join(' — ')
