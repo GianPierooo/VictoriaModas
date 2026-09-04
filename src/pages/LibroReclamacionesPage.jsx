@@ -26,6 +26,20 @@ const selectClass = (hasError) =>
     hasError ? 'border-red-300 focus:border-red-400' : 'border-ink/20 focus:border-clay'
   }`
 
+// Numera visualmente las 3 secciones obligatorias del Anexo I — un
+// círculo con el número en vez del "1." suelto en el texto, para que se
+// lea como pasos de un trámite y no como un solo bloque largo de campos.
+function SectionLegend({ n, children }) {
+  return (
+    <legend className="mb-5 flex items-center gap-3 font-serif text-xl font-light text-ink">
+      <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-clay/40 text-sm text-clay-dark">
+        {n}
+      </span>
+      {children}
+    </legend>
+  )
+}
+
 const initialForm = {
   tipo: 'reclamo',
   nombres: '',
@@ -213,7 +227,7 @@ export default function LibroReclamacionesPage() {
 
             {/* 1. Identificación del consumidor */}
             <fieldset>
-              <legend className="mb-5 font-serif text-xl font-light text-ink">1. Identificación del consumidor reclamante</legend>
+              <SectionLegend n={1}>Identificación del consumidor reclamante</SectionLegend>
               <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
                 <div>
                   <label htmlFor="nombres" className={labelClass}>Nombres *</label>
@@ -268,7 +282,7 @@ export default function LibroReclamacionesPage() {
 
             {/* 2. Identificación del bien contratado */}
             <fieldset>
-              <legend className="mb-5 font-serif text-xl font-light text-ink">2. Identificación del bien contratado</legend>
+              <SectionLegend n={2}>Identificación del bien contratado</SectionLegend>
               <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <label htmlFor="producto" className={labelClass}>Producto o pedido</label>
@@ -297,7 +311,7 @@ export default function LibroReclamacionesPage() {
 
             {/* 3. Detalle */}
             <fieldset>
-              <legend className="mb-5 font-serif text-xl font-light text-ink">3. Detalle de la {form.tipo === 'reclamo' ? 'reclamación' : 'queja'} y pedido del consumidor</legend>
+              <SectionLegend n={3}>Detalle de la {form.tipo === 'reclamo' ? 'reclamación' : 'queja'} y pedido del consumidor</SectionLegend>
               <div className="space-y-7">
                 <div>
                   <label htmlFor="detalle" className={labelClass}>Detalle de tu {form.tipo === 'reclamo' ? 'reclamación' : 'queja'} *</label>
