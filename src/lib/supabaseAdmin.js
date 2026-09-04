@@ -388,6 +388,34 @@ export async function listProductosParaVenta() {
   return data
 }
 
+// Teléfono → identidad estable para los límites de cupón: últimos 9 dígitos
+// (mismo criterio exacto que /api/culqi-cobrar#normalizarTelefono — si uno
+// de los dos cambia, el límite deja de contar bien y se puede evadir).
+function identidadTelefono(valor) {
+  const digitos = String(valor || '').replace(/\D/g, '')
+  return digitos.length >= 9 ? digitos.slice(-9) : digitos
+}
+
+// Cuántas veces usó ya esta persona un cupón — por ficha de cliente y/o por
+// teléfono, para que no se evada cambiando de una a la otra.
+async function contarUsosDeCuponPorPersona(cuponId, clienteId, telefono) {
+  const tel = identidadTelefono(telefono)
+  const filtros = []
+  if (clienteId) filtros.push(`cliente_id.eq.${clienteId}`)
+  if (tel) filtros.push(`telefono.eq.${tel}`)
+  if (!filtros.length) return 0
+  const { count, error } = await supabase
+    .from('cupones_usados')
+    .select('id', { count: 'exact', head: true })
+    .eq('cupon_id', cuponId)
+    .or(filtros.join(','))
+  if (error) {
+    console.warn('[createVenta] no se pudo contar usos previos del cupón:', error.message)
+    return 0 // no bloquear la venta por un fallo de lectura
+  }
+  return count || 0
+}
+
 // Crea la venta + sus items, y descuenta el stock vendido de cada variante
 // (PB-002: "integrar las ventas con la actualización de stock"). No es
 // atómico (son varias llamadas), pero valida stock disponible ANTES de
@@ -423,6 +451,20 @@ export async function createVenta({ clienteId, items, canal = 'menor', direccion
     const resultado = await validarCupon(cuponCodigo, subtotal)
     if (!resultado.ok) throw new Error(resultado.motivo)
     cupon = resultado.cupon
+    // Límite de usos POR PERSONA (mismo criterio que /api/culqi-cobrar): sin
+    // esto, el panel sería la puerta de atrás para reusar un cupón que la web
+    // ya rechazaría. Se cuenta por ficha de cliente y por teléfono, porque la
+    // misma persona puede aparecer de las dos formas.
+    if (cupon.usos_por_persona != null) {
+      const usados = await contarUsosDeCuponPorPersona(cupon.id, clienteId, telefonoContacto)
+      if (usados >= cupon.usos_por_persona) {
+        throw new Error(
+          cupon.usos_por_persona === 1
+            ? 'Esta clienta ya usó ese cupón en una compra anterior.'
+            : `Esta clienta ya usó ese cupón ${cupon.usos_por_persona} veces.`
+        )
+      }
+    }
     descuento = calcularDescuento(cupon, subtotal)
   }
 
@@ -468,7 +510,14 @@ export async function createVenta({ clienteId, items, canal = 'menor', direccion
   // Deja constancia del uso del cupón (best-effort: si falla, la venta ya
   // quedó registrada — no vale la pena revertirla por esto).
   if (cupon) {
-    await supabase.from('cupones_usados').insert({ cupon_id: cupon.id, cliente_id: clienteId, venta_id: venta.id })
+    // El teléfono va NORMALIZADO (solo dígitos) — es parte de la identidad
+    // con la que se cuenta el límite de usos por persona.
+    await supabase.from('cupones_usados').insert({
+      cupon_id: cupon.id,
+      cliente_id: clienteId,
+      venta_id: venta.id,
+      telefono: identidadTelefono(telefonoContacto) || null,
+    })
     await supabase.from('cupones').update({ usos_actuales: (cupon.usos_actuales || 0) + 1 }).eq('id', cupon.id)
   }
 

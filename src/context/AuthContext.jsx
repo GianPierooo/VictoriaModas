@@ -94,6 +94,20 @@ export function AuthProvider({ children }) {
     return supabase.auth.signInWithPassword({ email, password })
   }
 
+  // Entrar con Google. Redirige a Google y vuelve a /mi-cuenta con la sesión
+  // ya iniciada (Supabase procesa el retorno solo). Requiere tener el
+  // proveedor Google activado en Supabase → Authentication → Providers.
+  // Vale la pena además por un motivo de negocio, no solo de comodidad: una
+  // cuenta de Google es mucho más difícil de crear en masa que un correo sin
+  // verificar, así que los límites de "un cupón por persona" pesan más.
+  const signInWithGoogle = async () => {
+    if (!supabase) return { error: { message: 'Supabase no está configurado.' } }
+    return supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/mi-cuenta` },
+    })
+  }
+
   const signOut = async () => {
     if (!supabase) return
     await supabase.auth.signOut()
@@ -125,6 +139,7 @@ export function AuthProvider({ children }) {
       isAuthConfigured: Boolean(supabase),
       signUp,
       signIn,
+      signInWithGoogle,
       signOut,
       updateProfile,
     }),

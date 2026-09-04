@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ClipboardIcon, CheckIcon, ShareIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import PhoneField from '../components/PhoneField.jsx'
+import GoogleSignInButton from '../components/GoogleSignInButton.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
@@ -35,6 +36,17 @@ const inputClass = (hasError) =>
     hasError ? 'border-red-300 focus:border-red-400' : 'border-ink/20 focus:border-clay'
   }`
 const labelClass = 'mb-2 block text-[10px] uppercase tracking-luxe text-ink-muted'
+
+// Separador "o" entre el acceso con Google y el formulario de siempre.
+function SeparadorO() {
+  return (
+    <div className="flex items-center gap-4" aria-hidden="true">
+      <span className="h-px flex-1 bg-ink/10" />
+      <span className="text-[10px] uppercase tracking-luxe text-ink-muted">o</span>
+      <span className="h-px flex-1 bg-ink/10" />
+    </div>
+  )
+}
 
 export default function AccountPage() {
   useDocumentMeta({
@@ -465,6 +477,8 @@ function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-7">
+      <GoogleSignInButton label="Ingresar con Google" />
+      <SeparadorO />
       <div>
         <label htmlFor="email" className={labelClass}>Correo electrónico *</label>
         <input
@@ -550,6 +564,8 @@ function RegisterForm({ onDone }) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-7">
+      <GoogleSignInButton label="Registrarme con Google" />
+      <SeparadorO />
       <div>
         <label htmlFor="nombre" className={labelClass}>Nombre completo *</label>
         <input

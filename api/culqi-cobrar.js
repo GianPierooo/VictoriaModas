@@ -92,11 +92,25 @@ export default async function handler(req, res) {
 
   const subtotal = lineas.reduce((sum, l) => sum + l.precio * l.cantidad, 0)
 
-  // ---- 3) Cupón (opcional) — se revalida contra el subtotal real ----
+  // ---- 3) Identidad de quien compra (ANTES de cobrar, porque el límite de
+  // usos por persona del cupón depende de ella). Si mandó token de sesión se
+  // verifica contra Supabase Auth; si no, la identidad es el teléfono.
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const admin = serviceKey ? createClient(supabaseUrl, serviceKey) : null
+  const userId = await verificarUserId(supabase, accessToken)
+  const telefonoNorm = normalizarTelefono(cliente.telefono)
+  const clienteIdExistente = admin && userId ? await buscarClienteId(admin, userId) : null
+
+  // ---- 4) Cupón (opcional) — se revalida contra el subtotal real y contra
+  // los usos que ya hizo ESTA persona (ver validarCuponServidor).
   let cupon = null
   let descuento = 0
   if (cuponCodigo) {
-    const resultado = await validarCuponServidor(supabase, cuponCodigo, subtotal)
+    const resultado = await validarCuponServidor(supabase, admin, cuponCodigo, subtotal, {
+      userId,
+      clienteId: clienteIdExistente,
+      telefono: telefonoNorm,
+    })
     if (!resultado.ok) return res.status(200).json({ ok: false, error: resultado.motivo })
     cupon = resultado.cupon
     descuento = calcularDescuentoServidor(cupon, subtotal)
@@ -148,12 +162,9 @@ export default async function handler(req, res) {
   // recompra siempre; recompensa de referido si el cupón usado era uno de
   // referido). Si algo de esto falla, el cobro NO se revierte (ya se hizo) —
   // queda logueado para reconstruirlo a mano desde el panel.
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   let ventaId = null
-  if (serviceKey) {
+  if (admin) {
     try {
-      const admin = createClient(supabaseUrl, serviceKey)
-
       // Stock: una actualización por variante (igual que createVenta en el panel).
       for (const l of lineas) {
         const { data: actual } = await admin.from('producto_variantes').select('stock').eq('id', l.varianteId).single()
@@ -162,10 +173,10 @@ export default async function handler(req, res) {
         }
       }
 
-      // Si la clienta tenía sesión iniciada, verifica el token (nunca se
-      // confía en un user_id mandado por el navegador) y busca/crea su
-      // ficha de cliente para que la venta le aparezca en "Mis pedidos".
-      const clienteId = await resolverClienteId(supabase, admin, accessToken, cliente, email)
+      // Ficha de cliente: la que ya existía (buscada antes del cobro) o una
+      // nueva, para que la venta le aparezca en "Mis pedidos". El userId ya
+      // viene verificado contra Supabase Auth.
+      const clienteId = clienteIdExistente || (userId ? await crearClienteId(admin, userId, cliente, email) : null)
 
       const { data: venta, error: errVenta } = await admin
         .from('ventas')
@@ -194,7 +205,9 @@ export default async function handler(req, res) {
 
       if (cupon) {
         await admin.from('cupones').update({ usos_actuales: (cupon.usos_actuales || 0) + 1 }).eq('id', cupon.id)
-        await admin.from('cupones_usados').insert({ cupon_id: cupon.id, cliente_id: clienteId, venta_id: venta.id, telefono: String(cliente.telefono || '') })
+        // El teléfono se guarda NORMALIZADO (solo dígitos): es la identidad
+        // con la que se cuenta el límite de usos por persona más adelante.
+        await admin.from('cupones_usados').insert({ cupon_id: cupon.id, cliente_id: clienteId, venta_id: venta.id, telefono: telefonoNorm })
       }
 
       // Cupón "gracias por tu compra" — best-effort, no debe tumbar una venta
@@ -234,23 +247,13 @@ export default async function handler(req, res) {
 }
 
 // ------------------------------------------------------------
-// Resuelve el cliente_id de la venta: si el navegador mandó un access_token
-// de sesión, se verifica CRIPTOGRÁFICAMENTE contra Supabase Auth (nunca se
-// confía en un user_id suelto) y se busca/crea su ficha en `clientes` para
-// que la compra le aparezca en "Mis pedidos". Sin token válido → null
-// (compra de invitado, coherente con el modo invitado del sitio).
+// Crea la ficha en `clientes` para un usuario con sesión que todavía no
+// tenía una, para que la compra le aparezca en "Mis pedidos". Si falla, la
+// venta simplemente queda como de invitada (no se rompe el registro).
 // ------------------------------------------------------------
-async function resolverClienteId(supabaseAnon, admin, accessToken, cliente, email) {
-  if (!accessToken) return null
+async function crearClienteId(admin, userId, cliente, email) {
   try {
-    const { data, error } = await supabaseAnon.auth.getUser(accessToken)
-    if (error || !data?.user) return null
-    const userId = data.user.id
-
-    const { data: existente } = await admin.from('clientes').select('id').eq('user_id', userId).maybeSingle()
-    if (existente) return existente.id
-
-    const { data: nuevo, error: errNuevo } = await admin
+    const { data, error } = await admin
       .from('clientes')
       .insert({
         user_id: userId,
@@ -260,10 +263,10 @@ async function resolverClienteId(supabaseAnon, admin, accessToken, cliente, emai
       })
       .select('id')
       .single()
-    if (errNuevo) throw errNuevo
-    return nuevo.id
+    if (error) throw error
+    return data.id
   } catch (err) {
-    console.warn('[culqi-cobrar] no se pudo resolver la ficha de cliente (venta queda como invitado):', err && err.message)
+    console.warn('[culqi-cobrar] no se pudo crear la ficha de cliente (venta queda como invitada):', err && err.message)
     return null
   }
 }
@@ -341,9 +344,20 @@ async function fetchVariantes(supabase) {
   }))
 }
 
-// Misma lógica que src/lib/cupones.js#validarCupon, pero corriendo en el
-// servidor (no se puede reusar el archivo del cliente: usa import.meta.env).
-async function validarCuponServidor(supabase, codigo, subtotal) {
+// Validación del cupón EN EL SERVIDOR — este es el único control que
+// realmente cuenta (el de src/lib/cupones.js es solo para mostrar el total
+// en pantalla; cualquiera puede saltarse el JS del navegador).
+//
+// Además de lo obvio (existe, vigente, monto mínimo, tope global de usos),
+// acá se aplican las dos reglas anti-abuso:
+//  · `usos_por_persona` — cuántas veces puede usarlo LA MISMA persona.
+//    Identidad = su ficha de cliente si tiene sesión, o su teléfono si
+//    compra como invitada. Sin esto, un cupón sin tope global (p. ej. un
+//    código de referido, pensado para muchas amigas distintas) se convierte
+//    en un descuento permanente para quien lo tenga.
+//  · Nadie puede usar su PROPIO código de referido — el descuento es para
+//    quien es referida, no para quien refiere.
+async function validarCuponServidor(supabase, admin, codigo, subtotal, persona = {}) {
   const code = codigo.trim().toUpperCase()
   const { data: cupon, error } = await supabase.from('cupones').select('*').ilike('codigo', code).eq('activo', true).maybeSingle()
   if (error) return { ok: false, motivo: 'No se pudo validar el cupón.' }
@@ -355,7 +369,111 @@ async function validarCuponServidor(supabase, codigo, subtotal) {
   if (cupon.usos_maximos != null && cupon.usos_actuales >= cupon.usos_maximos) return { ok: false, motivo: 'Ese cupón ya alcanzó su límite de usos.' }
   if (cupon.monto_minimo && subtotal < cupon.monto_minimo) return { ok: false, motivo: `Este cupón requiere una compra mínima de S/ ${cupon.monto_minimo}.` }
 
+  // Auto-referido: el código propio no sirve para uno mismo. Se compara por
+  // usuario Y por teléfono, porque comparar solo por usuario se evade
+  // cerrando sesión y comprando como invitada (ahí no hay userId) — y el
+  // premio sería doble: descuento propio + recompensa por "referirse".
+  if (cupon.canal === 'referido' && cupon.created_by) {
+    const esElMismo =
+      (persona.userId && cupon.created_by === persona.userId) ||
+      (admin && persona.telefono && mismoTelefono(await telefonoDelUsuario(admin, cupon.created_by), persona.telefono))
+    if (esElMismo) {
+      return { ok: false, motivo: 'Tu código de referida es para compartirlo con tus amigas — no puedes usarlo en tu propia compra.' }
+    }
+  }
+
+  // Usos por persona. Sin llave de servicio no se puede consultar el
+  // historial: se deja pasar (mismo criterio del resto del proyecto: no
+  // romper la venta) pero queda en los logs para revisarlo.
+  const limitePersona = cupon.usos_por_persona
+  if (limitePersona != null) {
+    if (!admin) {
+      console.error('[culqi-cobrar] sin SUPABASE_SERVICE_ROLE_KEY: no se pudo verificar el límite por persona del cupón', code)
+    } else {
+      const usados = await contarUsosDePersona(admin, cupon.id, persona)
+      if (usados >= limitePersona) {
+        return {
+          ok: false,
+          motivo: limitePersona === 1 ? 'Ya usaste ese cupón en una compra anterior.' : `Ya usaste ese cupón ${limitePersona} veces.`,
+        }
+      }
+    }
+  }
+
   return { ok: true, cupon }
+}
+
+// Cuántas veces usó ESTA persona el cupón. Cuenta por ficha de cliente (si
+// tiene cuenta) y por teléfono (si compró como invitada) — así no se evade
+// simplemente cerrando sesión, ni creando una cuenta nueva con el mismo
+// teléfono de contacto.
+async function contarUsosDePersona(admin, cuponId, { clienteId, telefono }) {
+  const filtros = []
+  if (clienteId) filtros.push(`cliente_id.eq.${clienteId}`)
+  if (telefono) filtros.push(`telefono.eq.${telefono}`)
+  if (!filtros.length) return 0
+  const { count, error } = await admin
+    .from('cupones_usados')
+    .select('id', { count: 'exact', head: true })
+    .eq('cupon_id', cuponId)
+    .or(filtros.join(','))
+  if (error) {
+    console.error('[culqi-cobrar] no se pudo contar usos previos del cupón:', error.message)
+    return 0 // no bloquear la venta por un fallo de lectura
+  }
+  return count || 0
+}
+
+// Teléfono → identidad estable para los límites de cupón: solo dígitos y,
+// si hay 9 o más, únicamente los últimos 9 (el largo de un celular peruano).
+// Así "999 888 777", "999888777" y "+51 999888777" son la MISMA persona —
+// sin esto, el límite de usos se evadía escribiendo el número con prefijo.
+// El teléfono tal cual lo escribió la clienta se guarda aparte, en
+// ventas.telefono_contacto; esto es solo para identificar.
+function normalizarTelefono(valor) {
+  const digitos = String(valor || '').replace(/\D/g, '')
+  return digitos.length >= 9 ? digitos.slice(-9) : digitos
+}
+
+// ¿Son el mismo teléfono? (ya normalizados a los últimos 9 dígitos)
+function mismoTelefono(a, b) {
+  const x = normalizarTelefono(a)
+  const y = normalizarTelefono(b)
+  return x.length === 9 && x === y
+}
+
+// Verifica el token de sesión contra Supabase Auth. Devuelve el user id real
+// o null — nunca se confía en un id mandado por el navegador.
+async function verificarUserId(supabaseAnon, accessToken) {
+  if (!accessToken) return null
+  try {
+    const { data, error } = await supabaseAnon.auth.getUser(accessToken)
+    if (error || !data?.user) return null
+    return data.user.id
+  } catch {
+    return null
+  }
+}
+
+// Ficha de cliente ya existente para ese usuario (sin crearla).
+async function buscarClienteId(admin, userId) {
+  const { data } = await admin.from('clientes').select('id').eq('user_id', userId).maybeSingle()
+  return data?.id || null
+}
+
+// Teléfono (normalizado) de un usuario, mirando su ficha de cliente y, si no
+// tiene, su perfil. Sirve para reconocer a la misma persona aunque compre
+// sin sesión iniciada. Devuelve '' si no se puede saber.
+async function telefonoDelUsuario(admin, userId) {
+  try {
+    const { data: cli } = await admin.from('clientes').select('telefono').eq('user_id', userId).maybeSingle()
+    if (cli?.telefono) return normalizarTelefono(cli.telefono)
+    const { data: perfil } = await admin.from('perfiles').select('telefono').eq('user_id', userId).maybeSingle()
+    return normalizarTelefono(perfil?.telefono)
+  } catch (err) {
+    console.warn('[culqi-cobrar] no se pudo leer el teléfono del referente:', err && err.message)
+    return ''
+  }
 }
 
 function calcularDescuentoServidor(cupon, subtotal) {
