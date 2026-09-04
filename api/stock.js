@@ -155,7 +155,7 @@ async function readFromSupabase() {
 
   const endpoint =
     `${url}/rest/v1/producto_variantes` +
-    `?select=producto_id,stock,canal,activo,precio_menor_pen,tallas(nombre),colores(nombre),productos!inner(activo)` +
+    `?select=producto_id,stock,canal,activo,precio_menor_pen,precio_anterior_pen,oferta_hasta,tallas(nombre),colores(nombre),productos!inner(activo)` +
     `&activo=eq.true&canal=in.(menor,ambos)&productos.activo=eq.true`
   const res = await fetch(endpoint, { headers: { apikey: key, Authorization: `Bearer ${key}` } })
   if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`)
@@ -168,6 +168,8 @@ async function readFromSupabase() {
     stock: r.stock,
     canal: r.canal,
     precioMenorPEN: r.precio_menor_pen,
+    precioAnteriorPEN: r.precio_anterior_pen,
+    ofertaHasta: r.oferta_hasta,
     activo: r.activo,
   }))
 
@@ -268,10 +270,27 @@ function isPublicRetail(row) {
   return activo && (canal === '' || canal === 'menor' || canal === 'ambos')
 }
 
+// Una oferta es "real" solo si hay un precio de antes MAYOR al de ahora (si
+// no, no es una rebaja) y, si tiene fecha de vencimiento, esa fecha no pasó
+// todavía. Nunca se inventa un precio de antes — sale directo de lo que el
+// dueño cargó en /admin/productos (ver AdminProductFormPage.jsx). Decisión
+// de negocio (evita "descuentos ficticios", que en Perú regula INDECOPI):
+// si no hay un precio de antes real guardado, JAMÁS se muestra tachado ni
+// porcentaje — mismo criterio de honestidad que el resto del sitio (nunca
+// "agotado" falso, nunca countdowns de mentira).
+function ofertaFor(precio, precioAnterior, ofertaHasta) {
+  const antes = toNumber(precioAnterior)
+  if (precio == null || antes == null || antes <= precio) return { enOferta: false }
+  if (ofertaHasta && new Date(ofertaHasta).getTime() < Date.now()) return { enOferta: false }
+  const porcentaje = Math.round(((antes - precio) / antes) * 100)
+  return { enOferta: true, precioAnteriorPEN: antes, porcentajeOferta: porcentaje, ofertaHasta: ofertaHasta || null }
+}
+
 // Proyección pública: SOLO lo que puede ver el navegador. Incluye el precio
 // RETAIL (precioMenorPEN, null si no está en la hoja). NUNCA precioMayorPEN.
 function toPublic(row) {
   const precio = toNumber(row.precioMenorPEN)
+  const oferta = ofertaFor(precio, row.precioAnteriorPEN, row.ofertaHasta)
   return {
     id: row.id,
     color: row.color,
@@ -279,6 +298,7 @@ function toPublic(row) {
     stock: row.stock,
     estado: estadoFor(row.stock),
     precioMenorPEN: precio,
+    ...oferta,
   }
 }
 

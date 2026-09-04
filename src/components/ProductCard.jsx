@@ -7,7 +7,7 @@ import { useWishlist } from '../context/WishlistContext.jsx'
 import ResponsiveImage from './ResponsiveImage.jsx'
 import { useInViewReveal } from '../motion/useInViewReveal.js'
 import { useStock } from '../hooks/useStock.js'
-import { formatPEN } from '../utils/price.js'
+import { formatPEN, formatFechaCorta } from '../utils/price.js'
 
 const MAX_SWATCHES = 4
 
@@ -21,9 +21,14 @@ export default function ProductCard({ product, index = 0 }) {
   // Stock agregado del producto (todas sus variantes). Solo se señala la
   // urgencia ('ultimas'); 'disponible'/'consultar' no muestran nada para no
   // ensuciar la card. Nunca se muestra "agotado" — decisión de negocio.
-  const { getEstadoProducto, getPrecioProducto } = useStock()
+  const { getEstadoProducto, getPrecioProducto, getOfertaProducto } = useStock()
   const estadoProducto = getEstadoProducto(id)
   const precio = getPrecioProducto(id)
+  // Oferta REAL (precio de antes + % calculados por el servidor a partir de
+  // datos reales cargados en /admin/productos) — null si no hay ninguna.
+  // Nunca se muestra un "-X%" que no venga de un precio de antes real (ver
+  // api/stock.js#ofertaFor).
+  const oferta = getOfertaProducto(id)
 
   const [activeColor, setActiveColor] = useState(null)
 
@@ -53,7 +58,11 @@ export default function ProductCard({ product, index = 0 }) {
 
   const swatchColors = colors && colorImages ? colors.slice(0, MAX_SWATCHES) : []
   const extraColors = colors && colorImages ? colors.length - swatchColors.length : 0
-  const isOffer = badge && (badge.includes('%') || badge.toLowerCase().includes('oferta'))
+  // Con oferta real, el badge lo calcula el servidor (nunca texto suelto);
+  // el campo "badge" del admin queda solo para etiquetas sin número
+  // ("Nuevo", "Edición limitada") cuando no hay una rebaja real que mostrar.
+  const badgeTexto = oferta ? `-${oferta.porcentaje}%` : badge
+  const isOffer = Boolean(oferta) || (badge && (badge.includes('%') || badge.toLowerCase().includes('oferta')))
 
   return (
     <article
@@ -67,13 +76,13 @@ export default function ProductCard({ product, index = 0 }) {
           {/* Imagen */}
           <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-cream-dark transition-shadow duration-500 group-hover:shadow-rose-lg">
             {/* Badge discreto */}
-            {badge && (
+            {badgeTexto && (
               <span
                 className={`absolute top-3 left-3 z-10 px-3 py-1 bg-cream/90 backdrop-blur-sm text-[10px] uppercase tracking-luxe font-medium rounded-full ${
                   isOffer ? 'text-clay-dark' : 'text-ink'
                 }`}
               >
-                {badge}
+                {badgeTexto}
               </span>
             )}
 
@@ -186,9 +195,21 @@ export default function ProductCard({ product, index = 0 }) {
             <h3 className="font-serif text-base sm:text-lg text-ink font-light leading-snug group-hover:text-clay transition-colors duration-300">
               {name}
             </h3>
-            <p className="mt-1 text-sm font-light text-ink-soft">
-              {formatPEN(precio) || 'Precio a consultar'}
-            </p>
+            {oferta ? (
+              <p className="mt-1 flex items-center justify-center gap-2 text-sm font-light">
+                <span className="text-ink-muted line-through">{formatPEN(oferta.precioAnteriorPEN)}</span>
+                <span className="font-medium text-clay-dark">{formatPEN(precio)}</span>
+              </p>
+            ) : (
+              <p className="mt-1 text-sm font-light text-ink-soft">
+                {formatPEN(precio) || 'Precio a consultar'}
+              </p>
+            )}
+            {oferta?.hasta && (
+              <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-clay-dark">
+                Oferta hasta el {formatFechaCorta(oferta.hasta)}
+              </p>
+            )}
             {estadoProducto === 'ultimas' && (
               <p className="mt-1.5 text-[10px] uppercase tracking-[0.18em] text-clay-dark">
                 Últimas piezas

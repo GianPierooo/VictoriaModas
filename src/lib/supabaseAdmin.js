@@ -138,6 +138,12 @@ export async function replaceVariantes(productoId, variantes) {
     precio_menor_pen: v.precio_menor_pen === '' ? null : Number(v.precio_menor_pen),
     precio_mayor_pen: v.precio_mayor_pen === '' ? null : Number(v.precio_mayor_pen),
     precio_menor_usd: v.precio_menor_usd === '' ? null : Number(v.precio_menor_usd),
+    // Precio "de antes" para mostrar tachado — SOLO si es un número real que
+    // el dueño cargó a propósito (nunca se calcula ni se inventa). Vacío =
+    // sin oferta. Ver api/stock.js#ofertaFor (solo cuenta como oferta si es
+    // mayor al precio actual).
+    precio_anterior_pen: v.precio_anterior_pen === '' ? null : Number(v.precio_anterior_pen),
+    oferta_hasta: v.oferta_hasta === '' ? null : v.oferta_hasta,
     canal: v.canal || 'menor',
     activo: v.activo !== false,
   }))

@@ -102,6 +102,30 @@ export function useStock() {
     return min
   }
 
+  // Oferta REAL de una variante concreta — solo existe si /api/stock la
+  // marcó como tal (precio de antes real y, si tiene vencimiento, vigente).
+  // null si no está en oferta (nunca se inventa nada acá).
+  const getOferta = (id, color, talla) => {
+    if (!state) return null
+    const it = state.byKey.get(keyOf(id, color, talla))
+    return it?.enOferta ? { precioAnteriorPEN: it.precioAnteriorPEN, porcentaje: it.porcentajeOferta, hasta: it.ofertaHasta } : null
+  }
+
+  // Oferta representativa de un producto (para cards, sin variante elegida):
+  // la de mayor % entre sus variantes en oferta real. null si ninguna lo está.
+  const getOfertaProducto = (id) => {
+    if (!state) return null
+    const pid = String(id).toLowerCase()
+    let mejor = null
+    for (const it of state.byKey.values()) {
+      if (String(it.id).toLowerCase() !== pid || !it.enOferta) continue
+      if (!mejor || it.porcentajeOferta > mejor.porcentaje) {
+        mejor = { precioAnteriorPEN: it.precioAnteriorPEN, porcentaje: it.porcentajeOferta, hasta: it.ofertaHasta }
+      }
+    }
+    return mejor
+  }
+
   return {
     ready: !!state,
     source: state?.source || 'none',
@@ -109,6 +133,8 @@ export function useStock() {
     getEstadoProducto,
     getPrecio,
     getPrecioProducto,
+    getOferta,
+    getOfertaProducto,
   }
 }
 

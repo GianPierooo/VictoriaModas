@@ -19,7 +19,18 @@ const inputClass =
   'w-full rounded-lg border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/60 focus:border-clay focus:outline-none'
 
 function emptyVariante() {
-  return { _key: crypto.randomUUID(), talla_id: '', color_id: '', stock: 0, precio_menor_pen: '', precio_mayor_pen: '', canal: 'menor', activo: true }
+  return {
+    _key: crypto.randomUUID(),
+    talla_id: '',
+    color_id: '',
+    stock: 0,
+    precio_menor_pen: '',
+    precio_mayor_pen: '',
+    precio_anterior_pen: '',
+    oferta_hasta: '',
+    canal: 'menor',
+    activo: true,
+  }
 }
 
 export default function AdminProductFormPage() {
@@ -73,6 +84,8 @@ export default function AdminProductFormPage() {
             stock: v.stock,
             precio_menor_pen: v.precio_menor_pen ?? '',
             precio_mayor_pen: v.precio_mayor_pen ?? '',
+            precio_anterior_pen: v.precio_anterior_pen ?? '',
+            oferta_hasta: v.oferta_hasta ? v.oferta_hasta.slice(0, 10) : '',
             canal: v.canal,
             activo: v.activo,
           }))
@@ -117,6 +130,19 @@ export default function AdminProductFormPage() {
       toast.error('Cada variante necesita talla y color.')
       return
     }
+    // "P. antes" solo tiene sentido si es MAYOR al precio actual (si no, no
+    // es una rebaja real) — la web lo ignoraría igual (ver api/stock.js),
+    // pero mejor avisar acá que dejar cargado un número que no hace nada.
+    const ofertaInvalida = variantes.some((v) => {
+      if (v.precio_anterior_pen === '') return false
+      const antes = Number(v.precio_anterior_pen)
+      const ahora = Number(v.precio_menor_pen)
+      return !(antes > ahora)
+    })
+    if (ofertaInvalida) {
+      toast.error('"P. antes" debe ser mayor al precio menor actual para que cuente como oferta real.')
+      return
+    }
     setGuardando(true)
     try {
       await replaceVariantes(productoId, variantes)
@@ -126,6 +152,7 @@ export default function AdminProductFormPage() {
         (data.producto_variantes || []).map((v) => ({
           _key: v.id, id: v.id, talla_id: v.talla_id, color_id: v.color_id, stock: v.stock,
           precio_menor_pen: v.precio_menor_pen ?? '', precio_mayor_pen: v.precio_mayor_pen ?? '',
+          precio_anterior_pen: v.precio_anterior_pen ?? '', oferta_hasta: v.oferta_hasta ? v.oferta_hasta.slice(0, 10) : '',
           canal: v.canal, activo: v.activo,
         }))
       )
@@ -298,8 +325,14 @@ export default function AdminProductFormPage() {
               </button>
             </div>
 
+            <p className="mb-4 max-w-2xl text-xs font-light leading-relaxed text-ink-muted">
+              <strong className="text-ink-soft">P. antes</strong> y <strong className="text-ink-soft">Oferta hasta</strong> son
+              opcionales — solo úsalos cuando de verdad vas a bajar el precio (ese es el número que se muestra tachado en la
+              web). Vacíos = precio normal, sin oferta. Nunca escribas ahí un precio inventado solo para que se vea más
+              rebajado — es publicidad engañosa y puede traerte un reclamo real.
+            </p>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[820px] text-left text-sm">
+              <table className="w-full min-w-[1080px] text-left text-sm">
                 <thead>
                   <tr className="text-[10px] uppercase tracking-luxe text-ink-muted">
                     <th className="px-2 py-2">Talla</th>
@@ -307,6 +340,8 @@ export default function AdminProductFormPage() {
                     <th className="px-2 py-2">Stock</th>
                     <th className="px-2 py-2">P. menor (S/)</th>
                     <th className="px-2 py-2">P. mayor (S/)</th>
+                    <th className="px-2 py-2">P. antes (S/)</th>
+                    <th className="px-2 py-2">Oferta hasta</th>
                     <th className="px-2 py-2">Canal</th>
                     <th className="px-2 py-2">Activo</th>
                     <th className="px-2 py-2"></th>
@@ -335,6 +370,25 @@ export default function AdminProductFormPage() {
                       </td>
                       <td className="px-2 py-2">
                         <input type="number" min="0" step="0.01" value={v.precio_mayor_pen} onChange={(e) => actualizarVariante(v._key, 'precio_mayor_pen', e.target.value)} className="w-24 rounded-md border border-ink/15 px-2 py-1.5 text-sm" />
+                      </td>
+                      <td className="px-2 py-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={v.precio_anterior_pen}
+                          onChange={(e) => actualizarVariante(v._key, 'precio_anterior_pen', e.target.value)}
+                          placeholder="Sin oferta"
+                          className="w-24 rounded-md border border-ink/15 px-2 py-1.5 text-sm placeholder:text-ink-muted/50"
+                        />
+                      </td>
+                      <td className="px-2 py-2">
+                        <input
+                          type="date"
+                          value={v.oferta_hasta}
+                          onChange={(e) => actualizarVariante(v._key, 'oferta_hasta', e.target.value)}
+                          className="rounded-md border border-ink/15 px-2 py-1.5 text-sm"
+                        />
                       </td>
                       <td className="px-2 py-2">
                         <select value={v.canal} onChange={(e) => actualizarVariante(v._key, 'canal', e.target.value)} className="rounded-md border border-ink/15 px-2 py-1.5 text-sm">

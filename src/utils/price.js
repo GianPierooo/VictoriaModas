@@ -14,6 +14,17 @@ export function formatPEN(value) {
   return `S/ ${grouped}`
 }
 
+// "2026-09-20T00:00:00Z" -> "20/09". Sin año (la vigencia de la oferta ya
+// se filtra server-side — ver api/stock.js#ofertaFor). Usado por ProductCard
+// y ProductPage para mostrar "Oferta hasta el DD/MM".
+export function formatFechaCorta(iso) {
+  try {
+    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' })
+  } catch {
+    return ''
+  }
+}
+
 // Total del carrito en soles. `priceOf(item)` devuelve el precio unitario
 // retail (o null). Devuelve { total, allPriced }: total = suma de las líneas
 // con precio; allPriced = true solo si TODAS las líneas tienen precio (para

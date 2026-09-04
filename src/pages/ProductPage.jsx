@@ -18,7 +18,7 @@ import { COLOR_HEX } from '../utils/colorMap.js'
 import { useProducts } from '../hooks/useProducts.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { useStock, estadoStyle } from '../hooks/useStock.js'
-import { formatPEN } from '../utils/price.js'
+import { formatPEN, formatFechaCorta } from '../utils/price.js'
 import { trackEvent } from '../lib/metaPixel.js'
 
 const SITE_URL = 'https://victoriamodas.store'
@@ -55,10 +55,12 @@ export default function ProductPage() {
 
   // Stock en vivo (si la hoja no está conectada, estado = 'consultar' y el
   // indicador no se muestra; no altera el diseño).
-  const { getEstado, getPrecio, getPrecioProducto } = useStock()
+  const { getEstado, getPrecio, getPrecioProducto, getOferta, getOfertaProducto } = useStock()
   const stockStyle = estadoStyle(getEstado(productId, selectedColor, selectedSize))
   // Precio retail: el de la variante elegida, o el representativo del producto.
   const precio = getPrecio(productId, selectedColor, selectedSize) ?? getPrecioProducto(productId)
+  // Oferta REAL (nunca inventada — ver api/stock.js#ofertaFor).
+  const oferta = getOferta(productId, selectedColor, selectedSize) ?? getOfertaProducto(productId)
 
   // Al cambiar de producto (navegación entre detalles), reiniciar selección.
   // Si la URL trae ?color=..&talla=.. (pensado para deep-link de anuncios —
@@ -286,9 +288,26 @@ export default function ProductPage() {
                 <h1 className="hero-line mb-4 font-serif text-4xl font-light leading-[1.1] text-ink md:text-5xl" style={{ animationDelay: '0.12s' }}>
                   {product.name}
                 </h1>
-                <p className="hero-line mb-6 text-xl font-light text-ink" style={{ animationDelay: '0.16s' }}>
-                  {formatPEN(precio) || <span className="text-ink-soft">Precio a consultar</span>}
-                </p>
+                <div className="hero-line mb-6" style={{ animationDelay: '0.16s' }}>
+                  {oferta ? (
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className="text-base font-light text-ink-muted line-through">{formatPEN(oferta.precioAnteriorPEN)}</span>
+                      <span className="text-xl font-light text-clay-dark">{formatPEN(precio)}</span>
+                      <span className="rounded-full bg-clay/10 px-2.5 py-0.5 text-[10px] uppercase tracking-luxe text-clay-dark">
+                        -{oferta.porcentaje}%
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-xl font-light text-ink">
+                      {formatPEN(precio) || <span className="text-ink-soft">Precio a consultar</span>}
+                    </p>
+                  )}
+                  {oferta?.hasta && (
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-clay-dark">
+                      Oferta por tiempo limitado — hasta el {formatFechaCorta(oferta.hasta)}
+                    </p>
+                  )}
+                </div>
                 <p className="hero-line mb-9 max-w-md font-light leading-relaxed text-ink-soft" style={{ animationDelay: '0.2s' }}>
                   {product.description}
                 </p>
