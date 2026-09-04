@@ -4,6 +4,8 @@ import { ChevronLeftIcon, CheckCircleIcon, TruckIcon, ArrowPathIcon, ChatBubbleL
 import Layout from '../components/Layout.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import CouponField from '../components/CouponField.jsx'
+import PhoneField from '../components/PhoneField.jsx'
+import { DEFAULT_PHONE_COUNTRY } from '../utils/phoneCountries.js'
 import { useCart } from '../context/CartContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { supabase } from '../lib/supabaseClient.js'
@@ -15,7 +17,9 @@ import { buildOrderPayload, registerOrder } from '../utils/orderUtils.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { trackEvent } from '../lib/metaPixel.js'
 
-const REQUIRED_FIELDS = ['nombre', 'telefono', 'ciudad']
+// El teléfono se valida aparte (telefonoNumero, ver más abajo) porque su
+// prefijo de país vive en su propio estado (PhoneField), no en formData.
+const REQUIRED_FIELDS = ['nombre', 'ciudad']
 // Para pagar en línea con Culqi además hace falta un correo (Culqi lo exige
 // para el cargo, y sirve para mandar el comprobante).
 const REQUIRED_FIELDS_PAGO = [...REQUIRED_FIELDS, 'email']
@@ -53,11 +57,15 @@ export default function CheckoutPage() {
   const priceOf = (it) => getPrecio(it.id, it.selectedColor, it.selectedSize)
   const [formData, setFormData] = useState({
     nombre: '',
-    telefono: '',
     ciudad: '',
     email: '',
     notas: '',
   })
+  // Selector de prefijo + número (mismo patrón que /mi-cuenta) — Perú por
+  // defecto, ya que es donde compra la enorme mayoría de las clientas.
+  const [telefonoPrefix, setTelefonoPrefix] = useState(DEFAULT_PHONE_COUNTRY.code)
+  const [telefonoNumero, setTelefonoNumero] = useState('')
+  const telefono = telefonoNumero.trim() ? `${telefonoPrefix} ${telefonoNumero.trim()}` : ''
   const [errors, setErrors] = useState({})
   const [confirmed, setConfirmed] = useState(false)
   const [pagoConfirmado, setPagoConfirmado] = useState(false)
@@ -108,6 +116,7 @@ export default function CheckoutPage() {
     REQUIRED_FIELDS.forEach(field => {
       if (!formData[field].trim()) nextErrors[field] = true
     })
+    if (!telefonoNumero.trim()) nextErrors.telefono = true
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
       toast.error('Completa los campos marcados para enviar tu pedido.')
@@ -132,13 +141,14 @@ export default function CheckoutPage() {
         currency: 'PEN',
         value: totalPEN ?? undefined,
       },
-      { telefono: formData.telefono }
+      { telefono }
     )
     // Registra el pedido en la hoja en SEGUNDO PLANO (sin await): si falla, el
     // flujo de WhatsApp continúa igual. Va antes de openWhatsApp para no perder
     // el gesto de clic (evita bloqueo de popup).
-    registerOrder(buildOrderPayload(formData, items, totalPEN, coupon))
-    openWhatsApp(generateOrderMessage(formData, items, totalPEN, coupon))
+    const datosPedido = { ...formData, telefono }
+    registerOrder(buildOrderPayload(datosPedido, items, totalPEN, coupon))
+    openWhatsApp(generateOrderMessage(datosPedido, items, totalPEN, coupon))
     setConfirmedItems(items)
     setConfirmed(true)
     window.scrollTo({ top: 0, behavior: 'instant' })
@@ -154,6 +164,7 @@ export default function CheckoutPage() {
     REQUIRED_FIELDS_PAGO.forEach((field) => {
       if (!formData[field].trim()) nextErrors[field] = true
     })
+    if (!telefonoNumero.trim()) nextErrors.telefono = true
     if (formData.email.trim() && !/^\S+@\S+\.\S+$/.test(formData.email.trim())) {
       nextErrors.email = true
     }
@@ -231,7 +242,7 @@ export default function CheckoutPage() {
             email: formData.email.trim(),
             items: items.map((it) => ({ id: it.id, color: it.selectedColor, talla: it.selectedSize, cantidad: it.quantity })),
             cuponCodigo: coupon?.codigo || '',
-            cliente: { nombre: formData.nombre, telefono: formData.telefono, ciudad: formData.ciudad, notas: formData.notas },
+            cliente: { nombre: formData.nombre, telefono, ciudad: formData.ciudad, notas: formData.notas },
             accessToken,
           }),
         })
@@ -246,7 +257,7 @@ export default function CheckoutPage() {
         trackEvent(
           'Purchase',
           { content_ids: items.map((it) => it.id), num_items: totalItems, currency: 'PEN', value: data.total ?? totalPEN },
-          { telefono: formData.telefono, email: formData.email }
+          { telefono, email: formData.email }
         )
         setConfirmedItems(items)
         clearCart()
@@ -417,15 +428,18 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 gap-7 md:grid-cols-2">
                   <div>
-                    <label htmlFor="telefono" className={labelClass}>Teléfono *</label>
-                    <input
-                      type="tel"
+                    <PhoneField
                       id="telefono"
-                      name="telefono"
-                      value={formData.telefono}
-                      onChange={handleInputChange}
-                      placeholder="999 999 999"
-                      className={inputClass('telefono')}
+                      label="Teléfono"
+                      required
+                      prefix={telefonoPrefix}
+                      onPrefixChange={setTelefonoPrefix}
+                      number={telefonoNumero}
+                      onNumberChange={(value) => {
+                        setTelefonoNumero(value)
+                        if (errors.telefono) setErrors((prev) => ({ ...prev, telefono: false }))
+                      }}
+                      hasError={errors.telefono}
                     />
                     {errors.telefono && <p className="mt-2 text-xs text-red-400">Ingresa tu teléfono.</p>}
                   </div>
