@@ -1,3 +1,8 @@
+// Umbral de envío gratis (compartido por AnnouncementBanner, FreeShippingBar,
+// CartPage, CheckoutPage, ProductPage, ChatWidget y api/chat.js). Cambiar
+// solo aquí y actualizar el texto estático de esos archivos si difiere.
+export const FREE_SHIPPING_THRESHOLD = 60
+
 // Formato de precio en soles reutilizable. Devuelve "S/ 89" (o "S/ 1,290",
 // "S/ 89.50") para números válidos, o null si no hay precio — así el llamador
 // decide el texto de respaldo (p. ej. "Precio a consultar").

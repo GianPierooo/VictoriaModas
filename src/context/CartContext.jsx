@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { cartItemKey } from '../utils/cart.js'
 import { useToast } from './ToastContext.jsx'
+import { validarCupon } from '../lib/cupones.js'
 
 const CartContext = createContext(null)
 
@@ -20,10 +21,22 @@ function loadStoredCart() {
   }
 }
 
+function loadStoredCoupon() {
+  try {
+    const raw = localStorage.getItem('vm_cart_coupon')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState(loadStoredCart)
   // Mini-carrito lateral (drawer): ver/editar sin salir de la página.
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // Cupón aplicado (persiste junto al carrito para llegar hasta el checkout).
+  const [coupon, setCoupon] = useState(loadStoredCoupon)
+  const [couponLoading, setCouponLoading] = useState(false)
   const toast = useToast()
 
   // Persistencia endurecida: no rompe si el almacenamiento no está disponible
@@ -35,6 +48,15 @@ export function CartProvider({ children }) {
       /* almacenamiento no disponible */
     }
   }, [items])
+
+  useEffect(() => {
+    try {
+      if (coupon) localStorage.setItem('vm_cart_coupon', JSON.stringify(coupon))
+      else localStorage.removeItem('vm_cart_coupon')
+    } catch {
+      /* almacenamiento no disponible */
+    }
+  }, [coupon])
 
   const openDrawer = useCallback(() => setDrawerOpen(true), [])
   const closeDrawer = useCallback(() => setDrawerOpen(false), [])
@@ -71,7 +93,27 @@ export function CartProvider({ children }) {
     ))
   }, [])
 
-  const clearCart = useCallback(() => setItems([]), [])
+  const clearCart = useCallback(() => {
+    setItems([])
+    setCoupon(null)
+  }, [])
+
+  // Valida un código contra Supabase y, si es válido, lo guarda como cupón
+  // aplicado. `subtotal` lo calcula quien llama (CartContext no conoce
+  // precios — esos viven en useStock). Devuelve el resultado de la
+  // validación para que el formulario muestre el mensaje correcto.
+  const applyCoupon = useCallback(async (codigo, subtotal) => {
+    setCouponLoading(true)
+    const result = await validarCupon(codigo, subtotal)
+    setCouponLoading(false)
+    if (result.ok) {
+      setCoupon(result.cupon)
+      toast.success(`Cupón ${result.cupon.codigo} aplicado.`)
+    }
+    return result
+  }, [toast])
+
+  const removeCoupon = useCallback(() => setCoupon(null), [])
 
   const totals = useMemo(() => {
     const itemCount = items.reduce((sum, it) => sum + it.quantity, 0)
@@ -82,8 +124,13 @@ export function CartProvider({ children }) {
     () => ({
       items, addItem, removeItem, updateQuantity, clearCart, totals,
       drawerOpen, openDrawer, closeDrawer,
+      coupon, couponLoading, applyCoupon, removeCoupon,
     }),
-    [items, addItem, removeItem, updateQuantity, clearCart, totals, drawerOpen, openDrawer, closeDrawer]
+    [
+      items, addItem, removeItem, updateQuantity, clearCart, totals,
+      drawerOpen, openDrawer, closeDrawer,
+      coupon, couponLoading, applyCoupon, removeCoupon,
+    ]
   )
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

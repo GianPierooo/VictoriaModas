@@ -14,17 +14,22 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/re
 import { XMarkIcon, ShoppingBagIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ResponsiveImage from './ResponsiveImage.jsx'
 import QuantitySelector from './QuantitySelector'
+import FreeShippingBar from './FreeShippingBar.jsx'
+import CouponField from './CouponField.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useStock } from '../hooks/useStock.js'
 import { formatPEN, cartTotal } from '../utils/price.js'
 import { cartItemKey } from '../utils/cart.js'
+import { calcularDescuento } from '../lib/cupones.js'
 
 export default function CartDrawer() {
-  const { items, drawerOpen, closeDrawer, updateQuantity, removeItem } = useCart()
+  const { items, drawerOpen, closeDrawer, updateQuantity, removeItem, coupon } = useCart()
   const { getPrecio } = useStock()
   const priceOf = (it) => getPrecio(it.id, it.selectedColor, it.selectedSize)
   const totalItems = items.reduce((sum, it) => sum + it.quantity, 0)
   const { total, allPriced } = cartTotal(items, priceOf)
+  const descuento = allPriced ? calcularDescuento(coupon, total) : 0
+  const totalConDescuento = Math.max(0, total - descuento)
 
   return (
     <Dialog open={drawerOpen} onClose={closeDrawer} className="relative z-[70]">
@@ -70,6 +75,11 @@ export default function CartDrawer() {
                   </div>
                 ) : (
                   <>
+                    {/* Barra de envío gratis */}
+                    <div className="px-6 pt-5">
+                      <FreeShippingBar total={total} allPriced={allPriced} />
+                    </div>
+
                     {/* Líneas del carrito */}
                     <ul className="flex-1 divide-y divide-ink/10 overflow-y-auto px-6">
                       {items.map((item) => {
@@ -138,14 +148,23 @@ export default function CartDrawer() {
 
                     {/* Pie */}
                     <div className="border-t border-ink/10 px-6 py-5">
+                      <div className="mb-4">
+                        <CouponField subtotal={total} />
+                      </div>
                       <div className="mb-1 flex items-center justify-between text-xs text-ink-muted">
                         <span>Artículos</span>
                         <span>{totalItems}</span>
                       </div>
+                      {descuento > 0 && (
+                        <div className="mb-1 flex items-center justify-between text-xs text-clay">
+                          <span>Descuento ({coupon.codigo})</span>
+                          <span>-{formatPEN(descuento)}</span>
+                        </div>
+                      )}
                       <div className="mb-4 flex items-baseline justify-between">
                         <span className="text-sm font-light text-ink-soft">Subtotal</span>
                         <span className="font-serif text-xl font-light text-ink">
-                          {allPriced ? formatPEN(total) : <span className="text-base text-ink-muted">A consultar</span>}
+                          {allPriced ? formatPEN(totalConDescuento) : <span className="text-base text-ink-muted">A consultar</span>}
                         </span>
                       </div>
 

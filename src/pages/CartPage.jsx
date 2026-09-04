@@ -3,18 +3,23 @@ import { XMarkIcon, ChevronLeftIcon, TruckIcon, ArrowPathIcon } from '@heroicons
 import Layout from '../components/Layout.jsx'
 import QuantitySelector from '../components/QuantitySelector'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
+import FreeShippingBar from '../components/FreeShippingBar.jsx'
+import CouponField from '../components/CouponField.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useStock } from '../hooks/useStock.js'
 import { formatPEN, cartTotal } from '../utils/price.js'
 import { cartItemKey } from '../utils/cart.js'
+import { calcularDescuento } from '../lib/cupones.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, clearCart } = useCart()
+  const { items, removeItem, updateQuantity, clearCart, coupon } = useCart()
   const { getPrecio } = useStock()
   const priceOf = (it) => getPrecio(it.id, it.selectedColor, it.selectedSize)
   const totalItems = items.reduce((sum, it) => sum + it.quantity, 0)
   const { total, allPriced } = cartTotal(items, priceOf)
+  const descuento = allPriced ? calcularDescuento(coupon, total) : 0
+  const totalConDescuento = Math.max(0, total - descuento)
   useDocumentMeta({ title: 'Tu carrito | Victoria Modas' })
 
   return (
@@ -59,6 +64,9 @@ export default function CartPage() {
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-12">
               {/* Lista de items */}
               <div className="lg:col-span-2">
+                <div className="mb-6">
+                  <FreeShippingBar total={total} allPriced={allPriced} />
+                </div>
                 <ul className="border-t border-ink/10">
                   {items.map((item) => {
                     const key = cartItemKey(item)
@@ -151,15 +159,25 @@ export default function CartPage() {
                 <div className="rounded-xl bg-cream p-7 lg:sticky lg:top-28 lg:p-8">
                   <h2 className="mb-6 font-serif text-2xl font-light text-ink">Resumen</h2>
 
+                  <div className="mb-6">
+                    <CouponField subtotal={total} />
+                  </div>
+
                   <div className="space-y-3 border-b border-ink/10 pb-6 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="font-light text-ink-soft">Artículos</span>
                       <span className="text-ink">{totalItems}</span>
                     </div>
+                    {descuento > 0 && (
+                      <div className="flex items-center justify-between text-clay">
+                        <span className="font-light">Descuento ({coupon.codigo})</span>
+                        <span>-{formatPEN(descuento)}</span>
+                      </div>
+                    )}
                     <div className="flex items-baseline justify-between">
                       <span className="font-light text-ink-soft">Total</span>
                       <span className="font-serif text-2xl font-light text-ink">
-                        {allPriced ? formatPEN(total) : <span className="text-lg text-ink-muted">A consultar</span>}
+                        {allPriced ? formatPEN(totalConDescuento) : <span className="text-lg text-ink-muted">A consultar</span>}
                       </span>
                     </div>
                   </div>
