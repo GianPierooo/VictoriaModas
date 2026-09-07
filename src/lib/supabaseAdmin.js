@@ -101,10 +101,24 @@ export async function getProductoAdmin(id) {
 }
 
 // Crea o actualiza los datos básicos del producto (no toca variantes/imágenes).
+// Requiere el objeto COMPLETO (con nombre, etc.) — ver updateProductoParcial
+// para cambiar un solo campo de un producto que ya existe.
 export async function upsertProducto(producto) {
   const { data, error } = await supabase.from('productos').upsert(producto).select().single()
   if (error) throw error
   return data
+}
+
+// Cambia SOLO los campos indicados de un producto que ya existe (ej. activar/
+// desactivar desde el listado). A propósito usa `.update()` y no `.upsert()`:
+// con Postgres, `INSERT ... ON CONFLICT DO UPDATE` arma primero la fila
+// completa a insertar (usando NULL en las columnas que falten) y ahí mismo
+// revienta cualquier restricción NOT NULL (ej. "nombre") — pasa AUNQUE la fila
+// ya exista y el insert nunca se vaya a ejecutar de verdad. `.update()` no
+// tiene ese problema: solo toca las columnas que se le pasan.
+export async function updateProductoParcial(id, cambios) {
+  const { error } = await supabase.from('productos').update(cambios).eq('id', id)
+  if (error) throw error
 }
 
 export async function deleteProducto(id) {

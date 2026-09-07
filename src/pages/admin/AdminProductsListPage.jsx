@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { listProductosAdmin, listCategorias, upsertProducto, deleteProducto } from '../../lib/supabaseAdmin.js'
+import { listProductosAdmin, listCategorias, updateProductoParcial, deleteProducto } from '../../lib/supabaseAdmin.js'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
 
@@ -37,7 +37,7 @@ export default function AdminProductsListPage() {
 
   const toggleActivo = async (producto) => {
     try {
-      await upsertProducto({ id: producto.id, activo: !producto.activo })
+      await updateProductoParcial(producto.id, { activo: !producto.activo })
       cargar()
     } catch (err) {
       toast.error('No se pudo actualizar: ' + err.message)
