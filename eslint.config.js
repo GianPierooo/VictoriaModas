@@ -35,8 +35,12 @@ export default defineConfig([
   // Código que corre en Node, no en el navegador:
   //  · /api      → funciones serverless
   //  · vite.config.js → config + middleware de dev (usa process.env)
+  //  · src/lib/asistenteIA.js → cerebro del bot, compartido entre el widget
+  //    web (api/chat.js) y el bot de WhatsApp (api/whatsapp-webhook.js);
+  //    vive en src/lib para poder importarlo desde ambos, pero corre
+  //    server-side (usa process.env), nunca en el navegador.
   {
-    files: ['api/**/*.js', 'vite.config.js'],
+    files: ['api/**/*.js', 'vite.config.js', 'src/lib/asistenteIA.js'],
     languageOptions: {
       globals: { ...globals.node },
       parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
