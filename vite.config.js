@@ -28,6 +28,14 @@ function devApi() {
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(o))
         },
+        // Vercel/Express soportan .send() para texto plano (ej. el
+        // "handshake" de verificación de webhooks, que exige devolver el
+        // valor tal cual, sin envolverlo en JSON) — el shim local no lo
+        // tenía y cualquier handler que lo usara reventaba solo en dev.
+        send(body) {
+          res.statusCode = this._code
+          res.end(typeof body === 'string' ? body : JSON.stringify(body))
+        },
       }
       try {
         // Ruta absoluta desde la raíz del proyecto (el import relativo se
@@ -76,6 +84,7 @@ function devApi() {
       mount(server, '/api/chat', 'api/chat.js')
       mount(server, '/api/meta-conversions', 'api/meta-conversions.js')
       mount(server, '/api/culqi-cobrar', 'api/culqi-cobrar.js')
+      mount(server, '/api/whatsapp-webhook', 'api/whatsapp-webhook.js')
     },
   }
 }
