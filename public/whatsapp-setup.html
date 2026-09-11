@@ -44,7 +44,8 @@
     line-height: 1.5;
     font-size: 0.95rem;
   }
-  button {
+  button, .boton {
+    display: block;
     margin-top: 20px;
     width: 100%;
     padding: 14px;
@@ -54,8 +55,11 @@
     border-radius: 4px;
     font-size: 1rem;
     cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
   }
-  button:hover { background: var(--clay-dark); }
+  button:hover, .boton:hover { background: var(--clay-dark); }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
   #estado {
     margin-top: 16px;
@@ -65,6 +69,17 @@
   }
   .ok { color: #2e7d32; }
   .error { color: #b3261e; }
+  .candidata {
+    text-align: left;
+    border: 1px solid var(--cream-dark);
+    border-radius: 4px;
+    padding: 12px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+  .candidata:hover { background: var(--cream-dark); }
+  .candidata b { display: block; }
+  .candidata small { color: var(--muted); }
 </style>
 </head>
 <body>
@@ -76,13 +91,14 @@
       perder la app normal del celular (coexistencia).
     </p>
     <p>
-      Al darle click, Meta te va a pedir iniciar sesión y confirmar. En un
-      momento te va a mostrar un código QR para escanear con el celular
+      Al darle click, te lleva a Facebook a confirmar. En algún punto del
+      proceso te va a mostrar un código QR para escanear con el celular
       donde tienes la app de WhatsApp Business — ahí es donde conectas tu
       número real.
     </p>
     <button id="btnConectar">Conectar WhatsApp</button>
     <div id="estado"></div>
+    <div id="candidatas"></div>
   </div>
 
   <script>
@@ -92,12 +108,10 @@
     // solo vive en el servidor (api/whatsapp-embedded-signup.js).
     const META_APP_ID = '1470180548479134'
     const EMBEDDED_SIGNUP_CONFIG_ID = '1819328749484139'
-
-    let codigoRecibido = null
-    let wabaIdRecibido = null
-    let phoneNumberIdRecibido = null
+    const REDIRECT_URI = window.location.origin + window.location.pathname
 
     const estadoEl = document.getElementById('estado')
+    const candidatasEl = document.getElementById('candidatas')
     const btn = document.getElementById('btnConectar')
 
     function mostrarEstado(texto, tipo) {
@@ -105,60 +119,51 @@
       estadoEl.className = tipo || ''
     }
 
-    // Carga el SDK de JavaScript de Facebook.
-    window.fbAsyncInit = function () {
-      FB.init({ appId: META_APP_ID, version: 'v21.0' })
-    }
-    ;(function (d, s, id) {
-      const fjs = d.getElementsByTagName(s)[0]
-      if (d.getElementById(id)) return
-      const js = d.createElement(s)
-      js.id = id
-      js.src = 'https://connect.facebook.net/es_LA/sdk.js'
-      js.async = true
-      js.defer = true
-      js.crossOrigin = 'anonymous'
-      fjs.parentNode.insertBefore(js, fjs)
-    })(document, 'script', 'facebook-jssdk')
-
-    // Meta manda el waba_id / phone_number_id por postMessage durante el
-    // flujo (antes de que el callback de FB.login termine con el code).
-    window.addEventListener('message', (event) => {
-      if (!event.origin || !event.origin.endsWith('facebook.com')) return
-      try {
-        const data = JSON.parse(event.data)
-        if (data.type === 'WA_EMBEDDED_SIGNUP' && data.event === 'FINISH') {
-          wabaIdRecibido = data.data && data.data.waba_id
-          phoneNumberIdRecibido = data.data && data.data.phone_number_id
-        }
-      } catch {
-        // Mensajes que no son JSON (otros usos internos del SDK) — se ignoran.
-      }
-    })
-
-    async function terminarConexion() {
-      if (!codigoRecibido || !wabaIdRecibido) return
+    async function enviarAlServidor(code, wabaId) {
       mostrarEstado('Conectando tu número con el servidor…')
       btn.disabled = true
+      candidatasEl.innerHTML = ''
       try {
         const resp = await fetch('/api/whatsapp-embedded-signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: codigoRecibido, wabaId: wabaIdRecibido }),
+          body: JSON.stringify({ code, wabaId, redirectUri: REDIRECT_URI }),
         })
         const data = await resp.json()
+
+        if (data.needsChoice) {
+          mostrarEstado('Se encontró más de una cuenta de WhatsApp Business. Elige cuál conectar:', '')
+          data.candidatas.forEach((c) => {
+            const div = document.createElement('div')
+            div.className = 'candidata'
+            const numeros = c.telefonos.map((t) => t.numero).join(', ') || '(sin número aún)'
+            div.innerHTML = '<b>' + c.businessName + '</b><small>WABA ' + c.wabaId + ' — ' + numeros + '</small>'
+            div.addEventListener('click', () => {
+              // Reusa el mismo code guardado en sessionStorage (por si el
+              // usuario recargó entre medio).
+              enviarAlServidor(code, c.wabaId)
+            })
+            candidatasEl.appendChild(div)
+          })
+          btn.disabled = false
+          return
+        }
+
         if (!resp.ok || !data.ok) {
           mostrarEstado('Error: ' + (data.error || 'fallo desconocido') + '\n' + JSON.stringify(data.detail || {}), 'error')
           btn.disabled = false
           return
         }
+
+        const numeros = (data.telefonos || []).map((t) => t.numero + ' → Phone Number ID: ' + t.id).join('\n')
         mostrarEstado(
-          '¡Listo! Tu número quedó conectado.\n\n' +
-            'WABA ID: ' + wabaIdRecibido + '\n' +
-            'Phone Number ID: ' + (phoneNumberIdRecibido || '(revísalo en Meta > Configuración de la API)') +
-            '\n\nCopia el Phone Number ID y pásaselo a Claude para terminar de configurar Vercel.',
+          '¡Listo! Tu número quedó conectado.\n\nWABA ID: ' + data.wabaId + '\n\n' +
+            (numeros || '(Meta todavía no reporta el número — revísalo en Meta > Configuración de la API en un momento)') +
+            '\n\nCopia el Phone Number ID correcto (el de +51 994 347 405) y pásaselo a Claude para terminar de configurar Vercel.',
           'ok'
         )
+        // Limpiar el ?code= de la URL para que un refresh no reintente.
+        window.history.replaceState({}, document.title, REDIRECT_URI)
       } catch (err) {
         mostrarEstado('Error de red: ' + err.message, 'error')
         btn.disabled = false
@@ -166,32 +171,30 @@
     }
 
     btn.addEventListener('click', () => {
-      if (typeof FB === 'undefined') {
-        mostrarEstado('El SDK de Facebook todavía está cargando, espera un segundo y vuelve a intentar.', 'error')
+      mostrarEstado('Redirigiendo a Facebook…')
+      const url =
+        'https://www.facebook.com/v21.0/dialog/oauth' +
+        '?client_id=' + encodeURIComponent(META_APP_ID) +
+        '&config_id=' + encodeURIComponent(EMBEDDED_SIGNUP_CONFIG_ID) +
+        '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) +
+        '&response_type=code' +
+        '&override_default_response_type=true'
+      window.location.href = url
+    })
+
+    // Al volver de Facebook, la URL trae ?code=... — se procesa solo.
+    ;(function () {
+      const params = new URLSearchParams(window.location.search)
+      const code = params.get('code')
+      const errorDescription = params.get('error_description') || params.get('error_message')
+      if (errorDescription) {
+        mostrarEstado('Facebook devolvió un error: ' + errorDescription, 'error')
         return
       }
-      mostrarEstado('Abriendo el flujo de conexión de Meta…')
-      FB.login(
-        (response) => {
-          if (response.authResponse && response.authResponse.code) {
-            codigoRecibido = response.authResponse.code
-            terminarConexion()
-          } else {
-            mostrarEstado('Se canceló o no se completó la conexión.', 'error')
-          }
-        },
-        {
-          config_id: EMBEDDED_SIGNUP_CONFIG_ID,
-          response_type: 'code',
-          override_default_response_type: true,
-          extras: {
-            setup: {},
-            featureType: 'whatsapp_business_app_onboarding',
-            sessionInfoVersion: '3',
-          },
-        }
-      )
-    })
+      if (code) {
+        enviarAlServidor(code, null)
+      }
+    })()
   </script>
 </body>
 </html>
