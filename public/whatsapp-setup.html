@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Conectar WhatsApp — Victoria Modas (uso interno)</title>
+<style>
+  :root {
+    --cream: #FBF7F4;
+    --cream-dark: #F4EDE7;
+    --ink: #2B2424;
+    --soft: #5B5150;
+    --muted: #756967;
+    --clay: #9C5F4E;
+    --clay-dark: #8A5340;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Roboto', Arial, sans-serif;
+    padding: 24px;
+  }
+  .card {
+    max-width: 480px;
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--cream-dark);
+    border-radius: 4px;
+    padding: 32px;
+  }
+  h1 {
+    font-size: 1.25rem;
+    margin: 0 0 8px;
+  }
+  p {
+    color: var(--soft);
+    line-height: 1.5;
+    font-size: 0.95rem;
+  }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    background: var(--clay);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  button:hover { background: var(--clay-dark); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  #estado {
+    margin-top: 16px;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .ok { color: #2e7d32; }
+  .error { color: #b3261e; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Conectar número de WhatsApp</h1>
+    <p>
+      Herramienta interna de un solo uso para conectar tu número real de
+      WhatsApp Business (+51 994 347 405) a la plataforma de Meta, sin
+      perder la app normal del celular (coexistencia).
+    </p>
+    <p>
+      Al darle click, Meta te va a pedir iniciar sesión y confirmar. En un
+      momento te va a mostrar un código QR para escanear con el celular
+      donde tienes la app de WhatsApp Business — ahí es donde conectas tu
+      número real.
+    </p>
+    <button id="btnConectar">Conectar WhatsApp</button>
+    <div id="estado"></div>
+  </div>
+
+  <script>
+    // No son secretos: el App ID y el config_id de Embedded Signup son
+    // valores públicos (equivalentes a una "publishable key"), pensados
+    // para usarse desde el navegador. El secreto real (META_APP_SECRET)
+    // solo vive en el servidor (api/whatsapp-embedded-signup.js).
+    const META_APP_ID = '1470180548479134'
+    const EMBEDDED_SIGNUP_CONFIG_ID = '1819328749484139'
+
+    let codigoRecibido = null
+    let wabaIdRecibido = null
+    let phoneNumberIdRecibido = null
+
+    const estadoEl = document.getElementById('estado')
+    const btn = document.getElementById('btnConectar')
+
+    function mostrarEstado(texto, tipo) {
+      estadoEl.textContent = texto
+      estadoEl.className = tipo || ''
+    }
+
+    // Carga el SDK de JavaScript de Facebook.
+    window.fbAsyncInit = function () {
+      FB.init({ appId: META_APP_ID, version: 'v21.0' })
+    }
+    ;(function (d, s, id) {
+      const fjs = d.getElementsByTagName(s)[0]
+      if (d.getElementById(id)) return
+      const js = d.createElement(s)
+      js.id = id
+      js.src = 'https://connect.facebook.net/es_LA/sdk.js'
+      js.async = true
+      js.defer = true
+      js.crossOrigin = 'anonymous'
+      fjs.parentNode.insertBefore(js, fjs)
+    })(document, 'script', 'facebook-jssdk')
+
+    // Meta manda el waba_id / phone_number_id por postMessage durante el
+    // flujo (antes de que el callback de FB.login termine con el code).
+    window.addEventListener('message', (event) => {
+      if (!event.origin || !event.origin.endsWith('facebook.com')) return
+      try {
+        const data = JSON.parse(event.data)
+        if (data.type === 'WA_EMBEDDED_SIGNUP' && data.event === 'FINISH') {
+          wabaIdRecibido = data.data && data.data.waba_id
+          phoneNumberIdRecibido = data.data && data.data.phone_number_id
+        }
+      } catch {
+        // Mensajes que no son JSON (otros usos internos del SDK) — se ignoran.
+      }
+    })
+
+    async function terminarConexion() {
+      if (!codigoRecibido || !wabaIdRecibido) return
+      mostrarEstado('Conectando tu número con el servidor…')
+      btn.disabled = true
+      try {
+        const resp = await fetch('/api/whatsapp-embedded-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: codigoRecibido, wabaId: wabaIdRecibido }),
+        })
+        const data = await resp.json()
+        if (!resp.ok || !data.ok) {
+          mostrarEstado('Error: ' + (data.error || 'fallo desconocido') + '\n' + JSON.stringify(data.detail || {}), 'error')
+          btn.disabled = false
+          return
+        }
+        mostrarEstado(
+          '¡Listo! Tu número quedó conectado.\n\n' +
+            'WABA ID: ' + wabaIdRecibido + '\n' +
+            'Phone Number ID: ' + (phoneNumberIdRecibido || '(revísalo en Meta > Configuración de la API)') +
+            '\n\nCopia el Phone Number ID y pásaselo a Claude para terminar de configurar Vercel.',
+          'ok'
+        )
+      } catch (err) {
+        mostrarEstado('Error de red: ' + err.message, 'error')
+        btn.disabled = false
+      }
+    }
+
+    btn.addEventListener('click', () => {
+      if (typeof FB === 'undefined') {
+        mostrarEstado('El SDK de Facebook todavía está cargando, espera un segundo y vuelve a intentar.', 'error')
+        return
+      }
+      mostrarEstado('Abriendo el flujo de conexión de Meta…')
+      FB.login(
+        (response) => {
+          if (response.authResponse && response.authResponse.code) {
+            codigoRecibido = response.authResponse.code
+            terminarConexion()
+          } else {
+            mostrarEstado('Se canceló o no se completó la conexión.', 'error')
+          }
+        },
+        {
+          config_id: EMBEDDED_SIGNUP_CONFIG_ID,
+          response_type: 'code',
+          override_default_response_type: true,
+          extras: {
+            setup: {},
+            featureType: 'whatsapp_business_app_onboarding',
+            sessionInfoVersion: '3',
+          },
+        }
+      )
+    })
+  </script>
+</body>
+</html>

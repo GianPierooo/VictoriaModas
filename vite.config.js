@@ -85,6 +85,7 @@ function devApi() {
       mount(server, '/api/meta-conversions', 'api/meta-conversions.js')
       mount(server, '/api/culqi-cobrar', 'api/culqi-cobrar.js')
       mount(server, '/api/whatsapp-webhook', 'api/whatsapp-webhook.js')
+      mount(server, '/api/whatsapp-embedded-signup', 'api/whatsapp-embedded-signup.js')
     },
   }
 }
