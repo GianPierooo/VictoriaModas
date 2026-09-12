@@ -182,6 +182,39 @@
     background: linear-gradient(90deg, #F4EDE7 25%, #EFD0CC 50%, #F4EDE7 75%);
     background-size: 200% 100%;
   }
+
+  /* Brillo sutil que recorre la barra de progreso rellena (FreeShippingBar)
+     mientras aún no se desbloquea el envío gratis — un "sheen" discreto,
+     no un efecto glow/neón (nada de blur ni color saturado). */
+  @keyframes progressSheen {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-progress-sheen {
+    animation: progressSheen 2.2s ease-in-out infinite;
+  }
+
+  /* Aparición suave del ícono de check al desbloquear el envío gratis —
+     escala controlada sin rebote (ease-out, un solo paso). */
+  @keyframes checkIn {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-check-in {
+    animation: checkIn 0.35s ease-out;
+  }
   
   /* Truncate text con múltiples líneas */
   .line-clamp-2 {
