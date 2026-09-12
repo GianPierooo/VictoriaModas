@@ -161,16 +161,19 @@ export default function GuiaTallas({ productoId }) {
                 </p>
 
                 {modo === 'medidas' ? (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClass}>Cintura (cm)</label>
-                      <input type="number" inputMode="numeric" min="0" value={cintura} onChange={(e) => setCintura(e.target.value)} className={inputClass} placeholder="70" />
+                  <>
+                    <TallaFitSilueta cintura={cintura ? Number(cintura) : null} cadera={cadera ? Number(cadera) : null} />
+                    <div className="mt-2 grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelClass}>Cintura (cm)</label>
+                        <input type="number" inputMode="numeric" min="0" value={cintura} onChange={(e) => setCintura(e.target.value)} className={inputClass} placeholder="70" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Cadera (cm)</label>
+                        <input type="number" inputMode="numeric" min="0" value={cadera} onChange={(e) => setCadera(e.target.value)} className={inputClass} placeholder="96" />
+                      </div>
                     </div>
-                    <div>
-                      <label className={labelClass}>Cadera (cm)</label>
-                      <input type="number" inputMode="numeric" min="0" value={cadera} onChange={(e) => setCadera(e.target.value)} className={inputClass} placeholder="96" />
-                    </div>
-                  </div>
+                  </>
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -212,6 +215,8 @@ export default function GuiaTallas({ productoId }) {
                     <p className="mb-1 text-[11px] uppercase tracking-luxe text-clay">Talla recomendada</p>
                     <p className="mb-5 font-serif text-4xl font-light text-ink">{resultadoMedidas.recomendada.tallaNombre}</p>
                     <TallaFitSilueta
+                      cintura={Number(cintura)}
+                      cadera={Number(cadera)}
                       cinturaEstado={resultadoMedidas.recomendada.cinturaEstado}
                       caderaEstado={resultadoMedidas.recomendada.caderaEstado}
                     />
