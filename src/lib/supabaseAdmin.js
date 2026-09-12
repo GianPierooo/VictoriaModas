@@ -168,6 +168,60 @@ export async function replaceVariantes(productoId, variantes) {
 }
 
 // ---------------------------------------------------------
+// Guía de tallas inteligente — medidas reales por prenda + talla (cintura/
+// cadera en cm y/o peso/altura). Ver src/lib/tallas.js para la lógica de
+// recomendación que consume estos datos del lado público.
+// ---------------------------------------------------------
+export async function getMedidasProducto(productoId) {
+  if (guard(true)) return []
+  const { data, error } = await supabase.from('tallas_medidas').select('*').eq('producto_id', productoId)
+  if (error) throw error
+  return data
+}
+
+// Mismo patrón que replaceVariantes: reemplaza TODAS las filas de medidas
+// de un producto por las dadas. `filas` trae una entrada por talla del
+// catálogo (aunque esté vacía) — solo se guardan las que tengan al menos un
+// número cargado; las que quedaron vacías se borran si ya existían.
+export async function replaceMedidasTallas(productoId, filas) {
+  const { data: actuales, error: errList } = await supabase
+    .from('tallas_medidas')
+    .select('id, talla_id')
+    .eq('producto_id', productoId)
+  if (errList) throw errList
+
+  const numOrNull = (v) => (v === '' || v == null ? null : Number(v))
+  const conDatos = filas.filter((f) =>
+    [f.cintura_min_cm, f.cintura_max_cm, f.cadera_min_cm, f.cadera_max_cm, f.peso_min_kg, f.peso_max_kg, f.altura_min_cm, f.altura_max_cm].some(
+      (v) => v !== '' && v != null
+    )
+  )
+  const tallasConDatos = new Set(conDatos.map((f) => f.talla_id))
+  const idsABorrar = (actuales || []).filter((a) => !tallasConDatos.has(a.talla_id)).map((a) => a.id)
+  if (idsABorrar.length) {
+    const { error } = await supabase.from('tallas_medidas').delete().in('id', idsABorrar)
+    if (error) throw error
+  }
+
+  const filasAGuardar = conDatos.map((f) => ({
+    producto_id: productoId,
+    talla_id: f.talla_id,
+    cintura_min_cm: numOrNull(f.cintura_min_cm),
+    cintura_max_cm: numOrNull(f.cintura_max_cm),
+    cadera_min_cm: numOrNull(f.cadera_min_cm),
+    cadera_max_cm: numOrNull(f.cadera_max_cm),
+    peso_min_kg: numOrNull(f.peso_min_kg),
+    peso_max_kg: numOrNull(f.peso_max_kg),
+    altura_min_cm: numOrNull(f.altura_min_cm),
+    altura_max_cm: numOrNull(f.altura_max_cm),
+  }))
+  if (filasAGuardar.length) {
+    const { error } = await supabase.from('tallas_medidas').upsert(filasAGuardar, { onConflict: 'producto_id,talla_id' })
+    if (error) throw error
+  }
+}
+
+// ---------------------------------------------------------
 // Stock (vista general — todas las variantes de todos los productos, para
 // la página /admin/stock). Separado de `listProductosAdmin` a propósito:
 // esa es sobre productos (nombre/fotos/descripción), esta es sobre

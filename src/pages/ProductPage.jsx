@@ -13,6 +13,7 @@ import Layout from '../components/Layout.jsx'
 import QuantitySelector from '../components/QuantitySelector'
 import ProductCard from '../components/ProductCard.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
+import GuiaTallas from '../components/GuiaTallas.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { COLOR_HEX } from '../utils/colorMap.js'
 import { useProducts } from '../hooks/useProducts.js'
@@ -341,7 +342,10 @@ export default function ProductPage() {
 
                 {/* Talla */}
                 <div className="mb-8">
-                  <div className="mb-3 text-[10px] uppercase tracking-luxe text-ink-muted">Talla</div>
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-[10px] uppercase tracking-luxe text-ink-muted">Talla</span>
+                    <GuiaTallas productoId={productId} />
+                  </div>
                   <div className="flex flex-wrap gap-2.5">
                     {product.sizes.map((size) => {
                       const disabled = unavailableSizes.includes(size)

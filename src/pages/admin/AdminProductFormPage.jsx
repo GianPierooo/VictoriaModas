@@ -10,6 +10,8 @@ import {
   replaceVariantes,
   uploadProductoImagen,
   deleteProductoImagen,
+  getMedidasProducto,
+  replaceMedidasTallas,
 } from '../../lib/supabaseAdmin.js'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
@@ -17,6 +19,30 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
 const labelClass = 'mb-2 block text-[10px] uppercase tracking-luxe text-ink-muted'
 const inputClass =
   'w-full rounded-lg border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/60 focus:border-clay focus:outline-none'
+
+const MEDIDA_CAMPOS = [
+  'cintura_min_cm', 'cintura_max_cm', 'cadera_min_cm', 'cadera_max_cm',
+  'peso_min_kg', 'peso_max_kg', 'altura_min_cm', 'altura_max_cm',
+]
+
+function medidaVacia(talla) {
+  const fila = { talla_id: talla.id, talla_nombre: talla.nombre }
+  for (const campo of MEDIDA_CAMPOS) fila[campo] = ''
+  return fila
+}
+
+// Combina las tallas del catálogo (siempre todas, para poder cargar la que
+// falte) con las filas ya guardadas en tallas_medidas para este producto.
+function combinarMedidas(tallasCatalogo, filasGuardadas) {
+  const porTalla = new Map(filasGuardadas.map((f) => [f.talla_id, f]))
+  return tallasCatalogo.map((t) => {
+    const guardada = porTalla.get(t.id)
+    if (!guardada) return medidaVacia(t)
+    const fila = { talla_id: t.id, talla_nombre: t.nombre }
+    for (const campo of MEDIDA_CAMPOS) fila[campo] = guardada[campo] ?? ''
+    return fila
+  })
+}
 
 function emptyVariante() {
   return {
@@ -48,9 +74,12 @@ export default function AdminProductFormPage() {
   const [form, setForm] = useState({ nombre: '', categoria_id: '', tela: '', descripcion: '', badge: '', activo: true })
   const [variantes, setVariantes] = useState([])
   const [imagenes, setImagenes] = useState([])
+  const [medidas, setMedidas] = useState([])
   const [colorImagenNueva, setColorImagenNueva] = useState('')
+  const [medidasGuardadas, setMedidasGuardadas] = useState([])
   const [loading, setLoading] = useState(!isNew)
   const [guardando, setGuardando] = useState(false)
+  const [guardandoMedidas, setGuardandoMedidas] = useState(false)
 
   useEffect(() => {
     listCategorias().then(setCategorias).catch(() => {})
@@ -94,8 +123,16 @@ export default function AdminProductFormPage() {
       })
       .catch((err) => toast.error('No se pudo cargar el producto: ' + err.message))
       .finally(() => setLoading(false))
+    getMedidasProducto(id).then(setMedidasGuardadas).catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  // Combina el catálogo de tallas (siempre completo) con lo ya guardado —
+  // recién cuando ambos llegaron (pueden resolver en cualquier orden).
+  useEffect(() => {
+    if (tallas.length === 0) return
+    setMedidas(combinarMedidas(tallas, medidasGuardadas))
+  }, [tallas, medidasGuardadas])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -160,6 +197,24 @@ export default function AdminProductFormPage() {
       toast.error('No se pudo guardar: ' + (err.message.includes('duplicate') ? 'ya existe una variante con esa talla y color.' : err.message))
     } finally {
       setGuardando(false)
+    }
+  }
+
+  const actualizarMedida = (tallaId, campo, valor) => {
+    setMedidas((prev) => prev.map((m) => (m.talla_id === tallaId ? { ...m, [campo]: valor } : m)))
+  }
+
+  const guardarMedidas = async () => {
+    setGuardandoMedidas(true)
+    try {
+      await replaceMedidasTallas(productoId, medidas)
+      toast.success('Guía de tallas guardada.')
+      const data = await getMedidasProducto(productoId)
+      setMedidasGuardadas(data)
+    } catch (err) {
+      toast.error('No se pudo guardar la guía de tallas: ' + err.message)
+    } finally {
+      setGuardandoMedidas(false)
     }
   }
 
@@ -419,6 +474,68 @@ export default function AdminProductFormPage() {
               className="mt-6 rounded-full bg-ink px-8 py-3 text-xs uppercase tracking-[0.15em] text-cream transition-colors hover:bg-clay disabled:opacity-60"
             >
               Guardar variantes
+            </button>
+          </div>
+
+          {/* ---- Guía de tallas ---- */}
+          <div className="mb-10 rounded-xl bg-white p-6 shadow-soft ring-1 ring-ink/10">
+            <h2 className="mb-2 font-serif text-lg font-light text-ink">Guía de tallas inteligente</h2>
+            <p className="mb-5 max-w-2xl text-xs font-light leading-relaxed text-ink-muted">
+              Mide la prenda real (plano, cinta métrica, sin estirar la tela) y carga el rango que le queda bien a cada
+              talla. <strong className="text-ink-soft">Cintura/Cadera</strong> es el modo preciso; <strong className="text-ink-soft">Peso/Altura</strong> es
+              opcional, para quien no sabe sus medidas exactas — solo aparece en la web si lo llenas. Deja vacía una talla
+              que no aplique a esta prenda.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-left text-sm">
+                <thead>
+                  <tr className="text-[10px] uppercase tracking-luxe text-ink-muted">
+                    <th className="px-2 py-2">Talla</th>
+                    <th className="px-2 py-2" colSpan={2}>Cintura (cm)</th>
+                    <th className="px-2 py-2" colSpan={2}>Cadera (cm)</th>
+                    <th className="px-2 py-2" colSpan={2}>Peso (kg)</th>
+                    <th className="px-2 py-2" colSpan={2}>Altura (cm)</th>
+                  </tr>
+                  <tr className="text-[10px] uppercase tracking-luxe text-ink-muted/70">
+                    <th></th>
+                    <th className="px-2 pb-2">Min</th>
+                    <th className="px-2 pb-2">Max</th>
+                    <th className="px-2 pb-2">Min</th>
+                    <th className="px-2 pb-2">Max</th>
+                    <th className="px-2 pb-2">Min</th>
+                    <th className="px-2 pb-2">Max</th>
+                    <th className="px-2 pb-2">Min</th>
+                    <th className="px-2 pb-2">Max</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {medidas.map((m) => (
+                    <tr key={m.talla_id} className="border-t border-ink/5">
+                      <td className="px-2 py-2 font-medium text-ink">{m.talla_nombre}</td>
+                      {MEDIDA_CAMPOS.map((campo) => (
+                        <td key={campo} className="px-2 py-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.5"
+                            value={m[campo]}
+                            onChange={(e) => actualizarMedida(m.talla_id, campo, e.target.value)}
+                            className="w-16 rounded-md border border-ink/15 px-2 py-1.5 text-sm"
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button
+              type="button"
+              onClick={guardarMedidas}
+              disabled={guardandoMedidas}
+              className="mt-6 rounded-full bg-ink px-8 py-3 text-xs uppercase tracking-[0.15em] text-cream transition-colors hover:bg-clay disabled:opacity-60"
+            >
+              Guardar guía de tallas
             </button>
           </div>
         </>
