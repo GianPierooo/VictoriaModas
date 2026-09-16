@@ -4,33 +4,38 @@
 // Reactiva al total real del carrito (no un texto fijo). Se usa en
 // CartDrawer y CartPage. Estética propia (clay/cream/ink) — sin colores
 // saturados, glow ni rebotes, ver CLAUDE.md. Microinteracciones:
-//  - El monto restante se anima al cambiar (useAnimatedNumber), en vez de
-//    saltar de golpe.
+//  - El ancho de la barra se anima vía CSS (transition-[width], no JS) al
+//    cambiar el total.
 //  - Un brillo sutil ("sheen") recorre el relleno mientras no se
 //    desbloquea, para que se sienta viva sin ser ruidosa.
 //  - Al desbloquear, el ícono cambia de camión a check con una aparición
 //    suave (escala controlada, sin rebote).
-// Respeta prefers-reduced-motion: sin el sheen ni el conteo animado.
+//
+// El MONTO EN TEXTO ("Te faltan S/ X") se muestra siempre exacto, sin
+// animar — bug real encontrado y corregido: la primera versión animaba el
+// número con un hook propio (useAnimatedNumber) que, en la transición de
+// oculta→visible de la barra, podía quedarse pegado mostrando el valor
+// placeholder de antes de cargar el precio (ej. "Te faltan S/60" con el
+// carrito ya en S/59.9, cuando debía decir "S/0.1") — encontrado
+// navegando el sitio real, reproducible tras recarga. Mostrar SIEMPRE el
+// número real y correcto pesa más que la animación del texto — el ancho
+// de la barra sigue animado (CSS puro, sin ese riesgo) para no perder
+// toda la sensación de movimiento.
+// Respeta prefers-reduced-motion: sin el sheen.
 // ============================================================
 import { TruckIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { formatPEN, FREE_SHIPPING_THRESHOLD } from '../utils/price.js'
-import { useAnimatedNumber } from '../hooks/useAnimatedNumber.js'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 
 export default function FreeShippingBar({ total, allPriced }) {
   const reducedMotion = usePrefersReducedMotion()
 
+  // Con líneas "a consultar" el total no es confiable — no mostrar la barra.
+  if (!allPriced) return null
+
   const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total)
   const progress = Math.min(100, (total / FREE_SHIPPING_THRESHOLD) * 100)
   const unlocked = remaining === 0
-
-  // Los hooks deben llamarse siempre en el mismo orden — el `return null`
-  // por !allPriced va DESPUÉS de declararlos, nunca antes.
-  const remainingAnimado = useAnimatedNumber(remaining, { duration: reducedMotion ? 0 : 450 })
-  const progressAnimado = useAnimatedNumber(progress, { duration: reducedMotion ? 0 : 450 })
-
-  // Con líneas "a consultar" el total no es confiable — no mostrar la barra.
-  if (!allPriced) return null
 
   return (
     <div className="rounded-lg bg-cream px-4 py-3.5">
@@ -47,14 +52,14 @@ export default function FreeShippingBar({ total, allPriced }) {
           <span className="text-clay">¡Envío gratis desbloqueado!</span>
         ) : (
           <span>
-            Te faltan <span className="font-normal text-clay">{formatPEN(remainingAnimado)}</span> para envío gratis
+            Te faltan <span className="font-normal text-clay">{formatPEN(remaining)}</span> para envío gratis
           </span>
         )}
       </p>
       <div className="h-1 w-full overflow-hidden rounded-full bg-ink/10">
         <div
           className="relative h-full overflow-hidden rounded-full bg-clay transition-[width] duration-500 ease-out"
-          style={{ width: `${progressAnimado}%` }}
+          style={{ width: `${progress}%` }}
         >
           {!unlocked && !reducedMotion && (
             <span
