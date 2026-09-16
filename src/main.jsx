@@ -5,6 +5,7 @@ import { ToastProvider } from './context/ToastContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { WishlistProvider } from './context/WishlistContext.jsx'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
+import ProfileCompletionGate from './components/ProfileCompletionGate.jsx'
 import PageLoader from './components/PageLoader.jsx'
 import RequireRole from './components/RequireRole.jsx'
 import { initMetaPixel } from './lib/metaPixel.js'
@@ -158,6 +159,7 @@ createRoot(document.getElementById('root')).render(
         <CartProvider>
           <WishlistProvider>
             <RouterProvider router={router} />
+            <ProfileCompletionGate />
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>

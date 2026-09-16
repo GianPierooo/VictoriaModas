@@ -124,33 +124,9 @@ function LoggedInPanel({ user, profile, onLogout }) {
     navigate('/')
   }
 
-  // Cuenta creada con Google (o alguna vieja de antes) sin nombre/teléfono
-  // — se pide completarlo antes de dejar ver el resto de "Mi cuenta". El
-  // registro normal ya pide ambos datos al crear la cuenta; este gate
-  // atrapa el hueco de Google (que solo trae el correo).
-  const perfilIncompleto = !profile?.nombre?.trim() || !profile?.telefono?.trim()
-
-  if (perfilIncompleto) {
-    return (
-      <div className="w-full">
-        <div className="mb-10 text-center">
-          <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Mi cuenta</p>
-          <h1 className="mb-3 font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl">¡Ya casi!</h1>
-          <p className="font-light text-ink-soft">{user.email}</p>
-        </div>
-        <CompleteProfileGate profile={profile} />
-        <div className="mt-8 text-center">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="text-[11px] uppercase tracking-[0.1em] text-ink-muted transition-colors hover:text-ink cursor-pointer"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      </div>
-    )
-  }
+  // Perfil incompleto (Google Sign-In sin nombre/teléfono) ya lo bloquea
+  // ProfileCompletionGate GLOBALMENTE (ver main.jsx) antes de que se pueda
+  // llegar a ver nada de "Mi cuenta" — no hace falta repetir el gate acá.
 
   return (
     <div className="w-full">
@@ -201,85 +177,6 @@ function LoggedInPanel({ user, profile, onLogout }) {
         </button>
       </div>
     </div>
-  )
-}
-
-function CompleteProfileGate({ profile }) {
-  const { updateProfile } = useAuth()
-  const toast = useToast()
-  const parsed = parseTelefono(profile?.telefono)
-  const [nombre, setNombre] = useState(profile?.nombre || '')
-  const [telefonoPrefix, setTelefonoPrefix] = useState(parsed.prefix)
-  const [telefonoNumero, setTelefonoNumero] = useState(parsed.numero)
-  const [errors, setErrors] = useState({})
-  const [guardando, setGuardando] = useState(false)
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    const nextErrors = {}
-    if (!nombre.trim()) nextErrors.nombre = true
-    if (!telefonoNumero.trim()) nextErrors.telefono = true
-    if (Object.keys(nextErrors).length) {
-      setErrors(nextErrors)
-      return
-    }
-    const telefono = `${telefonoPrefix} ${telefonoNumero.trim()}`
-    setGuardando(true)
-    // Al guardar, updateProfile() actualiza el `profile` del contexto — este
-    // componente desaparece solo (LoggedInPanel deja de considerarlo
-    // incompleto) sin necesidad de un callback aparte.
-    const { error } = await updateProfile({ nombre: nombre.trim(), telefono })
-    setGuardando(false)
-    if (error) {
-      toast.error('No se pudo guardar: ' + error.message)
-      return
-    }
-    toast.success('¡Listo! Ya tienes tu cuenta completa.')
-  }
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="mx-auto max-w-sm space-y-7 rounded-2xl bg-white p-6 text-left shadow-soft ring-1 ring-ink/10 sm:p-8"
-    >
-      <p className="font-light leading-relaxed text-ink-soft">
-        Nos falta tu nombre y teléfono para poder atenderte bien en tus pedidos.
-      </p>
-      <div>
-        <label htmlFor="cp-nombre" className={labelClass}>Nombre completo *</label>
-        <input
-          type="text"
-          id="cp-nombre"
-          autoComplete="name"
-          value={nombre}
-          onChange={(e) => {
-            setNombre(e.target.value)
-            if (errors.nombre) setErrors((p) => ({ ...p, nombre: false }))
-          }}
-          className={inputClass(errors.nombre)}
-        />
-      </div>
-      <PhoneField
-        id="cp-telefono"
-        label="Teléfono *"
-        prefix={telefonoPrefix}
-        onPrefixChange={setTelefonoPrefix}
-        number={telefonoNumero}
-        onNumberChange={(v) => {
-          setTelefonoNumero(v)
-          if (errors.telefono) setErrors((p) => ({ ...p, telefono: false }))
-        }}
-        hasError={errors.telefono}
-      />
-      <button
-        type="submit"
-        disabled={guardando}
-        className="w-full rounded-full bg-ink px-9 py-3.5 text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay disabled:opacity-60"
-      >
-        {guardando ? 'Guardando…' : 'Continuar'}
-      </button>
-    </form>
   )
 }
 
