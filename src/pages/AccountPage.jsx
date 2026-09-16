@@ -576,6 +576,7 @@ function RegisterForm({ onDone }) {
   const { signUp } = useAuth()
   const toast = useToast()
   const [formData, setFormData] = useState({ nombre: '', email: '', password: '' })
+  const [confirmarEmail, setConfirmarEmail] = useState('')
   const [confirmarPassword, setConfirmarPassword] = useState('')
   const [telefonoPrefix, setTelefonoPrefix] = useState(DEFAULT_PHONE_COUNTRY.code)
   const [telefonoNumero, setTelefonoNumero] = useState('')
@@ -595,8 +596,10 @@ function RegisterForm({ onDone }) {
     const fuerza = evaluarContrasena(formData.password)
     const nextErrors = {}
     const telefonoValido = telefonoNumero.trim() && telefonoTieneLongitudValida(telefonoPrefix, telefonoNumero)
+    const emailConfirmado = confirmarEmail.trim().toLowerCase() === formData.email.trim().toLowerCase()
     if (!formData.nombre.trim()) nextErrors.nombre = true
     if (!esEmailValido(formData.email)) nextErrors.email = true
+    if (!emailConfirmado) nextErrors.confirmarEmail = true
     if (!telefonoValido) nextErrors.telefono = true
     if (!fuerza.valida) nextErrors.password = true
     if (confirmarPassword !== formData.password) nextErrors.confirmar = true
@@ -605,6 +608,8 @@ function RegisterForm({ onDone }) {
       setErrors(nextErrors)
       if (nextErrors.email && formData.email.trim() && !nextErrors.nombre) {
         toast.error('Ingresa un correo válido.')
+      } else if (nextErrors.confirmarEmail && !nextErrors.email) {
+        toast.error('Los correos no coinciden.')
       } else if (nextErrors.telefono && !nextErrors.nombre && !nextErrors.email) {
         toast.error(telefonoNumero.trim() ? 'Ese teléfono no tiene la cantidad de dígitos correcta.' : 'Ingresa tu teléfono.')
       } else if (nextErrors.password && formData.password) {
@@ -678,6 +683,27 @@ function RegisterForm({ onDone }) {
           onChange={handleChange}
           placeholder="tucorreo@ejemplo.com"
           className={inputClass(errors.email)}
+        />
+      </div>
+      <div>
+        <label htmlFor="reg-email-confirmar" className={labelClass}>Confirma tu correo *</label>
+        <input
+          type="email"
+          id="reg-email-confirmar"
+          name="confirmarEmail"
+          autoComplete="off"
+          value={confirmarEmail}
+          onChange={(e) => {
+            setConfirmarEmail(e.target.value)
+            if (errors.confirmarEmail) setErrors((prev) => ({ ...prev, confirmarEmail: false }))
+          }}
+          // Sin pegar a propósito: si el correo del campo de arriba tiene un
+          // error de tipeo, pegarlo acá también anularía el sentido de
+          // pedirlo dos veces (el correo de confirmación de Supabase nunca
+          // llegaría, y la clienta quedaría varada sin saber por qué).
+          onPaste={(e) => e.preventDefault()}
+          placeholder="Escríbelo de nuevo"
+          className={inputClass(errors.confirmarEmail)}
         />
       </div>
       <PasswordField
