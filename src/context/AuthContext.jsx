@@ -80,18 +80,47 @@ export function AuthProvider({ children }) {
     }
   }, [session?.user?.id])
 
-  const signUp = async ({ email, password, nombre, telefono }) => {
+  const signUp = async ({ email, password, nombre, telefono, captchaToken }) => {
     if (!supabase) return { error: { message: 'Supabase no está configurado.' } }
     return supabase.auth.signUp({
       email,
       password,
-      options: { data: { nombre, telefono } }, // → trigger los copia a `perfiles`
+      options: {
+        data: { nombre, telefono }, // → trigger los copia a `perfiles`
+        captchaToken: captchaToken || undefined,
+      },
     })
   }
 
-  const signIn = async ({ email, password }) => {
+  const signIn = async ({ email, password, captchaToken }) => {
     if (!supabase) return { error: { message: 'Supabase no está configurado.' } }
-    return supabase.auth.signInWithPassword({ email, password })
+    return supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken: captchaToken || undefined },
+    })
+  }
+
+  // "Olvidé mi contraseña": manda un correo con un enlace mágico que trae
+  // de vuelta a /restablecer-contrasena con una sesión de recuperación ya
+  // activa (Supabase la arma sola al procesar el enlace).
+  // A propósito SIEMPRE se devuelve éxito de cara a la clienta (ver
+  // ForgotPasswordForm) aunque el correo no exista — decirlo distinto
+  // permitiría a alguien usar este formulario para averiguar qué correos
+  // ya tienen cuenta (enumeración de usuarios).
+  const resetPasswordForEmail = async (email, captchaToken) => {
+    if (!supabase) return { error: { message: 'Supabase no está configurado.' } }
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/restablecer-contrasena`,
+      captchaToken: captchaToken || undefined,
+    })
+  }
+
+  // Define la nueva contraseña — solo funciona con la sesión de
+  // recuperación que Supabase activa sola al volver del enlace del correo.
+  const updatePassword = async (password) => {
+    if (!supabase) return { error: { message: 'Supabase no está configurado.' } }
+    return supabase.auth.updateUser({ password })
   }
 
   // Entrar con Google. Redirige a Google y vuelve a /mi-cuenta con la sesión
@@ -142,6 +171,8 @@ export function AuthProvider({ children }) {
       signInWithGoogle,
       signOut,
       updateProfile,
+      resetPasswordForEmail,
+      updatePassword,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, profile, loading, profileLoading]

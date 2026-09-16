@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ClipboardIcon, CheckIcon, ShareIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import PhoneField from '../components/PhoneField.jsx'
+import PasswordField from '../components/PasswordField.jsx'
 import GoogleSignInButton from '../components/GoogleSignInButton.jsx'
+import Turnstile from '../components/Turnstile.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
@@ -11,6 +13,8 @@ import { DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES } from '../utils/phoneCountries.
 import { listVentasCliente } from '../lib/supabaseAdmin.js'
 import { obtenerOCrearCodigoReferido, listarRecompensasReferidos, VALOR_REFERIDO_SOLES } from '../lib/referidos.js'
 import { formatPEN } from '../utils/price.js'
+import { esEmailValido, evaluarContrasena } from '../lib/authValidation.js'
+import { mapAuthError } from '../lib/authErrors.js'
 
 // "+51 999888777" → { prefix: '+51', numero: '999888777' } (tolerante a
 // teléfonos guardados sin prefijo, de antes de que existiera este campo).
@@ -398,52 +402,58 @@ function ReferidosTab({ userId, nombre }) {
 }
 
 function AuthForms() {
-  const [mode, setMode] = useState('login') // 'login' | 'register'
+  const [mode, setMode] = useState('login') // 'login' | 'register' | 'forgot'
+
+  const titulos = {
+    login: <>Bienvenida de <span className="italic text-clay">vuelta</span></>,
+    register: <>Crea tu <span className="italic text-clay">cuenta</span></>,
+    forgot: <>Recupera tu <span className="italic text-clay">acceso</span></>,
+  }
 
   return (
     <div className="w-full">
       <div className="mb-10 text-center">
         <p className="mb-4 text-[11px] uppercase tracking-luxe text-clay">Mi cuenta</p>
-        <h1 className="font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl">
-          {mode === 'login' ? (
-            <>Bienvenida de <span className="italic text-clay">vuelta</span></>
-          ) : (
-            <>Crea tu <span className="italic text-clay">cuenta</span></>
-          )}
-        </h1>
+        <h1 className="font-serif text-4xl font-light leading-[1.05] text-ink md:text-5xl">{titulos[mode]}</h1>
       </div>
 
-      {/* Selector login/registro */}
-      <div className="mb-9 flex justify-center gap-2 rounded-full bg-cream-dark p-1">
-        {[
-          { key: 'login', label: 'Ingresar' },
-          { key: 'register', label: 'Registrarme' },
-        ].map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setMode(t.key)}
-            className={`flex-1 rounded-full px-5 py-2.5 text-xs uppercase tracking-[0.15em] transition-colors duration-300 ${
-              mode === t.key ? 'bg-ink text-cream' : 'text-ink-soft hover:text-ink'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* Selector login/registro — oculto en el flujo de recuperación */}
+      {mode !== 'forgot' && (
+        <div className="mb-9 flex justify-center gap-2 rounded-full bg-cream-dark p-1">
+          {[
+            { key: 'login', label: 'Ingresar' },
+            { key: 'register', label: 'Registrarme' },
+          ].map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setMode(t.key)}
+              className={`flex-1 rounded-full px-5 py-2.5 text-xs uppercase tracking-[0.15em] transition-colors duration-300 ${
+                mode === t.key ? 'bg-ink text-cream' : 'text-ink-soft hover:text-ink'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {mode === 'login' ? <LoginForm /> : <RegisterForm onDone={() => setMode('login')} />}
+      {mode === 'login' && <LoginForm onForgotPassword={() => setMode('forgot')} />}
+      {mode === 'register' && <RegisterForm onDone={() => setMode('login')} />}
+      {mode === 'forgot' && <ForgotPasswordForm onBack={() => setMode('login')} />}
     </div>
   )
 }
 
-function LoginForm() {
+function LoginForm({ onForgotPassword }) {
   const { signIn } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const [resetCaptcha, setResetCaptcha] = useState(0)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -454,21 +464,21 @@ function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     const nextErrors = {}
-    if (!formData.email.trim()) nextErrors.email = true
+    if (!esEmailValido(formData.email)) nextErrors.email = true
     if (!formData.password) nextErrors.password = true
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
+      if (nextErrors.email && formData.email.trim()) toast.error('Ingresa un correo válido.')
       return
     }
 
     setSubmitting(true)
-    const { error } = await signIn(formData)
+    const { error } = await signIn({ ...formData, captchaToken })
     setSubmitting(false)
+    setResetCaptcha((n) => n + 1) // el token de Turnstile es de un solo uso
 
     if (error) {
-      toast.error(error.message === 'Invalid login credentials'
-        ? 'Correo o contraseña incorrectos.'
-        : error.message)
+      toast.error(mapAuthError(error))
       return
     }
     toast.success('¡Bienvenida de vuelta!')
@@ -493,18 +503,24 @@ function LoginForm() {
         />
       </div>
       <div>
-        <label htmlFor="password" className={labelClass}>Contraseña *</label>
-        <input
-          type="password"
+        <PasswordField
           id="password"
           name="password"
-          autoComplete="current-password"
+          label="Contraseña *"
           value={formData.password}
           onChange={handleChange}
-          placeholder="••••••••"
-          className={inputClass(errors.password)}
+          autoComplete="current-password"
+          hasError={errors.password}
         />
+        <button
+          type="button"
+          onClick={onForgotPassword}
+          className="mt-2 text-[11px] uppercase tracking-[0.1em] text-clay underline decoration-clay/40 underline-offset-4 transition-colors hover:text-clay-dark cursor-pointer"
+        >
+          ¿Olvidaste tu contraseña?
+        </button>
       </div>
+      <Turnstile onToken={setCaptchaToken} resetToken={resetCaptcha} />
       <button
         type="submit"
         disabled={submitting}
@@ -520,10 +536,13 @@ function RegisterForm({ onDone }) {
   const { signUp } = useAuth()
   const toast = useToast()
   const [formData, setFormData] = useState({ nombre: '', email: '', password: '' })
+  const [confirmarPassword, setConfirmarPassword] = useState('')
   const [telefonoPrefix, setTelefonoPrefix] = useState(DEFAULT_PHONE_COUNTRY.code)
   const [telefonoNumero, setTelefonoNumero] = useState('')
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const [resetCaptcha, setResetCaptcha] = useState(0)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -533,14 +552,21 @@ function RegisterForm({ onDone }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const fuerza = evaluarContrasena(formData.password)
     const nextErrors = {}
     if (!formData.nombre.trim()) nextErrors.nombre = true
-    if (!formData.email.trim()) nextErrors.email = true
-    if (!formData.password || formData.password.length < 6) nextErrors.password = true
+    if (!esEmailValido(formData.email)) nextErrors.email = true
+    if (!fuerza.valida) nextErrors.password = true
+    if (confirmarPassword !== formData.password) nextErrors.confirmar = true
+
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
-      if (nextErrors.password && formData.password) {
-        toast.error('La contraseña debe tener al menos 6 caracteres.')
+      if (nextErrors.email && formData.email.trim() && !nextErrors.nombre) {
+        toast.error('Ingresa un correo válido.')
+      } else if (nextErrors.password && formData.password) {
+        toast.error('La contraseña debe tener 8+ caracteres, con letras y números.')
+      } else if (nextErrors.confirmar && !nextErrors.password) {
+        toast.error('Las contraseñas no coinciden.')
       }
       return
     }
@@ -549,13 +575,12 @@ function RegisterForm({ onDone }) {
     const telefono = telefonoNumero.trim() ? `${telefonoPrefix} ${telefonoNumero.trim()}` : ''
 
     setSubmitting(true)
-    const { error } = await signUp({ ...formData, telefono })
+    const { error } = await signUp({ ...formData, telefono, captchaToken })
     setSubmitting(false)
+    setResetCaptcha((n) => n + 1)
 
     if (error) {
-      toast.error(error.message === 'User already registered'
-        ? 'Ya existe una cuenta con ese correo — intenta ingresar.'
-        : error.message)
+      toast.error(mapAuthError(error))
       return
     }
     toast.success('Cuenta creada. Ya puedes ingresar.')
@@ -600,25 +625,126 @@ function RegisterForm({ onDone }) {
           className={inputClass(errors.email)}
         />
       </div>
-      <div>
-        <label htmlFor="reg-password" className={labelClass}>Contraseña *</label>
-        <input
-          type="password"
-          id="reg-password"
-          name="password"
-          autoComplete="new-password"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="Mínimo 6 caracteres"
-          className={inputClass(errors.password)}
-        />
-      </div>
+      <PasswordField
+        id="reg-password"
+        name="password"
+        label="Contraseña *"
+        value={formData.password}
+        onChange={handleChange}
+        autoComplete="new-password"
+        placeholder="Mínimo 8 caracteres"
+        hasError={errors.password}
+        mostrarFuerza
+      />
+      <PasswordField
+        id="reg-password-confirmar"
+        name="confirmarPassword"
+        label="Confirma tu contraseña *"
+        value={confirmarPassword}
+        onChange={(e) => {
+          setConfirmarPassword(e.target.value)
+          if (errors.confirmar) setErrors((p) => ({ ...p, confirmar: false }))
+        }}
+        autoComplete="new-password"
+        placeholder="Repite la contraseña"
+        hasError={errors.confirmar}
+      />
+      <Turnstile onToken={setCaptchaToken} resetToken={resetCaptcha} />
       <button
         type="submit"
         disabled={submitting}
         className="w-full rounded-full bg-ink px-9 py-4 text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay disabled:opacity-60"
       >
         {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
+      </button>
+    </form>
+  )
+}
+
+function ForgotPasswordForm({ onBack }) {
+  const { resetPasswordForEmail } = useAuth()
+  const toast = useToast()
+  const [email, setEmail] = useState('')
+  const [error, setError] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [enviado, setEnviado] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!esEmailValido(email)) {
+      setError(true)
+      toast.error('Ingresa un correo válido.')
+      return
+    }
+    setSubmitting(true)
+    const { error: err } = await resetPasswordForEmail(email, captchaToken)
+    setSubmitting(false)
+
+    // Mensaje SIEMPRE igual, exista o no la cuenta — evita que alguien use
+    // este formulario para averiguar qué correos ya están registrados.
+    // Solo un fallo de transporte real (captcha/rate-limit/red) se avisa
+    // distinto, porque ahí sí falló el envío en sí, no la existencia del
+    // correo.
+    if (err && /captcha|rate limit|failed to fetch|network/i.test(err.message)) {
+      toast.error(mapAuthError(err))
+      return
+    }
+    setEnviado(true)
+  }
+
+  if (enviado) {
+    return (
+      <div className="text-center">
+        <p className="mb-8 font-light leading-relaxed text-ink-soft">
+          Si existe una cuenta con ese correo, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja
+          de entrada (y la carpeta de spam, por si acaso).
+        </p>
+        <button
+          type="button"
+          onClick={onBack}
+          className="text-xs uppercase tracking-[0.15em] text-clay underline decoration-clay/40 underline-offset-4"
+        >
+          Volver a ingresar
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate className="space-y-7">
+      <p className="text-center font-light leading-relaxed text-ink-soft">
+        Escribe tu correo y te mandamos un enlace para crear una contraseña nueva.
+      </p>
+      <div>
+        <label htmlFor="forgot-email" className={labelClass}>Correo electrónico *</label>
+        <input
+          type="email"
+          id="forgot-email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value)
+            if (error) setError(false)
+          }}
+          placeholder="tucorreo@ejemplo.com"
+          className={inputClass(error)}
+        />
+      </div>
+      <Turnstile onToken={setCaptchaToken} />
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full rounded-full bg-ink px-9 py-4 text-xs uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-clay disabled:opacity-60"
+      >
+        {submitting ? 'Enviando…' : 'Mandarme el enlace'}
+      </button>
+      <button
+        type="button"
+        onClick={onBack}
+        className="block w-full text-center text-[11px] uppercase tracking-[0.1em] text-ink-muted transition-colors hover:text-ink cursor-pointer"
+      >
+        Volver a ingresar
       </button>
     </form>
   )

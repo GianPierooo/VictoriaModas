@@ -50,6 +50,7 @@ const CheckoutPage = lazyWithReload(() => import('./pages/CheckoutPage.jsx'))
 const ProductPage = lazyWithReload(() => import('./pages/ProductPage.jsx'))
 const CartPage = lazyWithReload(() => import('./pages/CartPage.jsx'))
 const AccountPage = lazyWithReload(() => import('./pages/AccountPage.jsx'))
+const ResetPasswordPage = lazyWithReload(() => import('./pages/ResetPasswordPage.jsx'))
 const FavoritesPage = lazyWithReload(() => import('./pages/FavoritesPage.jsx'))
 // Ruta privada de mayoreo (no enlazada en Header/Footer/sitemap).
 const MayoristasPage = lazyWithReload(() => import('./pages/MayoristasPage.jsx'))
@@ -101,6 +102,7 @@ const router = createBrowserRouter([
   { path: '/checkout', element: withSuspense(<CheckoutPage />) },
   { path: '/favoritos', element: withSuspense(<FavoritesPage />) },
   { path: '/mi-cuenta', element: withSuspense(<AccountPage />) },
+  { path: '/restablecer-contrasena', element: withSuspense(<ResetPasswordPage />) },
   { path: '/mayoristas', element: withSuspense(<MayoristasPage />) },
   {
     // Un solo panel para admin y vendedor (antes /panel-ventas era aparte —
