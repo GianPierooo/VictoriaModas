@@ -2,7 +2,7 @@ import { useState } from 'react'
 import PhoneField from './PhoneField.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
-import { DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES } from '../utils/phoneCountries.js'
+import { DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES, telefonoTieneLongitudValida } from '../utils/phoneCountries.js'
 
 const inputClass = (hasError) =>
   `w-full border-b bg-transparent py-2.5 text-ink font-light placeholder:text-ink-muted/50 focus:outline-none transition-colors ${
@@ -38,11 +38,15 @@ export default function CompleteProfileForm({ profile }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const telefonoValido = telefonoNumero.trim() && telefonoTieneLongitudValida(telefonoPrefix, telefonoNumero)
     const nextErrors = {}
     if (!nombre.trim()) nextErrors.nombre = true
-    if (!telefonoNumero.trim()) nextErrors.telefono = true
+    if (!telefonoValido) nextErrors.telefono = true
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
+      if (nextErrors.telefono && telefonoNumero.trim() && !nextErrors.nombre) {
+        toast.error('Ese teléfono no tiene la cantidad de dígitos correcta.')
+      }
       return
     }
     const telefono = `${telefonoPrefix} ${telefonoNumero.trim()}`

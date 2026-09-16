@@ -123,6 +123,15 @@ export function AuthProvider({ children }) {
     return supabase.auth.updateUser({ password })
   }
 
+  // Reenvía el correo de confirmación de cuenta — necesario desde que
+  // "Confirm email" está activo en Supabase: si el correo se pierde, cae
+  // en spam sin que lo vean, o el enlace vence, antes no había forma de
+  // pedir uno nuevo (quedaba una cuenta "atascada" para siempre).
+  const resendConfirmation = async (email, captchaToken) => {
+    if (!supabase) return { error: { message: 'Supabase no está configurado.' } }
+    return supabase.auth.resend({ type: 'signup', email, options: { captchaToken: captchaToken || undefined } })
+  }
+
   // Entrar con Google. Redirige a Google y vuelve a /mi-cuenta con la sesión
   // ya iniciada (Supabase procesa el retorno solo). Requiere tener el
   // proveedor Google activado en Supabase → Authentication → Providers.
@@ -173,6 +182,7 @@ export function AuthProvider({ children }) {
       updateProfile,
       resetPasswordForEmail,
       updatePassword,
+      resendConfirmation,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, profile, loading, profileLoading]

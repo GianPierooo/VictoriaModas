@@ -88,9 +88,19 @@ export default function PhoneField({
           type="tel"
           id={id}
           name={id}
+          inputMode="numeric"
           autoComplete="tel-national"
           value={number}
-          onChange={(e) => onNumberChange(e.target.value)}
+          onChange={(e) => {
+            // Bug real corregido: antes se podía escribir cualquier
+            // cantidad de dígitos sin importar el país (ej. más de 9 con
+            // +51 Perú). Solo dígitos, y como máximo los que tenga un
+            // número real de ese país (ver phoneCountries.js#length).
+            const soloDigitos = e.target.value.replace(/\D/g, '')
+            const limitado = selected.length ? soloDigitos.slice(0, selected.length) : soloDigitos
+            onNumberChange(limitado)
+          }}
+          maxLength={selected.length || undefined}
           placeholder={placeholder}
           className={`w-full border-b bg-transparent py-2.5 text-ink font-light placeholder:text-ink-muted/50 focus:outline-none transition-colors ${
             hasError ? 'border-red-300 focus:border-red-400' : 'border-ink/20 focus:border-clay'

@@ -9,7 +9,7 @@ import Turnstile from '../components/Turnstile.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
-import { DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES } from '../utils/phoneCountries.js'
+import { DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES, telefonoTieneLongitudValida } from '../utils/phoneCountries.js'
 import { listVentasCliente } from '../lib/supabaseAdmin.js'
 import { obtenerOCrearCodigoReferido, listarRecompensasReferidos, VALOR_REFERIDO_SOLES } from '../lib/referidos.js'
 import { formatPEN } from '../utils/price.js'
@@ -193,6 +193,10 @@ function ProfileTab({ user, profile }) {
     e.preventDefault()
     if (!nombre.trim()) {
       toast.error('Ingresa tu nombre.')
+      return
+    }
+    if (telefonoNumero.trim() && !telefonoTieneLongitudValida(telefonoPrefix, telefonoNumero)) {
+      toast.error('Ese teléfono no tiene la cantidad de dígitos correcta.')
       return
     }
     const telefono = telefonoNumero.trim() ? `${telefonoPrefix} ${telefonoNumero.trim()}` : ''
@@ -450,7 +454,7 @@ function AuthForms() {
 }
 
 function LoginForm({ onForgotPassword }) {
-  const { signIn } = useAuth()
+  const { signIn, resendConfirmation } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
   const [formData, setFormData] = useState({ email: '', password: '' })
@@ -458,11 +462,17 @@ function LoginForm({ onForgotPassword }) {
   const [submitting, setSubmitting] = useState(false)
   const [captchaToken, setCaptchaToken] = useState('')
   const [resetCaptcha, setResetCaptcha] = useState(0)
+  // Se activa cuando el intento de ingresar falla por correo sin confirmar
+  // — ofrece reenviarlo ahí mismo en vez de dejar la cuenta "atascada" si
+  // el primer correo se perdió, cayó en spam sin que lo vean, o venció.
+  const [mostrarReenviar, setMostrarReenviar] = useState(false)
+  const [reenviando, setReenviando] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: false }))
+    if (mostrarReenviar) setMostrarReenviar(false)
   }
 
   const handleSubmit = async (e) => {
@@ -483,10 +493,23 @@ function LoginForm({ onForgotPassword }) {
 
     if (error) {
       toast.error(mapAuthError(error))
+      setMostrarReenviar(/email not confirmed/i.test(error.message))
       return
     }
     toast.success('¡Bienvenida de vuelta!')
     navigate('/')
+  }
+
+  const handleReenviar = async () => {
+    setReenviando(true)
+    const { error } = await resendConfirmation(formData.email, captchaToken)
+    setReenviando(false)
+    if (error) {
+      toast.error(mapAuthError(error))
+      return
+    }
+    toast.success('Te mandamos el correo de confirmación de nuevo.')
+    setMostrarReenviar(false)
   }
 
   return (
@@ -524,6 +547,19 @@ function LoginForm({ onForgotPassword }) {
           ¿Olvidaste tu contraseña?
         </button>
       </div>
+      {mostrarReenviar && (
+        <div className="rounded-lg bg-cream-dark px-4 py-3.5 text-center">
+          <p className="mb-2 text-xs font-light text-ink-soft">¿No te llegó el correo de confirmación?</p>
+          <button
+            type="button"
+            onClick={handleReenviar}
+            disabled={reenviando}
+            className="text-[11px] uppercase tracking-[0.1em] text-clay underline decoration-clay/40 underline-offset-4 transition-colors hover:text-clay-dark cursor-pointer disabled:opacity-60"
+          >
+            {reenviando ? 'Enviando…' : 'Reenviar correo de confirmación'}
+          </button>
+        </div>
+      )}
       <Turnstile onToken={setCaptchaToken} resetToken={resetCaptcha} />
       <button
         type="submit"
@@ -558,9 +594,10 @@ function RegisterForm({ onDone }) {
     e.preventDefault()
     const fuerza = evaluarContrasena(formData.password)
     const nextErrors = {}
+    const telefonoValido = telefonoNumero.trim() && telefonoTieneLongitudValida(telefonoPrefix, telefonoNumero)
     if (!formData.nombre.trim()) nextErrors.nombre = true
     if (!esEmailValido(formData.email)) nextErrors.email = true
-    if (!telefonoNumero.trim()) nextErrors.telefono = true
+    if (!telefonoValido) nextErrors.telefono = true
     if (!fuerza.valida) nextErrors.password = true
     if (confirmarPassword !== formData.password) nextErrors.confirmar = true
 
@@ -569,7 +606,7 @@ function RegisterForm({ onDone }) {
       if (nextErrors.email && formData.email.trim() && !nextErrors.nombre) {
         toast.error('Ingresa un correo válido.')
       } else if (nextErrors.telefono && !nextErrors.nombre && !nextErrors.email) {
-        toast.error('Ingresa tu teléfono.')
+        toast.error(telefonoNumero.trim() ? 'Ese teléfono no tiene la cantidad de dígitos correcta.' : 'Ingresa tu teléfono.')
       } else if (nextErrors.password && formData.password) {
         toast.error('La contraseña debe tener 8+ caracteres, con letras y números.')
       } else if (nextErrors.confirmar && !nextErrors.password) {
