@@ -11,7 +11,8 @@ import {
   PhoneIcon,
   QuestionMarkCircleIcon,
   UserGroupIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline'
 import { useCart } from '../context/CartContext.jsx'
 import { useWishlist } from '../context/WishlistContext.jsx'
@@ -26,8 +27,11 @@ export default function Header() {
   const location = useLocation()
   const { items, openDrawer } = useCart()
   const { count: favCount } = useWishlist()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
+  // Mismos roles que ya protege /admin (ver main.jsx#RequireRole) — el botón
+  // es a la vez el acceso y el indicador: si lo ves, entraste con esa cuenta.
+  const isStaff = profile?.rol === 'admin' || profile?.rol === 'vendedor'
 
   // Links de navegación principal
   // ABRIGOS: oculto hasta tener stock con fotos (la página sigue activa en
@@ -232,6 +236,18 @@ export default function Header() {
               <MagnifyingGlassIcon className="h-6 w-6" />
             </button>
 
+            {/* Panel de administración — solo admin/vendedor (ver isStaff) */}
+            {isStaff && (
+              <Link
+                to="/admin"
+                className="p-2 rounded-md text-clay hover:text-clay-dark hover:bg-clay/10 transition-all duration-300"
+                aria-label="Ir al panel de administración"
+                title="Panel de administración"
+              >
+                <Cog6ToothIcon className="h-6 w-6" />
+              </Link>
+            )}
+
             {/* Mi cuenta */}
             <Link
               to="/mi-cuenta"
@@ -402,6 +418,17 @@ export default function Header() {
                       )}
                     </Link>
                   </div>
+
+                  {/* Panel de administración — solo admin/vendedor (ver isStaff) */}
+                  {isStaff && (
+                    <Link
+                      to="/admin"
+                      className="mt-3 flex items-center justify-center gap-2 rounded-lg bg-clay px-3 py-3.5 text-xs font-medium uppercase tracking-[0.15em] text-cream transition-colors hover:bg-clay-dark"
+                    >
+                      <Cog6ToothIcon className="h-5 w-5" />
+                      Panel de administración
+                    </Link>
+                  )}
                 </div>
               </div>
 
