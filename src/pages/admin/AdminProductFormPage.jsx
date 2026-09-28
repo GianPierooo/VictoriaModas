@@ -71,7 +71,7 @@ export default function AdminProductFormPage() {
   const [colores, setColores] = useState([])
 
   const [productoId, setProductoId] = useState(id || '')
-  const [form, setForm] = useState({ nombre: '', categoria_id: '', tela: '', descripcion: '', badge: '', activo: true })
+  const [form, setForm] = useState({ nombre: '', sku: '', categoria_id: '', tela: '', descripcion: '', badge: '', activo: true })
   const [variantes, setVariantes] = useState([])
   const [imagenes, setImagenes] = useState([])
   const [medidas, setMedidas] = useState([])
@@ -98,6 +98,7 @@ export default function AdminProductFormPage() {
         }
         setForm({
           nombre: data.nombre || '',
+          sku: data.sku || '',
           categoria_id: data.categoria_id || '',
           tela: data.tela || '',
           descripcion: data.descripcion || '',
@@ -151,11 +152,19 @@ export default function AdminProductFormPage() {
     }
     setGuardando(true)
     try {
-      await upsertProducto({ id: productoId.trim(), ...form })
+      // '' → null: la columna sku es UNIQUE, y en Postgres un '' sí cuenta
+      // como valor igual a otro '' (a diferencia de NULL, que nunca choca
+      // consigo mismo) — dejarlo así rompería el segundo producto sin código.
+      await upsertProducto({ id: productoId.trim(), ...form, sku: form.sku.trim() || null })
       toast.success('Datos guardados.')
       if (isNew) navigate(`/admin/productos/${productoId.trim()}`, { replace: true })
     } catch (err) {
-      toast.error('No se pudo guardar: ' + err.message)
+      toast.error(
+        'No se pudo guardar: ' +
+          (err.message.includes('duplicate') && err.message.includes('sku')
+            ? 'ya existe otro producto con ese código.'
+            : err.message)
+      )
     } finally {
       setGuardando(false)
     }
@@ -289,6 +298,18 @@ export default function AdminProductFormPage() {
           <div>
             <label className={labelClass}>Nombre *</label>
             <input type="text" name="nombre" value={form.nombre} onChange={handleChange} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Código (SKU)</label>
+            <input
+              type="text"
+              name="sku"
+              value={form.sku}
+              onChange={handleChange}
+              placeholder="Ej. PTV-01"
+              className={inputClass}
+            />
+            <p className="mt-1.5 text-xs text-ink-muted">Opcional — para identificarlo rápido (ej. en el catálogo de Meta).</p>
           </div>
           <div>
             <label className={labelClass}>Categoría</label>

@@ -115,7 +115,10 @@ export default function AdminProductsListPage() {
             )}
             {filtrados.map((p) => (
               <tr key={p.id} className="border-b border-ink/5 last:border-0">
-                <td className="px-5 py-4 font-light text-ink">{p.nombre}</td>
+                <td className="px-5 py-4 font-light text-ink">
+                  {p.nombre}
+                  {p.sku && <span className="mt-0.5 block text-xs font-light text-ink-muted">{p.sku}</span>}
+                </td>
                 <td className="px-5 py-4 text-ink-soft">{p.categoriaNombre}</td>
                 <td className="px-5 py-4 text-ink-soft">{p.variantesCount}</td>
                 <td className="px-5 py-4 text-ink-soft">{p.stockTotal}</td>
