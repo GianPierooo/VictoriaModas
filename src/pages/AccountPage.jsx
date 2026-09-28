@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { ClipboardIcon, CheckIcon, ShareIcon } from '@heroicons/react/24/outline'
 import Layout from '../components/Layout.jsx'
 import PhoneField from '../components/PhoneField.jsx'
@@ -7,6 +7,7 @@ import PasswordField from '../components/PasswordField.jsx'
 import GoogleSignInButton from '../components/GoogleSignInButton.jsx'
 import Turnstile from '../components/Turnstile.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { supabase } from '../lib/supabaseClient.js'
 import { useToast } from '../context/ToastContext.jsx'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES, telefonoTieneLongitudValida } from '../utils/phoneCountries.js'
@@ -58,9 +59,13 @@ export default function AccountPage() {
     description: 'Inicia sesión o crea tu cuenta en Victoria Modas para seguir tus pedidos.',
   })
 
-  const { user, profile, loading, isAuthConfigured, signOut } = useAuth()
+  const { user, profile, loading, profileLoading, isAuthConfigured, signOut } = useAuth()
 
-  if (loading) {
+  const loggedIn = isAuthConfigured && user
+  // Mientras se resuelve la sesión, o hay sesión pero el perfil (y su rol)
+  // todavía no cargó, no se puede decidir nada — mismo criterio que
+  // RequireRole: nunca decidir con datos a medias.
+  if (loading || (loggedIn && profileLoading)) {
     return (
       <Layout>
         <div className="flex min-h-[60vh] items-center justify-center bg-cream">
@@ -70,7 +75,13 @@ export default function AccountPage() {
     )
   }
 
-  const loggedIn = isAuthConfigured && user
+  // Admin/vendedor nunca ven "Mi cuenta" — de acá entran o vuelven (login con
+  // Google, refrescar la página con sesión activa, etc.) directo al panel.
+  // El login con correo/contraseña ya manda para allá desde LoginForm; esto
+  // cubre el resto de los caminos con un solo punto de decisión por rol.
+  if (loggedIn && (profile?.rol === 'admin' || profile?.rol === 'vendedor')) {
+    return <Navigate to="/admin" replace />
+  }
 
   return (
     <Layout>
@@ -487,7 +498,7 @@ function LoginForm({ onForgotPassword }) {
     }
 
     setSubmitting(true)
-    const { error } = await signIn({ ...formData, captchaToken })
+    const { data, error } = await signIn({ ...formData, captchaToken })
     setSubmitting(false)
     setResetCaptcha((n) => n + 1) // el token de Turnstile es de un solo uso
 
@@ -497,7 +508,15 @@ function LoginForm({ onForgotPassword }) {
       return
     }
     toast.success('¡Bienvenida de vuelta!')
-    navigate('/')
+    // Admin/vendedor van directo al panel; el resto sigue a la home como
+    // siempre. Se consulta el rol acá (no se espera a que `profile` del
+    // contexto se actualice solo) porque justo después de signIn() todavía
+    // no hay garantía de que ya haya cargado para este usuario.
+    const userId = data?.user?.id
+    const { data: perfil } = userId && supabase
+      ? await supabase.from('perfiles').select('rol').eq('user_id', userId).maybeSingle()
+      : { data: null }
+    navigate(perfil?.rol === 'admin' || perfil?.rol === 'vendedor' ? '/admin' : '/')
   }
 
   const handleReenviar = async () => {
