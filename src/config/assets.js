@@ -16,16 +16,6 @@
 // ============================================================
 
 export const ASSETS = {
-  // ── Hero del Home ──────────────────────────────────────────
-  // Video de fondo "tejido en movimiento". MP4 H.264 comprimido (~3-6 MB,
-  // loop corto 6-12s, sin audio). El .webm es opcional (mejor compresión);
-  // el navegador elige el primero que soporte.
-  heroVideoWebm: '/videos/hero.webm',
-  heroVideoMp4: '/videos/hero.mp4',
-  // Imagen editorial del hero (LCP + poster del video). Vertical 4:5 o
-  // similar, mínimo ~1600px de ancho. Hoy usa una foto de producto.
-  heroImage: '/imagenes/vestidos/vestido_suplex01/azul_adelante.png',
-
   // ── Videos editoriales del Home (secciones grandes) ────────
   // Loops cortos, mudos, comprimidos (~2-3 MB c/u). Se montan diferidos
   // (solo al entrar la sección en pantalla y tras el primer paint), con la

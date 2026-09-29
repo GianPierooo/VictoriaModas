@@ -305,3 +305,11 @@
 @media (prefers-reduced-motion: reduce) {
   .vm-paso, .vm-pop, .vm-marcador { animation: none; }
 }
+
+/* Carrusel de la portada (HeroCarrusel): la barra de progreso del punto activo
+   es el temporizador del avance automático — al terminar, pasa al siguiente. */
+@keyframes vm-progreso {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.vm-progreso { animation-name: vm-progreso; animation-timing-function: linear; animation-fill-mode: both; }

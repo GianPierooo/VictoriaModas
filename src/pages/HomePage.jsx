@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRightIcon, ChevronLeftIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline'
 import Header from '../components/Header.jsx'
 import Footer from '../components/Footer.jsx'
 import AnnouncementBanner from '../components/AnnouncementBanner.jsx'
@@ -9,118 +9,15 @@ import MetaPixelPageView from '../components/MetaPixelPageView.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import BackgroundVideo from '../components/BackgroundVideo.jsx'
+import HeroCarrusel from '../components/HeroCarrusel.jsx'
 import PageTransition from '../motion/PageTransition.jsx'
 import { useInViewReveal } from '../motion/useInViewReveal.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 
-// ── Assets del hero: rutas centralizadas en src/config/assets.js (el dueño
-//    sube el archivo y encaja solo; si no existe, hay fallback y nada se rompe).
+// Rutas de los assets editoriales reemplazables: src/config/assets.js (con
+// fallback, nada se rompe si el archivo no existe).
 import { ASSETS } from '../config/assets.js'
-
-const HERO_VIDEO_WEBM = ASSETS.heroVideoWebm
-const HERO_VIDEO = ASSETS.heroVideoMp4
-const HERO_IMAGE = ASSETS.heroImage
-
-// ============= HERO — tejido en movimiento =============
-function Hero() {
-  const reduced = usePrefersReducedMotion()
-  const [showVideo, setShowVideo] = useState(false)
-  const [videoFailed, setVideoFailed] = useState(false)
-
-  // El LCP es la imagen (eager/high). El video se monta DESPUÉS del primer
-  // paint (idle) para no competir con el LCP, y solo si no hay reduced-motion.
-  useEffect(() => {
-    if (reduced) return
-    let idleId
-    const start = () => setShowVideo(true)
-    if (typeof window.requestIdleCallback === 'function') {
-      idleId = window.requestIdleCallback(start, { timeout: 1600 })
-      return () => window.cancelIdleCallback?.(idleId)
-    }
-    const t = setTimeout(start, 800)
-    return () => clearTimeout(t)
-  }, [reduced])
-
-  const videoLayer = showVideo && !videoFailed && !reduced
-
-  return (
-    <section className="relative w-full min-h-[92vh] overflow-hidden bg-ink">
-      {/* Media base: imagen editorial (LCP). Siempre presente → si falta el
-          video, no se rompe nada. */}
-      <ResponsiveImage
-        src={HERO_IMAGE}
-        alt="Vestido de la nueva colección Victoria Modas"
-        className="absolute inset-0 h-full w-full object-cover object-top"
-        loading="eager"
-        fetchPriority="high"
-        width={1600}
-        height={2000}
-      />
-
-      {/* Video de fondo, opcional y diferido. Si /videos/hero.mp4 no existe,
-          onError lo retira y queda la imagen. */}
-      {videoLayer && (
-        <video
-          className="absolute inset-0 h-full w-full object-cover object-top"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={HERO_IMAGE}
-          onError={() => setVideoFailed(true)}
-          aria-hidden="true"
-        >
-          <source src={HERO_VIDEO_WEBM} type="video/webm" />
-          <source src={HERO_VIDEO} type="video/mp4" />
-        </video>
-      )}
-
-      {/* Velo ink para legibilidad del texto (más denso abajo). */}
-      <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/30 to-ink/25" />
-      {/* Velo cream muy sutil arriba: mantiene legible el header transparente
-          (texto oscuro) cuando aún no hay scroll. */}
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-cream/70 to-transparent" />
-
-      {/* Contenido — entrada secuenciada (titular → subtítulo → CTA). */}
-      <div className="relative z-10 mx-auto flex min-h-[92vh] max-w-4xl flex-col items-center justify-center px-6 py-28 text-center">
-        <p className="hero-line mb-6 text-[11px] uppercase tracking-luxe text-cream/85" style={{ animationDelay: '0.05s' }}>
-          Nueva colección · 2026
-        </p>
-        <h1
-          className="hero-line mb-8 font-serif text-6xl font-light leading-[1.02] tracking-[-0.01em] text-cream md:text-7xl lg:text-8xl"
-          style={{ animationDelay: '0.18s' }}
-        >
-          Elegancia
-          <span className="block italic text-clay-light">hecha para ti</span>
-        </h1>
-        <p
-          className="hero-line mb-11 max-w-md text-base font-light leading-relaxed text-cream/80 md:text-lg"
-          style={{ animationDelay: '0.32s' }}
-        >
-          Vestidos, blusas y pantalones en telas premium, diseñados y hechos en
-          Perú para la mujer de hoy.
-        </p>
-        <div className="hero-line" style={{ animationDelay: '0.46s' }}>
-          <Link
-            to="/vestidos"
-            className="group inline-flex items-center justify-center rounded-full bg-ink px-10 py-4 text-xs uppercase tracking-[0.2em] text-cream shadow-soft ring-1 ring-cream/15 transition-colors duration-500 hover:bg-clay"
-          >
-            Explorar la colección
-            <ChevronRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Indicador de scroll (bounce suave; se detiene con reduced-motion). */}
-      <div className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 text-cream/70 lg:flex">
-        <span className="text-[10px] uppercase tracking-luxe">Descubre</span>
-        <ChevronDownIcon className="descubre-bounce h-4 w-4" />
-      </div>
-    </section>
-  )
-}
 
 // Reveal al scroll (robusto: con fallback si IO no está/ no dispara).
 // Delega en useInViewReveal para compartir la lógica con las cards.
@@ -608,7 +505,7 @@ export default function HomePage() {
       <AnnouncementBanner />
       <Header />
       <PageTransition id="main-content">
-        <Hero />
+        <HeroCarrusel />
         <FeaturedProducts />
         <Collections />
         <CategoryShowcase />
