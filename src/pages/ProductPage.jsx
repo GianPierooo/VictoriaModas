@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { Disclosure, Transition } from '@headlessui/react'
 import {
+  CheckIcon,
   ChevronRightIcon,
   ChevronLeftIcon,
   ChevronUpIcon,
@@ -53,6 +54,9 @@ export default function ProductPage() {
   const [selectedColor, setSelectedColor] = useState(product.colors[0])
   const [selectedSize, setSelectedSize] = useState(product.sizes[0])
   const [quantity, setQuantity] = useState(1)
+  // Talla que el probador ya le recomendó a la clienta (medidas guardadas en
+  // su dispositivo) — se marca con una insignia en el selector.
+  const [tallaSugerida, setTallaSugerida] = useState(null)
 
   // Stock en vivo (si la hoja no está conectada, estado = 'consultar' y el
   // indicador no se muestra; no altera el diseño).
@@ -344,7 +348,16 @@ export default function ProductPage() {
                 <div className="mb-8">
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-[10px] uppercase tracking-luxe text-ink-muted">Talla</span>
-                    <GuiaTallas productoId={productId} />
+                    <GuiaTallas
+                      productoId={productId}
+                      nombreProducto={product.name}
+                      imagen={mainImage}
+                      colorNombre={selectedColor}
+                      tallaActual={selectedSize}
+                      tallasDeshabilitadas={unavailableSizes}
+                      onElegirTalla={setSelectedSize}
+                      onTallaSugerida={setTallaSugerida}
+                    />
                   </div>
                   <div className="flex flex-wrap gap-2.5">
                     {product.sizes.map((size) => {
@@ -356,7 +369,7 @@ export default function ProductPage() {
                           disabled={disabled}
                           onClick={() => setSelectedSize(size)}
                           aria-pressed={selectedSize === size}
-                          className={`h-11 min-w-[52px] rounded-full border px-5 text-sm uppercase tracking-[0.1em] transition-all duration-300 active:scale-95 ${
+                          className={`relative h-11 min-w-[52px] rounded-full border px-5 text-sm uppercase tracking-[0.1em] transition-all duration-300 active:scale-95 ${
                             disabled
                               ? 'cursor-not-allowed border-ink/10 text-ink-muted/40 line-through'
                               : selectedSize === size
@@ -365,6 +378,15 @@ export default function ProductPage() {
                           }`}
                         >
                           {size}
+                          {size === tallaSugerida && !disabled && (
+                            <span
+                              className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-clay text-cream"
+                              title="Tu talla según tus medidas"
+                              aria-label="Tu talla según tus medidas"
+                            >
+                              <CheckIcon className="h-2.5 w-2.5" strokeWidth={3} />
+                            </span>
+                          )}
                         </button>
                       )
                     })}

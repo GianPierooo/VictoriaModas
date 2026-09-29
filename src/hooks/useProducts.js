@@ -23,12 +23,12 @@ let cache = null // array ya transformado, una vez que Supabase respondió con d
 let inflight = null // promesa compartida (evita pedir dos veces en paralelo)
 
 function toProductShape(row) {
-  const tallas = new Set()
+  const tallasOrden = new Map() // nombre -> orden en el catálogo de tallas
   const colores = new Set()
   const imagesByColor = {}
 
   for (const v of row.producto_variantes || []) {
-    if (v.tallas?.nombre) tallas.add(v.tallas.nombre)
+    if (v.tallas?.nombre) tallasOrden.set(v.tallas.nombre, v.tallas.orden ?? 999)
     if (v.colores?.nombre) colores.add(v.colores.nombre)
   }
 
@@ -56,7 +56,9 @@ function toProductShape(row) {
     fabric: row.tela || '',
     image: images[0] || '',
     images,
-    sizes: [...tallas],
+    // Por orden del catálogo (XS → S → M → L…), no por el orden en que
+    // llegaron las variantes — antes salían "L, S, M".
+    sizes: [...tallasOrden.entries()].sort((a, b) => a[1] - b[1]).map(([nombre]) => nombre),
     colors: [...colores],
     colorImages,
   }
@@ -66,7 +68,7 @@ async function fetchFromSupabase() {
   if (!supabase) return null
   const { data, error } = await supabase
     .from('productos')
-    .select('*, categorias(slug), producto_imagenes(*, colores(nombre)), producto_variantes(*, tallas(nombre), colores(nombre))')
+    .select('*, categorias(slug), producto_imagenes(*, colores(nombre)), producto_variantes(*, tallas(nombre, orden), colores(nombre))')
     .eq('activo', true)
   if (error) {
     console.error('[useProducts] Supabase falló, se queda con el catálogo estático:', error.message)

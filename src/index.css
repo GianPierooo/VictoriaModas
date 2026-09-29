@@ -264,3 +264,44 @@
     display: none !important;
   }
 }
+
+/* Probador de tallas (GuiaTallas) — estilos de las piezas diseñadas en Figma. */
+
+/* Cinta métrica: el <input range> va invisible encima de la cinta; la perilla
+   mide 1px para que el arrastre mapee de borde a borde (sin margen de perilla)
+   y el marcador dibujado coincida exacto con el dedo. */
+.vm-cinta {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  margin: 0;
+}
+.vm-cinta::-webkit-slider-runnable-track { background: transparent; height: 100%; }
+.vm-cinta::-moz-range-track { background: transparent; height: 100%; }
+.vm-cinta::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 1px; height: 46px; background: transparent; border: 0; }
+.vm-cinta::-moz-range-thumb { width: 1px; height: 46px; background: transparent; border: 0; border-radius: 0; }
+
+/* Cambio de paso (Medidas → Resultado): fundido + sube 12px. */
+@keyframes vm-paso-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.vm-paso { animation: vm-paso-in 260ms ease-out both; }
+
+/* Insignias ✓ ! ✕: aparecen con escala 0.85 → 1, sin rebote. */
+@keyframes vm-pop {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+.vm-pop { animation: vm-pop 180ms ease-out both; }
+
+/* Marcador del medidor de tallas: se desliza desde el borde izquierdo. */
+@keyframes vm-marcador-in {
+  from { left: 0%; }
+  to { left: var(--x); }
+}
+.vm-marcador { animation: vm-marcador-in 400ms ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vm-paso, .vm-pop, .vm-marcador { animation: none; }
+}
