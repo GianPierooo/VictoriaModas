@@ -5,6 +5,7 @@ import Layout from '../components/Layout.jsx'
 import ResponsiveImage from '../components/ResponsiveImage.jsx'
 import CouponField from '../components/CouponField.jsx'
 import PhoneField from '../components/PhoneField.jsx'
+import UbicacionSelector from '../components/UbicacionSelector.jsx'
 import { DEFAULT_PHONE_COUNTRY } from '../utils/phoneCountries.js'
 import { useCart } from '../context/CartContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
@@ -17,9 +18,10 @@ import { buildOrderPayload, registerOrder } from '../utils/orderUtils.js'
 import { useDocumentMeta } from '../hooks/useDocumentMeta.js'
 import { trackEvent } from '../lib/metaPixel.js'
 
-// El teléfono se valida aparte (telefonoNumero, ver más abajo) porque su
-// prefijo de país vive en su propio estado (PhoneField), no en formData.
-const REQUIRED_FIELDS = ['nombre', 'ciudad']
+// El teléfono y la ubicación se validan aparte (telefonoNumero / distrito,
+// ver más abajo) porque viven en su propio estado (PhoneField /
+// UbicacionSelector), no en formData.
+const REQUIRED_FIELDS = ['nombre']
 // Para pagar en línea con Culqi además hace falta un correo (Culqi lo exige
 // para el cargo, y sirve para mandar el comprobante).
 const REQUIRED_FIELDS_PAGO = [...REQUIRED_FIELDS, 'email']
@@ -57,7 +59,6 @@ export default function CheckoutPage() {
   const priceOf = (it) => getPrecio(it.id, it.selectedColor, it.selectedSize)
   const [formData, setFormData] = useState({
     nombre: '',
-    ciudad: '',
     email: '',
     notas: '',
   })
@@ -66,7 +67,17 @@ export default function CheckoutPage() {
   const [telefonoPrefix, setTelefonoPrefix] = useState(DEFAULT_PHONE_COUNTRY.code)
   const [telefonoNumero, setTelefonoNumero] = useState('')
   const telefono = telefonoNumero.trim() ? `${telefonoPrefix} ${telefonoNumero.trim()}` : ''
+  // Ubicación en cascada (Departamento → Provincia → Distrito) con datos
+  // reales de UBIGEO — reemplaza el viejo campo de texto libre "Ciudad/
+  // distrito", que dejaba escribir cualquier cosa. Ver src/data/ubigeoPeru.js.
+  const [ubicDepartamento, setUbicDepartamento] = useState('')
+  const [ubicProvincia, setUbicProvincia] = useState('')
+  const [ubicDistrito, setUbicDistrito] = useState('')
+  const ciudad = ubicDistrito ? `${ubicDistrito}, ${ubicProvincia}, ${ubicDepartamento}` : ''
   const [errors, setErrors] = useState({})
+  const clearCiudadError = () => {
+    if (errors.ciudad) setErrors((prev) => ({ ...prev, ciudad: false }))
+  }
   const [confirmed, setConfirmed] = useState(false)
   const [pagoConfirmado, setPagoConfirmado] = useState(false)
   const [pagando, setPagando] = useState(false)
@@ -117,6 +128,7 @@ export default function CheckoutPage() {
       if (!formData[field].trim()) nextErrors[field] = true
     })
     if (!telefonoNumero.trim()) nextErrors.telefono = true
+    if (!ubicDistrito) nextErrors.ciudad = true
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
       toast.error('Completa los campos marcados para enviar tu pedido.')
@@ -146,7 +158,7 @@ export default function CheckoutPage() {
     // Registra el pedido en la hoja en SEGUNDO PLANO (sin await): si falla, el
     // flujo de WhatsApp continúa igual. Va antes de openWhatsApp para no perder
     // el gesto de clic (evita bloqueo de popup).
-    const datosPedido = { ...formData, telefono }
+    const datosPedido = { ...formData, telefono, ciudad }
     registerOrder(buildOrderPayload(datosPedido, items, totalPEN, coupon))
     openWhatsApp(generateOrderMessage(datosPedido, items, totalPEN, coupon))
     setConfirmedItems(items)
@@ -165,6 +177,7 @@ export default function CheckoutPage() {
       if (!formData[field].trim()) nextErrors[field] = true
     })
     if (!telefonoNumero.trim()) nextErrors.telefono = true
+    if (!ubicDistrito) nextErrors.ciudad = true
     if (formData.email.trim() && !/^\S+@\S+\.\S+$/.test(formData.email.trim())) {
       nextErrors.email = true
     }
@@ -242,7 +255,7 @@ export default function CheckoutPage() {
             email: formData.email.trim(),
             items: items.map((it) => ({ id: it.id, color: it.selectedColor, talla: it.selectedSize, cantidad: it.quantity })),
             cuponCodigo: coupon?.codigo || '',
-            cliente: { nombre: formData.nombre, telefono, ciudad: formData.ciudad, notas: formData.notas },
+            cliente: { nombre: formData.nombre, telefono, ciudad, notas: formData.notas },
             accessToken,
           }),
         })
@@ -426,37 +439,34 @@ export default function CheckoutPage() {
                   {errors.nombre && <p className="mt-2 text-xs text-red-400">Ingresa tu nombre.</p>}
                 </div>
 
-                <div className="grid grid-cols-1 gap-7 md:grid-cols-2">
-                  <div>
-                    <PhoneField
-                      id="telefono"
-                      label="Teléfono"
-                      required
-                      prefix={telefonoPrefix}
-                      onPrefixChange={setTelefonoPrefix}
-                      number={telefonoNumero}
-                      onNumberChange={(value) => {
-                        setTelefonoNumero(value)
-                        if (errors.telefono) setErrors((prev) => ({ ...prev, telefono: false }))
-                      }}
-                      hasError={errors.telefono}
-                    />
-                    {errors.telefono && <p className="mt-2 text-xs text-red-400">Ingresa tu teléfono.</p>}
-                  </div>
+                <div>
+                  <PhoneField
+                    id="telefono"
+                    label="Teléfono"
+                    required
+                    prefix={telefonoPrefix}
+                    onPrefixChange={setTelefonoPrefix}
+                    number={telefonoNumero}
+                    onNumberChange={(value) => {
+                      setTelefonoNumero(value)
+                      if (errors.telefono) setErrors((prev) => ({ ...prev, telefono: false }))
+                    }}
+                    hasError={errors.telefono}
+                  />
+                  {errors.telefono && <p className="mt-2 text-xs text-red-400">Ingresa tu teléfono.</p>}
+                </div>
 
-                  <div>
-                    <label htmlFor="ciudad" className={labelClass}>Ciudad / distrito *</label>
-                    <input
-                      type="text"
-                      id="ciudad"
-                      name="ciudad"
-                      value={formData.ciudad}
-                      onChange={handleInputChange}
-                      placeholder="Ej. Lima, Miraflores"
-                      className={inputClass('ciudad')}
-                    />
-                    {errors.ciudad && <p className="mt-2 text-xs text-red-400">Ingresa tu ciudad o distrito.</p>}
-                  </div>
+                <div>
+                  <UbicacionSelector
+                    departamento={ubicDepartamento}
+                    provincia={ubicProvincia}
+                    distrito={ubicDistrito}
+                    onDepartamentoChange={(value) => { setUbicDepartamento(value); clearCiudadError() }}
+                    onProvinciaChange={(value) => { setUbicProvincia(value); clearCiudadError() }}
+                    onDistritoChange={(value) => { setUbicDistrito(value); clearCiudadError() }}
+                    hasError={errors.ciudad}
+                  />
+                  {errors.ciudad && <p className="mt-2 text-xs text-red-400">Selecciona tu departamento, provincia y distrito.</p>}
                 </div>
 
                 <div>
