@@ -3,6 +3,7 @@ import { PlusIcon } from '@heroicons/react/24/outline'
 import { listClientes, createCliente, updateCliente } from '../../lib/supabaseAdmin.js'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
+import IdBadge from '../../components/admin/IdBadge.jsx'
 
 const labelClass = 'mb-2 block text-[10px] uppercase tracking-luxe text-ink-muted'
 const inputClass = 'w-full rounded-lg border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/60 focus:border-clay focus:outline-none'
@@ -125,6 +126,7 @@ export default function AdminClientesPage() {
         <table className="w-full min-w-[560px] text-left text-sm">
           <thead>
             <tr className="border-b border-ink/10 text-[10px] uppercase tracking-luxe text-ink-muted">
+              <th className="px-5 py-4">ID</th>
               <th className="px-5 py-4">Nombre</th>
               <th className="px-5 py-4">Teléfono</th>
               <th className="px-5 py-4">Correo</th>
@@ -132,10 +134,11 @@ export default function AdminClientesPage() {
             </tr>
           </thead>
           <tbody>
-            {clientes === null && <tr><td colSpan={4} className="px-5 py-8 text-center text-ink-muted">Cargando…</td></tr>}
-            {clientes !== null && filtrados.length === 0 && <tr><td colSpan={4} className="px-5 py-8 text-center text-ink-muted">Sin clientes todavía.</td></tr>}
+            {clientes === null && <tr><td colSpan={5} className="px-5 py-8 text-center text-ink-muted">Cargando…</td></tr>}
+            {clientes !== null && filtrados.length === 0 && <tr><td colSpan={5} className="px-5 py-8 text-center text-ink-muted">Sin clientes todavía.</td></tr>}
             {filtrados.map((c) => (
               <tr key={c.id} className="border-b border-ink/5 last:border-0">
+                <td className="px-5 py-4"><IdBadge value={c.id} /></td>
                 <td className="px-5 py-4 font-light text-ink">{c.nombre}</td>
                 <td className="px-5 py-4 text-ink-soft">{c.telefono || '—'}</td>
                 <td className="px-5 py-4 text-ink-soft">{c.email || '—'}</td>

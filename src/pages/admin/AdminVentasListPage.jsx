@@ -5,6 +5,7 @@ import { listVentasStaff, updateVentaEstado } from '../../lib/supabaseAdmin.js'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
 import { formatPEN } from '../../utils/price.js'
+import IdBadge from '../../components/admin/IdBadge.jsx'
 
 const ESTADOS = ['pendiente', 'confirmado', 'enviado', 'entregado', 'cancelado']
 const ESTADO_LABEL = { pendiente: 'Pendiente', confirmado: 'Confirmado', enviado: 'Enviado', entregado: 'Entregado', cancelado: 'Cancelado' }
@@ -49,6 +50,7 @@ export default function AdminVentasListPage() {
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
             <tr className="border-b border-ink/10 text-[10px] uppercase tracking-luxe text-ink-muted">
+              <th className="px-5 py-4">ID</th>
               <th className="px-5 py-4">Fecha</th>
               <th className="px-5 py-4">Cliente</th>
               <th className="px-5 py-4">Artículos</th>
@@ -57,10 +59,11 @@ export default function AdminVentasListPage() {
             </tr>
           </thead>
           <tbody>
-            {ventas === null && <tr><td colSpan={5} className="px-5 py-8 text-center text-ink-muted">Cargando…</td></tr>}
-            {ventas !== null && ventas.length === 0 && <tr><td colSpan={5} className="px-5 py-8 text-center text-ink-muted">Sin ventas todavía.</td></tr>}
+            {ventas === null && <tr><td colSpan={6} className="px-5 py-8 text-center text-ink-muted">Cargando…</td></tr>}
+            {ventas !== null && ventas.length === 0 && <tr><td colSpan={6} className="px-5 py-8 text-center text-ink-muted">Sin ventas todavía.</td></tr>}
             {(ventas || []).map((v) => (
               <tr key={v.id} className="border-b border-ink/5 last:border-0">
+                <td className="px-5 py-4"><IdBadge value={v.id} /></td>
                 <td className="px-5 py-4 text-ink-soft">
                   {new Date(v.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </td>

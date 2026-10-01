@@ -5,6 +5,7 @@ import { listStockGeneral, updateVarianteStock } from '../../lib/supabaseAdmin.j
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
 import { formatPEN } from '../../utils/price.js'
+import IdBadge from '../../components/admin/IdBadge.jsx'
 
 // Mismo criterio en toda la web: nunca "agotado" — a lo sumo "últimas
 // piezas" (0 incluido). Ver api/stock.js / useStock.js.
@@ -86,6 +87,7 @@ export default function AdminStockPage() {
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead>
             <tr className="border-b border-ink/10 text-[10px] uppercase tracking-luxe text-ink-muted">
+              <th className="px-5 py-4">ID</th>
               <th className="px-5 py-4">Producto</th>
               <th className="px-5 py-4">Color</th>
               <th className="px-5 py-4">Talla</th>
@@ -96,12 +98,13 @@ export default function AdminStockPage() {
             </tr>
           </thead>
           <tbody>
-            {items === null && <tr><td colSpan={7} className="px-5 py-8 text-center text-ink-muted">Cargando…</td></tr>}
-            {items !== null && filtrados.length === 0 && <tr><td colSpan={7} className="px-5 py-8 text-center text-ink-muted">Sin resultados.</td></tr>}
+            {items === null && <tr><td colSpan={8} className="px-5 py-8 text-center text-ink-muted">Cargando…</td></tr>}
+            {items !== null && filtrados.length === 0 && <tr><td colSpan={8} className="px-5 py-8 text-center text-ink-muted">Sin resultados.</td></tr>}
             {filtrados.map((v) => {
               const estado = estadoDe(v.stock)
               return (
                 <tr key={v.id} className={`border-b border-ink/5 last:border-0 ${v.activo ? '' : 'opacity-50'}`}>
+                  <td className="px-5 py-4"><IdBadge value={v.id} /></td>
                   <td className="px-5 py-4 font-light text-ink">
                     <Link to={`/admin/productos/${v.productoId}`} className="hover:text-clay">
                       {v.productoNombre}

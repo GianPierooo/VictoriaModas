@@ -3,6 +3,7 @@ import { listReclamaciones, responderReclamacion } from '../../lib/supabaseAdmin
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
 import { PLAZO_RESPUESTA_DIAS_HABILES } from '../../config/legal.js'
+import IdBadge from '../../components/admin/IdBadge.jsx'
 
 function diasHabilesTranscurridos(desde) {
   const inicio = new Date(desde)
@@ -95,6 +96,7 @@ export default function AdminReclamacionesPage() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-ink/10 text-[10px] uppercase tracking-luxe text-ink-muted">
+                <th className="px-5 py-3">ID</th>
                 <th className="px-5 py-3">Código</th>
                 <th className="px-5 py-3">Tipo</th>
                 <th className="px-5 py-3">Consumidor</th>
@@ -110,6 +112,7 @@ export default function AdminReclamacionesPage() {
                 const vencido = r.estado === 'pendiente' && dias > PLAZO_RESPUESTA_DIAS_HABILES
                 return (
                   <tr key={r.id} className="border-t border-ink/5">
+                    <td className="px-5 py-3"><IdBadge value={r.id} /></td>
                     <td className="px-5 py-3 font-mono text-xs text-ink-soft">{r.codigo}</td>
                     <td className="px-5 py-3 capitalize text-ink-soft">{r.tipo}</td>
                     <td className="px-5 py-3 text-ink">{r.nombres} {r.apellido_paterno}</td>

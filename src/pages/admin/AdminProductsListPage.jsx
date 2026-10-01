@@ -4,6 +4,7 @@ import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { listProductosAdmin, listCategorias, updateProductoParcial, deleteProducto } from '../../lib/supabaseAdmin.js'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
+import IdBadge from '../../components/admin/IdBadge.jsx'
 
 export default function AdminProductsListPage() {
   useDocumentMeta({ title: 'Productos | Panel admin' })
@@ -98,6 +99,7 @@ export default function AdminProductsListPage() {
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead>
             <tr className="border-b border-ink/10 text-[10px] uppercase tracking-luxe text-ink-muted">
+              <th className="px-5 py-4">ID</th>
               <th className="px-5 py-4">Producto</th>
               <th className="px-5 py-4">Categoría</th>
               <th className="px-5 py-4">Variantes</th>
@@ -108,13 +110,14 @@ export default function AdminProductsListPage() {
           </thead>
           <tbody>
             {productos === null && (
-              <tr><td colSpan={6} className="px-5 py-8 text-center text-ink-muted">Cargando…</td></tr>
+              <tr><td colSpan={7} className="px-5 py-8 text-center text-ink-muted">Cargando…</td></tr>
             )}
             {productos !== null && filtrados.length === 0 && (
-              <tr><td colSpan={6} className="px-5 py-8 text-center text-ink-muted">Sin productos que coincidan.</td></tr>
+              <tr><td colSpan={7} className="px-5 py-8 text-center text-ink-muted">Sin productos que coincidan.</td></tr>
             )}
             {filtrados.map((p) => (
               <tr key={p.id} className="border-b border-ink/5 last:border-0">
+                <td className="px-5 py-4"><IdBadge value={p.id} full /></td>
                 <td className="px-5 py-4 font-light text-ink">
                   {p.nombre}
                   {p.sku && <span className="mt-0.5 block text-xs font-light text-ink-muted">{p.sku}</span>}

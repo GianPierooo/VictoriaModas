@@ -3,6 +3,7 @@ import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { listCategorias, listTallas, listColores, createLookup, updateLookup, deleteLookup } from '../../lib/supabaseAdmin.js'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
+import IdBadge from '../../components/admin/IdBadge.jsx'
 
 const TABS = [
   { key: 'categorias', label: 'Categorías' },
@@ -212,8 +213,9 @@ function LookupList({ items, children, renderExtra, onDelete }) {
         {items !== null && items.length === 0 && <p className="px-5 py-4 text-sm text-ink-muted">Nada todavía.</p>}
         {(items || []).map((item) => (
           <div key={item.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
-            <span className="flex items-center gap-3 text-sm font-light text-ink">
-              {item.nombre}
+            <span className="flex min-w-0 items-center gap-3 text-sm font-light text-ink">
+              <IdBadge value={item.id} />
+              <span className="truncate">{item.nombre}</span>
               {renderExtra && renderExtra(item)}
             </span>
             <button type="button" onClick={() => onDelete(item.id)} aria-label={`Eliminar ${item.nombre}`} className="text-ink-muted hover:text-red-500">

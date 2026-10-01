@@ -4,6 +4,7 @@ import { listCupones, createCupon, updateCupon, deleteCupon } from '../../lib/su
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
 import { formatPEN } from '../../utils/price.js'
+import IdBadge from '../../components/admin/IdBadge.jsx'
 
 const TIPOS = [
   { value: 'porcentaje', label: '% de descuento' },
@@ -234,6 +235,7 @@ export default function AdminCuponesPage() {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-serif text-base font-light text-ink">{c.codigo}</span>
+                <IdBadge value={c.id} />
                 <button
                   type="button"
                   onClick={() => toggleActivo(c)}
