@@ -73,7 +73,7 @@ export async function listProductosAdmin() {
   if (guard(true)) return []
   const { data, error } = await supabase
     .from('productos')
-    .select('*, categorias(nombre), producto_variantes(stock)')
+    .select('*, categorias(nombre), producto_variantes(stock), producto_imagenes(url, orden)')
     .order('created_at', { ascending: false })
   if (error) throw error
   return data.map((p) => ({
@@ -81,6 +81,7 @@ export async function listProductosAdmin() {
     categoriaNombre: p.categorias?.nombre || '—',
     variantesCount: p.producto_variantes?.length || 0,
     stockTotal: (p.producto_variantes || []).reduce((sum, v) => sum + (v.stock || 0), 0),
+    miniatura: [...(p.producto_imagenes || [])].sort((a, b) => (a.orden || 0) - (b.orden || 0))[0]?.url || null,
   }))
 }
 
@@ -119,6 +120,17 @@ export async function upsertProducto(producto) {
 export async function updateProductoParcial(id, cambios) {
   const { error } = await supabase.from('productos').update(cambios).eq('id', id)
   if (error) throw error
+}
+
+// ¿Alguna variante de este producto aparece en una venta? Si sí, no se puede
+// borrar (la base lo bloquea por la relación con venta_items) — se desactiva.
+export async function productoTieneVentas(productoId) {
+  const { count, error } = await supabase
+    .from('venta_items')
+    .select('id, producto_variantes!inner(producto_id)', { count: 'exact', head: true })
+    .eq('producto_variantes.producto_id', productoId)
+  if (error) throw error
+  return (count || 0) > 0
 }
 
 export async function deleteProducto(id) {
@@ -232,26 +244,59 @@ export async function listStockGeneral() {
   if (guard(true)) return []
   const { data, error } = await supabase
     .from('producto_variantes')
-    .select('id, stock, precio_menor_pen, activo, productos(id, nombre), tallas(nombre), colores(nombre)')
+    .select('id, codigo, stock, precio_menor_pen, activo, productos(id, nombre, sku, categoria_id, activo), tallas(nombre), colores(nombre)')
     .order('stock', { ascending: true })
   if (error) throw error
   return data.map((v) => ({
     id: v.id,
+    codigo: v.codigo,
     stock: v.stock,
     precioMenorPEN: v.precio_menor_pen,
     activo: v.activo,
     productoId: v.productos?.id,
     productoNombre: v.productos?.nombre || '—',
+    productoSku: v.productos?.sku || '',
+    productoActivo: v.productos?.activo !== false,
+    categoriaId: v.productos?.categoria_id || null,
     talla: v.tallas?.nombre || '—',
     color: v.colores?.nombre || '—',
   }))
 }
 
-// Ajuste rápido de stock de una variante (usado en /admin/stock, sin pasar
-// por el formulario completo del producto).
-export async function updateVarianteStock(varianteId, stock) {
-  const { error } = await supabase.from('producto_variantes').update({ stock: Math.max(0, Number(stock) || 0) }).eq('id', varianteId)
+// Ajuste rápido de stock de una variante (usado en /admin/stock). Pasa por
+// la función SQL `ajustar_stock` para que quede en el historial con motivo.
+export async function updateVarianteStock(varianteId, stock, motivo = 'ajuste') {
+  const { error } = await supabase.rpc('ajustar_stock', {
+    p_variante: varianteId,
+    p_stock: Math.max(0, Number(stock) || 0),
+    p_motivo: motivo,
+  })
   if (error) throw error
+}
+
+// Historial de cambios de stock de una variante (tabla stock_movimientos,
+// llenada por un trigger en la base — incluye ventas web de Culqi).
+export async function listMovimientosStock(varianteId) {
+  if (guard(true)) return []
+  const { data, error } = await supabase
+    .from('stock_movimientos')
+    .select('*, ventas(codigo)')
+    .eq('variante_id', varianteId)
+    .order('created_at', { ascending: false })
+    .limit(100)
+  if (error) throw error
+  return data
+}
+
+export async function listMovimientosRecientes(limite = 15) {
+  if (guard(true)) return []
+  const { data, error } = await supabase
+    .from('stock_movimientos')
+    .select('*, ventas(codigo), producto_variantes(codigo, productos(nombre), tallas(nombre), colores(nombre))')
+    .order('created_at', { ascending: false })
+    .limit(limite)
+  if (error) throw error
+  return data
 }
 
 // ---------------------------------------------------------
@@ -419,7 +464,8 @@ export async function listVentasCliente(userId) {
   if (!cliente) return []
   const { data, error } = await supabase
     .from('ventas')
-    .select('*, venta_items(*)')
+    // Columnas explícitas de la variante: nunca traer precio_mayor_pen al navegador.
+    .select('id, codigo, estado, subtotal, descuento, total, direccion_envio, created_at, venta_items(id, cantidad, precio_unitario, producto_variantes(productos(nombre), tallas(nombre), colores(nombre)))')
     .eq('cliente_id', cliente.id)
     .order('created_at', { ascending: false })
   if (error) throw error
@@ -431,10 +477,22 @@ export async function listVentasStaff() {
   if (guard(true)) return []
   const { data, error } = await supabase
     .from('ventas')
-    .select('*, clientes(nombre, telefono), venta_items(*, producto_variantes(*, productos(nombre), tallas(nombre), colores(nombre)))')
+    .select('*, clientes(id, codigo, nombre, telefono, email, tipo_documento, documento), cupones(codigo), venta_items(*, producto_variantes(id, codigo, productos(id, nombre), tallas(nombre), colores(nombre)))')
     .order('created_at', { ascending: false })
   if (error) throw error
   return data
+}
+
+// Cancela la venta en la base: devuelve el stock, libera el uso del cupón y
+// anota el motivo. Ver función SQL `cancelar_venta`.
+export async function cancelarVenta(id, motivo = '') {
+  const { error } = await supabase.rpc('cancelar_venta', { p_venta: id, p_motivo: motivo })
+  if (error) throw error
+}
+
+export async function updateVentaNotas(id, notas) {
+  const { error } = await supabase.from('ventas').update({ notas, updated_at: new Date().toISOString() }).eq('id', id)
+  if (error) throw error
 }
 
 export async function updateVentaEstado(id, estado) {
@@ -566,13 +624,13 @@ export async function createVenta({ clienteId, items, canal = 'menor', direccion
   const { error: errItems } = await supabase.from('venta_items').insert(filasItems)
   if (errItems) throw errItems
 
-  // Descuenta stock (una actualización por variante — suficiente a esta escala).
-  for (const it of items) {
-    const actual = variantesActuales.find((v) => v.id === it.variante_id)
-    await supabase
-      .from('producto_variantes')
-      .update({ stock: actual.stock - it.cantidad })
-      .eq('id', it.variante_id)
+  // Descuenta stock en una sola transacción del lado de la base (queda en el
+  // historial de stock con motivo "venta"). Si otra venta se llevó las
+  // últimas piezas entre la validación y este paso, se deshace la venta.
+  const { error: errDescuento } = await supabase.rpc('descontar_stock_venta', { p_venta: venta.id })
+  if (errDescuento) {
+    await supabase.from('ventas').delete().eq('id', venta.id)
+    throw new Error(errDescuento.message || 'No hay stock suficiente para uno de los productos.')
   }
 
   // Deja constancia del uso del cupón (best-effort: si falla, la venta ya
@@ -623,6 +681,16 @@ export async function listReclamaciones() {
   return data
 }
 
+// Marcar como prueba / notas internas (no cambia nada de lo que registró la
+// clienta — el Libro de Reclamaciones no se borra ni se edita).
+export async function updateReclamacionInterna(id, cambios) {
+  const permitido = {}
+  if ('es_prueba' in cambios) permitido.es_prueba = !!cambios.es_prueba
+  if ('notas_internas' in cambios) permitido.notas_internas = cambios.notas_internas
+  const { error } = await supabase.from('reclamaciones').update(permitido).eq('id', id)
+  if (error) throw error
+}
+
 export async function responderReclamacion(id, respuesta) {
   if (!supabase) throw new Error('Supabase no está configurado.')
   const { data: userData } = await supabase.auth.getUser()
@@ -636,4 +704,81 @@ export async function responderReclamacion(id, respuesta) {
     })
     .eq('id', id)
   if (error) throw error
+}
+
+// ---------------------------------------------------------
+// Resumen por cliente (compras, total gastado, última compra) — se calcula
+// sobre las ventas no canceladas. A esta escala alcanza con traerlas todas.
+// ---------------------------------------------------------
+export async function listResumenVentasPorCliente() {
+  if (guard(true)) return {}
+  const { data, error } = await supabase.from('ventas').select('cliente_id, total, estado, created_at')
+  if (error) throw error
+  const resumen = {}
+  for (const v of data) {
+    if (!v.cliente_id || v.estado === 'cancelado') continue
+    const r = (resumen[v.cliente_id] ||= { compras: 0, total: 0, ultima: null })
+    r.compras += 1
+    r.total += Number(v.total) || 0
+    if (!r.ultima || v.created_at > r.ultima) r.ultima = v.created_at
+  }
+  return resumen
+}
+
+// ---------------------------------------------------------
+// Equipo (solo admin) — funciones SQL con SECURITY DEFINER que verifican
+// que quien llama es admin. El rol ya NO se puede cambiar desde el cliente
+// con un update directo (ver migración 20261029).
+// ---------------------------------------------------------
+export async function listEquipo() {
+  if (guard(true)) return []
+  const { data, error } = await supabase.rpc('admin_listar_equipo')
+  if (error) throw error
+  return data
+}
+
+export async function setRolUsuario(userId, rol) {
+  const { error } = await supabase.rpc('admin_set_rol', { p_user: userId, p_rol: rol })
+  if (error) throw error
+}
+
+// ---------------------------------------------------------
+// Ajustes editables (tabla `ajustes`, lectura pública / escritura admin).
+// ---------------------------------------------------------
+export async function getAjuste(clave) {
+  if (guard(true)) return null
+  const { data, error } = await supabase.from('ajustes').select('valor').eq('clave', clave).maybeSingle()
+  if (error) throw error
+  return data?.valor ?? null
+}
+
+export async function setAjuste(clave, valor) {
+  const { data: userData } = await supabase.auth.getUser()
+  const { error } = await supabase
+    .from('ajustes')
+    .upsert({ clave, valor, updated_at: new Date().toISOString(), updated_by: userData?.user?.id || null })
+  if (error) throw error
+}
+
+// ---------------------------------------------------------
+// Inicio del panel: todo lo necesario para el resumen en una sola carga.
+// ---------------------------------------------------------
+export async function getResumenPanel() {
+  if (guard(true)) return null
+  const [ventasRes, stockRes, reclamosRes, clientesRes] = await Promise.all([
+    supabase
+      .from('ventas')
+      .select('id, codigo, total, estado, origen, created_at, clientes(nombre), venta_items(cantidad, precio_unitario, producto_variantes(productos(id, nombre)))')
+      .order('created_at', { ascending: false }),
+    supabase.from('producto_variantes').select('id, stock, activo, productos(nombre, activo), tallas(nombre), colores(nombre)').lte('stock', 3).eq('activo', true),
+    supabase.from('reclamaciones').select('id, codigo, created_at, estado, es_prueba, nombres, apellido_paterno').eq('estado', 'pendiente'),
+    supabase.from('clientes').select('id', { count: 'exact', head: true }),
+  ])
+  for (const r of [ventasRes, stockRes, reclamosRes]) if (r.error) throw r.error
+  return {
+    ventas: ventasRes.data,
+    stockBajo: stockRes.data.filter((v) => v.productos?.activo !== false),
+    reclamosPendientes: reclamosRes.data.filter((r) => !r.es_prueba),
+    totalClientes: clientesRes.count || 0,
+  }
 }

@@ -1,13 +1,45 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabaseClient.js'
+
+const POR_DEFECTO = [
+  'Envío gratis en compras mayores a S/ 60',
+  'Nueva colección disponible',
+  'Atención personalizada por WhatsApp',
+]
+
+// Los textos se editan en /admin/ajustes (tabla `ajustes`, clave "anuncios").
+// Se piden una sola vez por visita y se comparten entre páginas.
+let anunciosPromise = null
+function cargarAnuncios() {
+  if (!supabase) return Promise.resolve(POR_DEFECTO)
+  anunciosPromise ||= supabase
+    .from('ajustes')
+    .select('valor')
+    .eq('clave', 'anuncios')
+    .maybeSingle()
+    .then(({ data }) => {
+      const lista = Array.isArray(data?.valor) ? data.valor.filter((t) => typeof t === 'string' && t.trim()) : []
+      return lista.length ? lista : POR_DEFECTO
+    })
+    .catch(() => POR_DEFECTO)
+  return anunciosPromise
+}
 
 export default function AnnouncementBanner() {
   const [current, setCurrent] = useState(0)
+  const [announcements, setAnnouncements] = useState(POR_DEFECTO)
 
-  const announcements = [
-    "Envío gratis en compras mayores a S/ 60",
-    "Nueva colección disponible",
-    "Atención personalizada por WhatsApp",
-  ]
+  useEffect(() => {
+    let vivo = true
+    cargarAnuncios().then((lista) => {
+      if (!vivo) return
+      setAnnouncements(lista)
+      setCurrent(0)
+    })
+    return () => {
+      vivo = false
+    }
+  }, [])
 
   // Rotación automática de anuncios
   useEffect(() => {

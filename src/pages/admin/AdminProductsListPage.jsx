@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { listProductosAdmin, listCategorias, updateProductoParcial, deleteProducto } from '../../lib/supabaseAdmin.js'
+import { listProductosAdmin, listCategorias, updateProductoParcial, deleteProducto, productoTieneVentas } from '../../lib/supabaseAdmin.js'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js'
 import IdBadge from '../../components/admin/IdBadge.jsx'
@@ -13,6 +13,7 @@ export default function AdminProductsListPage() {
   const [categorias, setCategorias] = useState([])
   const [search, setSearch] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('todas')
+  const [estadoFiltro, setEstadoFiltro] = useState('todos')
 
   const cargar = () => {
     listProductosAdmin()
@@ -31,10 +32,13 @@ export default function AdminProductsListPage() {
     const term = search.trim().toLowerCase()
     return productos.filter((p) => {
       if (categoriaFiltro !== 'todas' && p.categoria_id !== categoriaFiltro) return false
-      if (term && !p.nombre.toLowerCase().includes(term)) return false
+      if (estadoFiltro === 'activos' && !p.activo) return false
+      if (estadoFiltro === 'inactivos' && p.activo) return false
+      if (estadoFiltro === 'sin-foto' && p.miniatura) return false
+      if (term && ![p.nombre, p.sku, p.id].filter(Boolean).some((s) => s.toLowerCase().includes(term))) return false
       return true
     })
-  }, [productos, search, categoriaFiltro])
+  }, [productos, search, categoriaFiltro, estadoFiltro])
 
   const toggleActivo = async (producto) => {
     try {
@@ -46,7 +50,22 @@ export default function AdminProductsListPage() {
   }
 
   const eliminar = async (producto) => {
-    if (!window.confirm(`¿Eliminar "${producto.nombre}"? Esto borra también sus variantes e imágenes.`)) return
+    try {
+      if (await productoTieneVentas(producto.id)) {
+        if (producto.activo && window.confirm(`"${producto.nombre}" tiene ventas registradas y no se puede eliminar sin perder ese historial. ¿Desactivarlo para que deje de verse en la web?`)) {
+          await updateProductoParcial(producto.id, { activo: false })
+          toast.success('Producto desactivado.')
+          cargar()
+        } else if (!producto.activo) {
+          toast.error('Tiene ventas registradas: se queda inactivo para conservar el historial.')
+        }
+        return
+      }
+    } catch (err) {
+      toast.error('No se pudo verificar: ' + err.message)
+      return
+    }
+    if (!window.confirm(`¿Eliminar "${producto.nombre}" para siempre? Esto borra también sus variantes, imágenes y medidas.`)) return
     try {
       await deleteProducto(producto.id)
       toast.success('Producto eliminado.')
@@ -79,7 +98,7 @@ export default function AdminProductsListPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre..."
+            placeholder="Buscar por nombre, SKU o id..."
             className="w-full rounded-full border border-ink/15 bg-white py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-ink-muted/60 focus:border-clay focus:outline-none"
           />
         </div>
@@ -92,6 +111,16 @@ export default function AdminProductsListPage() {
           {categorias.map((c) => (
             <option key={c.id} value={c.id}>{c.nombre}</option>
           ))}
+        </select>
+        <select
+          value={estadoFiltro}
+          onChange={(e) => setEstadoFiltro(e.target.value)}
+          className="rounded-full border border-ink/15 bg-white px-4 py-2.5 text-sm text-ink-soft focus:border-clay focus:outline-none"
+        >
+          <option value="todos">Activos e inactivos</option>
+          <option value="activos">Solo activos</option>
+          <option value="inactivos">Solo inactivos</option>
+          <option value="sin-foto">Sin fotos</option>
         </select>
       </div>
 
@@ -119,8 +148,17 @@ export default function AdminProductsListPage() {
               <tr key={p.id} className="border-b border-ink/5 last:border-0">
                 <td className="px-5 py-4"><IdBadge value={p.id} full /></td>
                 <td className="px-5 py-4 font-light text-ink">
-                  {p.nombre}
-                  {p.sku && <span className="mt-0.5 block text-xs font-light text-ink-muted">{p.sku}</span>}
+                  <div className="flex items-center gap-3">
+                    {p.miniatura ? (
+                      <img src={p.miniatura} alt="" loading="lazy" className="h-12 w-10 shrink-0 rounded object-cover ring-1 ring-ink/10" />
+                    ) : (
+                      <span className="flex h-12 w-10 shrink-0 items-center justify-center rounded bg-cream-dark text-[9px] uppercase text-ink-muted">Sin foto</span>
+                    )}
+                    <div>
+                      {p.nombre}
+                      {p.sku && <span className="mt-0.5 block text-xs font-light text-ink-muted">{p.sku}</span>}
+                    </div>
+                  </div>
                 </td>
                 <td className="px-5 py-4 text-ink-soft">{p.categoriaNombre}</td>
                 <td className="px-5 py-4 text-ink-soft">{p.variantesCount}</td>

@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { ToastProvider } from './context/ToastContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { WishlistProvider } from './context/WishlistContext.jsx'
-import { AuthProvider, useAuth } from './context/AuthContext.jsx'
+import { AuthProvider } from './context/AuthContext.jsx'
 import ProfileCompletionGate from './components/ProfileCompletionGate.jsx'
 import PageLoader from './components/PageLoader.jsx'
 import RequireRole from './components/RequireRole.jsx'
@@ -70,20 +70,19 @@ const AdminVentasListPage = lazyWithReload(() => import('./pages/admin/AdminVent
 const AdminVentaFormPage = lazyWithReload(() => import('./pages/admin/AdminVentaFormPage.jsx'))
 const AdminClientesPage = lazyWithReload(() => import('./pages/admin/AdminClientesPage.jsx'))
 const AdminReclamacionesPage = lazyWithReload(() => import('./pages/admin/AdminReclamacionesPage.jsx'))
+const AdminInicioPage = lazyWithReload(() => import('./pages/admin/AdminInicioPage.jsx'))
+const AdminEquipoPage = lazyWithReload(() => import('./pages/admin/AdminEquipoPage.jsx'))
+const AdminAjustesPage = lazyWithReload(() => import('./pages/admin/AdminAjustesPage.jsx'))
 
 // Envuelve un elemento de página en Suspense para mostrar el loader durante la descarga.
 const withSuspense = (element) => (
   <Suspense fallback={<PageLoader />}>{element}</Suspense>
 )
 
-// Índice de /admin: a dónde aterriza cada rol al entrar sin sub-ruta.
-// Admin ve "Productos" primero; vendedor (sin acceso a productos) va
-// directo a "Ventas". Se ejecuta ya dentro de RequireRole, así que el
-// perfil ya está cargado.
+// Índice de /admin: todos aterrizan en el resumen (Inicio).
 // eslint-disable-next-line react-refresh/only-export-components
 function AdminIndexRedirect() {
-  const { profile } = useAuth()
-  return <Navigate to={profile?.rol === 'vendedor' ? 'ventas' : 'productos'} replace />
+  return <Navigate to="inicio" replace />
 }
 
 const router = createBrowserRouter([
@@ -118,6 +117,15 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <AdminIndexRedirect /> },
+      { path: 'inicio', element: withSuspense(<AdminInicioPage />) },
+      {
+        path: 'equipo',
+        element: withSuspense(<RequireRole allow={['admin']}><AdminEquipoPage /></RequireRole>),
+      },
+      {
+        path: 'ajustes',
+        element: withSuspense(<RequireRole allow={['admin']}><AdminAjustesPage /></RequireRole>),
+      },
       {
         path: 'productos',
         element: withSuspense(<RequireRole allow={['admin']}><AdminProductsListPage /></RequireRole>),

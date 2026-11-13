@@ -214,7 +214,7 @@ function LookupList({ items, children, renderExtra, onDelete }) {
         {(items || []).map((item) => (
           <div key={item.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
             <span className="flex min-w-0 items-center gap-3 text-sm font-light text-ink">
-              <IdBadge value={item.id} />
+              <IdBadge value={item.codigo || item.id} />
               <span className="truncate">{item.nombre}</span>
               {renderExtra && renderExtra(item)}
             </span>

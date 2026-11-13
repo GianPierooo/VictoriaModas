@@ -8,6 +8,9 @@ import {
   ClipboardDocumentListIcon,
   UserGroupIcon,
   ExclamationTriangleIcon,
+  HomeIcon,
+  UsersIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { useToast } from '../../context/ToastContext.jsx'
@@ -16,6 +19,7 @@ import { useToast } from '../../context/ToastContext.jsx'
 // filtra qué ve cada quien — admin ve todo; vendedor solo ventas/clientes
 // (mismo alcance que antes tenía /panel-ventas, ahora fusionado aquí).
 const NAV = [
+  { to: '/admin/inicio', label: 'Inicio', icon: HomeIcon, roles: ['admin', 'vendedor'] },
   { to: '/admin/productos', label: 'Productos', icon: Squares2X2Icon, roles: ['admin'] },
   { to: '/admin/stock', label: 'Stock', icon: ArchiveBoxIcon, roles: ['admin'] },
   { to: '/admin/catalogo-base', label: 'Catálogo base', icon: TagIcon, roles: ['admin'] },
@@ -23,6 +27,8 @@ const NAV = [
   { to: '/admin/ventas', label: 'Ventas', icon: ClipboardDocumentListIcon, roles: ['admin', 'vendedor'] },
   { to: '/admin/clientes', label: 'Clientes', icon: UserGroupIcon, roles: ['admin', 'vendedor'] },
   { to: '/admin/reclamaciones', label: 'Reclamaciones', icon: ExclamationTriangleIcon, roles: ['admin', 'vendedor'] },
+  { to: '/admin/equipo', label: 'Equipo', icon: UsersIcon, roles: ['admin'] },
+  { to: '/admin/ajustes', label: 'Ajustes', icon: Cog6ToothIcon, roles: ['admin'] },
 ]
 
 // ============================================================
@@ -84,21 +90,35 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Nav móvil simple (arriba), el panel admin es principalmente de escritorio */}
-      <div className="flex flex-1 flex-col">
-        <div className="flex items-center justify-between border-b border-ink/10 bg-white px-5 py-4 lg:hidden">
-          <Link to="/" className="font-serif text-lg font-light tracking-wide text-ink">
-            Victoria<span className="italic text-clay">Modas</span>
-          </Link>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs uppercase tracking-[0.1em] text-ink-soft">
+      {/* Nav móvil: marca + cerrar sesión arriba, secciones en una fila deslizable */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="sticky top-0 z-40 border-b border-ink/10 bg-white lg:hidden">
+          <div className="flex items-center justify-between px-4 py-3">
+            <Link to="/" className="font-serif text-lg font-light tracking-wide text-ink">
+              Victoria<span className="italic text-clay">Modas</span>
+            </Link>
+            <button type="button" onClick={handleLogout} className="text-xs uppercase tracking-[0.1em] text-ink-muted hover:text-ink">
+              Salir
+            </button>
+          </div>
+          <nav className="flex gap-2 overflow-x-auto px-4 pb-3 [scrollbar-width:none]">
             {nav.map((item) => (
-              <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'text-ink' : '')}>
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-xs ${
+                    isActive ? 'bg-ink text-cream' : 'bg-cream-dark text-ink-soft'
+                  }`
+                }
+              >
+                <item.icon className="h-4 w-4" aria-hidden="true" />
                 {item.label}
               </NavLink>
             ))}
-          </div>
+          </nav>
         </div>
-        <main className="flex-1 px-6 py-8 lg:px-10 lg:py-10">
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
           <Outlet />
         </main>
       </div>
