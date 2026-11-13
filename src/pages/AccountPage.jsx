@@ -30,11 +30,14 @@ function parseTelefono(telefono) {
 
 const ESTADO_LABEL = {
   pendiente: 'Pendiente',
-  confirmado: 'Confirmado',
-  enviado: 'Enviado',
+  confirmado: 'Pagado',
+  en_preparacion: 'En preparación',
+  enviado: 'Despachado',
   entregado: 'Entregado',
   cancelado: 'Cancelado',
 }
+// Ciclo que ve la clienta en "Mis pedidos" (cancelado queda fuera de la barra).
+const PASOS_PEDIDO = ['pendiente', 'confirmado', 'en_preparacion', 'enviado', 'entregado']
 
 const inputClass = (hasError) =>
   `w-full border-b bg-transparent py-2.5 text-ink font-light placeholder:text-ink-muted/50 focus:outline-none transition-colors ${
@@ -288,20 +291,63 @@ function OrdersTab({ userId }) {
 
   return (
     <div className="mx-auto max-w-lg space-y-4 text-left">
-      {ventas.map((v) => (
-        <div key={v.id} className="rounded-2xl bg-white p-5 shadow-soft ring-1 ring-ink/10">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs uppercase tracking-luxe text-ink-muted">
-              {new Date(v.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
+      {ventas.map((v) => {
+        const paso = PASOS_PEDIDO.indexOf(v.estado)
+        return (
+          <div key={v.id} className="rounded-2xl bg-white p-5 shadow-soft ring-1 ring-ink/10">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                {v.codigo && <p className="font-serif text-base font-light text-ink">Pedido {v.codigo}</p>}
+                <p className="text-xs uppercase tracking-luxe text-ink-muted">
+                  {new Date(v.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-clay/10 px-3 py-1 text-[10px] uppercase tracking-wide text-clay">
+                {ESTADO_LABEL[v.estado] || v.estado}
+              </span>
+            </div>
+
+            {paso >= 0 && (
+              <ol className="mb-4 grid grid-cols-5 gap-1" aria-label="Avance del pedido">
+                {PASOS_PEDIDO.map((p, i) => (
+                  <li key={p} className="text-center">
+                    <span className={`mb-1 block h-1 rounded-full ${i <= paso ? 'bg-clay' : 'bg-ink/10'}`} />
+                    <span className={`text-[9px] leading-tight sm:text-[10px] ${i <= paso ? 'text-ink-soft' : 'text-ink-muted/60'}`}>
+                      {ESTADO_LABEL[p]}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+
+            <ul className="mb-3 space-y-1 border-t border-ink/5 pt-3 text-sm font-light text-ink-soft">
+              {(v.venta_items || []).map((it) => {
+                const pv = it.producto_variantes
+                const detalle = [pv?.tallas?.nombre, pv?.colores?.nombre].filter(Boolean).join(' · ')
+                return (
+                  <li key={it.id} className="flex justify-between gap-3">
+                    <span>
+                      {it.cantidad} × {pv?.productos?.nombre || 'Prenda'}
+                      {detalle && <span className="text-ink-muted"> ({detalle})</span>}
+                    </span>
+                    <span className="shrink-0">{formatPEN(it.cantidad * it.precio_unitario)}</span>
+                  </li>
+                )
+              })}
+            </ul>
+            {Number(v.descuento) > 0 && (
+              <p className="flex justify-between text-sm font-light text-ink-muted">
+                <span>Descuento</span>
+                <span>− {formatPEN(v.descuento)}</span>
+              </p>
+            )}
+            <p className="flex justify-between font-serif text-lg font-light text-ink">
+              <span>Total</span>
+              <span>{formatPEN(v.total) || `S/ ${v.total}`}</span>
             </p>
-            <span className="rounded-full bg-clay/10 px-3 py-1 text-[10px] uppercase tracking-wide text-clay">
-              {ESTADO_LABEL[v.estado] || v.estado}
-            </span>
           </div>
-          <p className="font-light text-ink-soft">{v.venta_items?.length || 0} artículo(s)</p>
-          <p className="font-serif text-lg font-light text-ink">{formatPEN(v.total) || `S/ ${v.total}`}</p>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -347,7 +393,7 @@ function ReferidosTab({ userId, nombre }) {
     const mensaje =
       `¡Hola! Te comparto mi código de Victoria Modas: *${codigo}* — ` +
       `úsalo en tu primera compra y ganas S/ ${VALOR_REFERIDO_SOLES} de descuento. ` +
-      `victoriamodas.store`
+      `victoriamodas.online`
     window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank')
   }
 
