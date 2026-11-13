@@ -23,7 +23,7 @@ import { useStock, estadoStyle } from '../hooks/useStock.js'
 import { formatPEN, formatFechaCorta } from '../utils/price.js'
 import { trackEvent } from '../lib/metaPixel.js'
 
-const SITE_URL = 'https://victoriamodas.store'
+const SITE_URL = 'https://www.victoriamodas.online'
 
 const WHATSAPP_NUMBER = '51994347405'
 

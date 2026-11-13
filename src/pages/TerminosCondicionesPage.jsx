@@ -33,14 +33,14 @@ const T = Object.fromEntries(SECCIONES.map((s) => [s.id, s.title]))
 export default function TerminosCondicionesPage() {
   useDocumentMeta({
     title: 'Términos y Condiciones | Victoria Modas',
-    description: 'Términos y condiciones de uso y compra en victoriamodas.store.',
+    description: 'Términos y condiciones de uso y compra en victoriamodas.online.',
   })
 
   return (
     <LegalPageLayout
       eyebrow="Legal"
       title="Términos y Condiciones"
-      subtitle={`Condiciones de uso del sitio web y de compra en ${NOMBRE_COMERCIAL} (victoriamodas.store).`}
+      subtitle={`Condiciones de uso del sitio web y de compra en ${NOMBRE_COMERCIAL} (victoriamodas.online).`}
       updated="4 de septiembre de 2026"
       sections={SECCIONES}
     >
@@ -55,7 +55,7 @@ export default function TerminosCondicionesPage() {
 
       <LegalSection id="aceptacion" title={T.aceptacion}>
         <p>
-          Al navegar, registrarte o comprar en victoriamodas.store aceptas estos Términos y Condiciones, nuestra{' '}
+          Al navegar, registrarte o comprar en victoriamodas.online aceptas estos Términos y Condiciones, nuestra{' '}
           <Link to="/politica-de-cambios" className="text-clay underline">Política de Cambios y Devoluciones</Link> y el
           tratamiento de tus datos personales descrito más abajo. Si no estás de acuerdo, te pedimos no usar el sitio.
         </p>
@@ -126,7 +126,7 @@ export default function TerminosCondicionesPage() {
 
       <LegalSection id="propiedad" title={T.propiedad}>
         <p>
-          Las fotografías, textos, marca y diseño de victoriamodas.store son propiedad de {RAZON_SOCIAL}. No está
+          Las fotografías, textos, marca y diseño de victoriamodas.online son propiedad de {RAZON_SOCIAL}. No está
           permitido reproducirlos sin autorización previa.
         </p>
       </LegalSection>
