@@ -102,7 +102,7 @@ export default function Footer() {
 
           {/* Tienda */}
           <div>
-            <h3 className="mb-4 text-[11px] uppercase tracking-luxe text-cream/50">Tienda</h3>
+            <h2 className="mb-4 text-[11px] uppercase tracking-luxe text-cream/50">Tienda</h2>
             <ul className="space-y-1">
               {tienda.map((item) => (
                 <li key={item.name}>
@@ -119,7 +119,7 @@ export default function Footer() {
 
           {/* Ayuda */}
           <div>
-            <h3 className="mb-4 text-[11px] uppercase tracking-luxe text-cream/50">Ayuda</h3>
+            <h2 className="mb-4 text-[11px] uppercase tracking-luxe text-cream/50">Ayuda</h2>
             <ul className="space-y-1">
               {ayuda.map((item) => (
                 <li key={item.name}>
@@ -136,7 +136,7 @@ export default function Footer() {
 
           {/* Contacto */}
           <div>
-            <h3 className="mb-4 text-[11px] uppercase tracking-luxe text-cream/50">Contacto</h3>
+            <h2 className="mb-4 text-[11px] uppercase tracking-luxe text-cream/50">Contacto</h2>
             <ul className="space-y-1 text-sm font-light text-cream/70">
               <li>
                 <a
@@ -179,7 +179,7 @@ export default function Footer() {
           <p className="text-xs font-light text-cream/50">
             © 2026 Victoria Modas — Lima, Perú
           </p>
-          <p className="text-xs font-light italic text-cream/40">
+          <p className="text-xs font-light italic text-cream/60">
             Hecho en Perú
           </p>
         </div>

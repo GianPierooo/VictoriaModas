@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 // Reveal robusto basado en IntersectionObserver, pensado para impulsar
 // animaciones de framer (`animate={inView ? 'visible' : 'hidden'}`).
@@ -10,6 +10,20 @@ import { useEffect, useRef, useState } from 'react'
 export function useInViewReveal({ amount = 0.15, once = true } = {}) {
   const ref = useRef(null)
   const [inView, setInView] = useState(false)
+
+  // Lo que ya está en pantalla al cargar se muestra sin animación y antes del
+  // primer pintado: esconderlo para luego hacerle fade retrasaba el contenido
+  // principal (LCP) de páginas como /nosotros. El fade queda para lo que entra
+  // con el scroll.
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const { top, bottom } = el.getBoundingClientRect()
+    if (top < window.innerHeight && bottom > 0) {
+      el.style.transition = 'none'
+      setInView(true)
+    }
+  }, [])
 
   useEffect(() => {
     const el = ref.current

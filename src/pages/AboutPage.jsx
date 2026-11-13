@@ -36,8 +36,8 @@ function TallerImage() {
   if (failed) {
     return (
       <div className="flex aspect-[4/3] items-center justify-center rounded-xl bg-cream">
-        <p className="text-center font-serif text-2xl font-light tracking-wide text-ink/30">
-          Victoria<span className="italic text-clay/40">Modas</span>
+        <p className="text-center font-serif text-2xl font-light tracking-wide text-ink-muted">
+          Victoria<span className="italic text-clay">Modas</span>
           <span className="mt-2 block text-[10px] uppercase tracking-luxe">Hecho en Perú</span>
         </p>
       </div>

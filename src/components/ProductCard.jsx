@@ -11,7 +11,9 @@ import { formatPEN, formatFechaCorta } from '../utils/price.js'
 
 const MAX_SWATCHES = 4
 
-export default function ProductCard({ product, index = 0 }) {
+// `prioridad`: la primera fila del catálogo carga sus fotos de inmediato y con
+// prioridad alta (es el contenido principal de la vista; ver Lighthouse LCP).
+export default function ProductCard({ product, index = 0, prioridad = false }) {
   const { id, name, image, badge, category, colors, colorImages } = product
 
   const { isFavorite, toggleFavorite } = useWishlist()
@@ -107,7 +109,8 @@ export default function ProductCard({ product, index = 0 }) {
               alt=""
               aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover object-top"
-              loading="lazy"
+              loading={prioridad ? 'eager' : 'lazy'}
+              fetchPriority={prioridad ? 'high' : undefined}
               width={900}
               height={1200}
             />
@@ -123,7 +126,8 @@ export default function ProductCard({ product, index = 0 }) {
                   ? ''
                   : 'transition-transform duration-[1200ms] ease-out group-hover:scale-[1.08]'
               }`}
-              loading="lazy"
+              loading={prioridad ? 'eager' : 'lazy'}
+              fetchPriority={prioridad ? 'high' : undefined}
               width={900}
               height={1200}
             />

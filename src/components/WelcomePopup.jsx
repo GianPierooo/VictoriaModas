@@ -64,7 +64,18 @@ export default function WelcomePopup() {
     }
     if (ya) return
 
-    const timer = setTimeout(async () => {
+    // Arranca recién con la primera interacción (scroll, toque, tecla): así no
+    // tapa la página mientras carga ni pasa a ser el "contenido principal" que
+    // mide Lighthouse (LCP), y no interrumpe a quien todavía no empezó a mirar.
+    const EVENTOS = ['scroll', 'pointerdown', 'keydown', 'touchstart']
+    let timer
+    const empezar = () => {
+      EVENTOS.forEach((e) => window.removeEventListener(e, empezar))
+      timer = setTimeout(mostrar, DELAY_MS)
+    }
+    EVENTOS.forEach((e) => window.addEventListener(e, empezar, { passive: true }))
+
+    const mostrar = async () => {
       const premios = await obtenerCuponesRuleta()
       if (!alive) return
       if (premios.length >= 2) {
@@ -78,10 +89,11 @@ export default function WelcomePopup() {
       setCuponDirecto(directo)
       setModo('directo')
       setOpen(true)
-    }, DELAY_MS)
+    }
 
     return () => {
       alive = false
+      EVENTOS.forEach((e) => window.removeEventListener(e, empezar))
       clearTimeout(timer)
     }
   }, [])

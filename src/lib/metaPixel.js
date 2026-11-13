@@ -32,12 +32,24 @@ function cargarScriptPixel() {
   n.loaded = true
   n.version = '2.0'
   n.queue = []
-  const t = document.createElement('script')
-  t.async = true
-  t.src = 'https://connect.facebook.net/en_US/fbevents.js'
-  document.head.appendChild(t)
-
   window.fbq('init', PIXEL_ID)
+
+  // El script de Meta (~240 KB y cookies de terceros) se descarga recién con la
+  // primera interacción o a los 10 s, no durante la carga inicial (Lighthouse:
+  // "Uses third-party cookies" y "Reduce unused JavaScript"). Mientras tanto
+  // fbq() encola los eventos en n.queue, así que no se pierde ninguno.
+  const EVENTOS = ['pointerdown', 'keydown', 'scroll', 'touchstart']
+  let timer
+  const inyectar = () => {
+    EVENTOS.forEach((e) => window.removeEventListener(e, inyectar))
+    clearTimeout(timer)
+    const t = document.createElement('script')
+    t.async = true
+    t.src = 'https://connect.facebook.net/en_US/fbevents.js'
+    document.head.appendChild(t)
+  }
+  EVENTOS.forEach((e) => window.addEventListener(e, inyectar, { once: true, passive: true }))
+  timer = setTimeout(inyectar, 10000)
 }
 
 // Llamar UNA vez al arrancar la app.

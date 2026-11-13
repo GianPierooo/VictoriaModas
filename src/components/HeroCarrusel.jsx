@@ -137,7 +137,9 @@ export default function HeroCarrusel() {
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
 
-        <div className="flex items-center gap-2" role="tablist" aria-label="Elegir banner">
+        {/* Cada botón mide 24×24 px (área táctil mínima, Lighthouse "target-size");
+            el punto visible sigue siendo de 8 px, dibujado por el span interno. */}
+        <div className="flex items-center" role="tablist" aria-label="Elegir banner">
           {BANNERS_HOME.map((b, i) => {
             const activo = i === actual
             return (
@@ -148,16 +150,20 @@ export default function HeroCarrusel() {
                 aria-selected={activo}
                 aria-label={`Ir al banner ${i + 1}`}
                 onClick={() => ir(i)}
-                className={`relative h-2 overflow-hidden rounded-full bg-ink/15 transition-[width] duration-300 cursor-pointer ${activo ? 'w-10' : 'w-2 hover:bg-ink/30'}`}
+                className="group flex h-6 min-w-6 cursor-pointer items-center justify-center px-1"
               >
-                {activo && (
-                  <span
-                    key={actual}
-                    className={`absolute inset-y-0 left-0 bg-ink ${reducido ? 'w-full' : 'vm-progreso'}`}
-                    style={{ animationDuration: `${DURACION_MS}ms`, animationPlayState: pausa ? 'paused' : 'running' }}
-                    onAnimationEnd={siguiente}
-                  />
-                )}
+                <span
+                  className={`relative block h-2 overflow-hidden rounded-full bg-ink/15 transition-[width] duration-300 ${activo ? 'w-10' : 'w-2 group-hover:bg-ink/30'}`}
+                >
+                  {activo && (
+                    <span
+                      key={actual}
+                      className={`absolute inset-y-0 left-0 bg-ink ${reducido ? 'w-full' : 'vm-progreso'}`}
+                      style={{ animationDuration: `${DURACION_MS}ms`, animationPlayState: pausa ? 'paused' : 'running' }}
+                      onAnimationEnd={siguiente}
+                    />
+                  )}
+                </span>
               </button>
             )
           })}

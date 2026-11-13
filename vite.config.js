@@ -93,16 +93,22 @@ function devApi() {
 export default defineConfig({
   plugins: [react(), devApi()],
   build: {
+    // Source maps públicos: Lighthouse los pide ("Missing source maps for large
+    // first-party JavaScript") y permiten leer errores de producción. El código
+    // del navegador ya es público; no hay secretos ahí (regla 1 de CLAUDE.md).
+    sourcemap: true,
     rollupOptions: {
       output: {
         // Librerías en chunks cacheables aparte del código de la app:
         //  - "ui"     → @headlessui / @heroicons (grandes, compartidas)
         //  - "vendor" → react, react-dom, react-router-dom y el resto de libs
+        // Excepción: @emailjs solo lo usa Contacto; queda en el chunk de esa
+        // página en vez de descargarse en todas las vistas.
+        // (Dejar React fuera de "vendor" rompe el orden de carga de "ui".)
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('@headlessui') || id.includes('@heroicons')) return 'ui'
-            return 'vendor'
-          }
+          if (!id.includes('node_modules') || id.includes('@emailjs')) return
+          if (id.includes('@headlessui') || id.includes('@heroicons')) return 'ui'
+          return 'vendor'
         },
       },
     },

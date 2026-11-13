@@ -295,8 +295,10 @@ export default function ProductsPage({ products = [], title = "Productos", filte
         <div className="mx-auto max-w-7xl px-6 py-14 md:py-20 lg:px-8">
           {sortedProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-x-4 gap-y-14 sm:gap-x-6 md:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
+              {/* Encabezado solo para lectores de pantalla: mantiene el orden h1 → h2 → h3 de las tarjetas */}
+              <h2 className="sr-only">Prendas de {toSentenceCase(title)}</h2>
               {sortedProducts.map((product, i) => (
-                <ProductCard key={product.id} product={product} index={i} />
+                <ProductCard key={product.id} product={product} index={i} prioridad={i < 4} />
               ))}
             </div>
           ) : (
