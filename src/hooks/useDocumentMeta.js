@@ -24,6 +24,20 @@ function setMeta(attr, key, content) {
  */
 export function useDocumentMeta({ title, description, jsonLd } = {}) {
   useEffect(() => {
+    // URL canónica de la vista actual (index.html trae la de la portada; si
+    // todas las rutas la conservan, Google y Lighthouse marcan el canonical
+    // como inválido porque cada página "dice" ser la portada).
+    const url = `https://www.victoriamodas.online${window.location.pathname}`
+    let canonical = document.head.querySelector('link[rel="canonical"]')
+    if (!canonical) {
+      canonical = document.createElement('link')
+      canonical.setAttribute('rel', 'canonical')
+      document.head.appendChild(canonical)
+    }
+    canonical.setAttribute('href', url)
+    setMeta('property', 'og:url', url)
+    setMeta('name', 'twitter:url', url)
+
     if (title) {
       document.title = title
       setMeta('property', 'og:title', title)
